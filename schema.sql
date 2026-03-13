@@ -45,15 +45,6 @@ CREATE TABLE cvs (
     FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE
 );
 
-CREATE TABLE candidate_cvs (
-    id              INT PRIMARY KEY AUTO_INCREMENT,
-    candidate_id    INT NOT NULL,
-    cv_id           INT NOT NULL,
-    label           VARCHAR(100),
-    FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE,
-    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
-);
-
 -- ─── OFFRES D'EMPLOI ──────────────────────────────────────────────────────────
 
 CREATE TABLE job_offers (
@@ -68,14 +59,6 @@ CREATE TABLE job_offers (
     is_active       BOOLEAN DEFAULT TRUE,
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES company_profiles(id) ON DELETE CASCADE
-);
-
-CREATE TABLE company_job_offers (
-    id              INT PRIMARY KEY AUTO_INCREMENT,
-    company_id      INT NOT NULL,
-    job_offer_id    INT NOT NULL,
-    FOREIGN KEY (company_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
-    FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE
 );
 
 -- ─── CATÉGORIES IA ────────────────────────────────────────────────────────────
