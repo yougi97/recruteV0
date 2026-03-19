@@ -5,7 +5,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.Techlance</groupId>
+    <groupId>com.techlance</groupId>
     <artifactId>recrute</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
