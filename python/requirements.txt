@@ -1,2 +1,5 @@
 faiss-cpu
 numpy
+pdfplumber
+pytesseract
+regex
