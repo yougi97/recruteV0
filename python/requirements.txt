@@ -3,3 +3,4 @@ numpy
 pdfplumber
 pytesseract
 regex
+sentence-transformers

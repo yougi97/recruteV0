@@ -1,6 +1,7 @@
 import pdfplumber
 import pytesseract
 import re
+from sentence_transformers import SentenceTransformer
 
 def extract_text_from_pdf(pdf_path):
 
@@ -26,7 +27,15 @@ def clean_text(text):
     # Remplacer les multiples espaces par un seul espace
     text = re.sub(r'\s+', ' ', text)
     
-    # caractères parasites
+    # caractères parasites (enlever les caractères spéciaux sauf les lettres,
+    # chiffres, espaces et quelques ponctuations courantes)
     text = re.sub(r'[^\w\s\-\.,@]', '', text) 
     
     return text
+
+def embed_text(text, model_name='paraphrase-multilingual-MiniLM-L12-v2'):
+    model = SentenceTransformer(model_name)
+    embedding = model.encode(text)
+    return embedding
+
+
