@@ -38,4 +38,43 @@ def embed_text(text, model_name='paraphrase-multilingual-MiniLM-L12-v2'):
     embedding = model.encode(text)
     return embedding
 
+def process_cv(pdf_path):
+    text = extract_text_from_pdf(pdf_path)
+    cleaned_text = clean_text(text)
+    embedding = embed_text(cleaned_text)
+    return embedding
+
+def process_cv_with_metadata(pdf_path):
+    text = extract_text_from_pdf(pdf_path)
+    cleaned_text = clean_text(text)
+    embedding = embed_text(cleaned_text)
+    
+    # Extraire des métadonnées simples (exemple : nom du fichier)
+    metadata = {
+        'filename': pdf_path.split('/')[-1]
+    }
+    
+    return embedding, metadata
+def process_job_description(pdf_path):
+    text = extract_text_from_pdf(pdf_path)
+    cleaned_text = clean_text(text)
+    embedding = embed_text(cleaned_text)
+    return embedding
+
+def process_job_description_with_metadata(pdf_path):
+    text = extract_text_from_pdf(pdf_path)
+    cleaned_text = clean_text(text)
+    embedding = embed_text(cleaned_text)
+    
+    # Extraire des métadonnées simples (exemple : nom du fichier)
+    metadata = {
+        'filename': pdf_path.split('/')[-1]
+    }
+    
+    return embedding, metadata
+
+def process_job_text(job_text):
+    cleaned_text = clean_text(job_text)
+    embedding = embed_text(cleaned_text)
+    return embedding
 
