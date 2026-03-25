@@ -2,6 +2,26 @@ import faiss
 import numpy as np
 from math import ceil, sqrt
 
+
+def compute_similarity(cv_vector, job_vector):
+    cv_array = np.asarray(cv_vector, dtype='float32').reshape(1, -1)
+    job_array = np.asarray(job_vector, dtype='float32').reshape(1, -1)
+
+    if cv_array.shape[1] != job_array.shape[1]:
+        raise ValueError(
+            f"Dimension mismatch: cv_vector has {cv_array.shape[1]} dims, "
+            f"job_vector has {job_array.shape[1]} dims"
+        )
+
+    cv_norm = np.linalg.norm(cv_array)
+    job_norm = np.linalg.norm(job_array)
+
+    if cv_norm == 0 or job_norm == 0:
+        raise ValueError("Cannot compute similarity with a zero-norm vector")
+
+    similarity = float((np.dot(cv_array, job_array.T) / (cv_norm * job_norm))[0, 0])
+    return similarity
+
 #prends en argument un vecteur de CV et une liste de vecteurs de job,
 # et retourne les indices des k jobs les plus similaires au CV
 
