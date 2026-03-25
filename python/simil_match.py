@@ -28,7 +28,8 @@ def simil_match(cv_vector, job_vectors, k=10):
     return scores, indices
 
 
-
+#prends en argument une liste de vecteurs de CV et un de vecteur de job,
+# et retourne les indices des k CVs les plus similaires au job
 def simil_match_findcv(cv_vector, job_vectors, k=10):
 
     d = 384          # dimensions 
