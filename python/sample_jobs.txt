@@ -1,0 +1,25 @@
+Développeur Python Senior
+Nous recherchons un développeur Python avec 5+ ans d'expérience. Vous devez maîtriser 
+Python, Flask/Django, et avoir une bonne connaissance en machine learning, traitement de données,
+et algorithmes. Vous travaillerez en équipe agile sur des projets de données.
+
+---
+
+Data Scientist - ML Engineer
+Rejoignez notre équipe data pour développer des solutions de machine learning. 
+Requis: Python avancé, scikit-learn, TensorFlow/PyTorch, SQL, et expérience en NLP.
+Vous aurez une formation théorique en mathématiques et en informatique.
+
+---
+
+Full Stack Engineer
+Développeur full stack tech-lead cherché. Maîtrise de Python, JavaScript, React et bases de données.
+Expérience en architecture logicielle et gestion de projets agiles. 
+Passionné par la résolution de problèmes complexes et l'optimisation de performances.
+
+---
+
+Junior Developer - Python
+Débutant avec bonne base en programmation Python. Vous apprendrez en travaillant sur 
+des projets réels avec mentorat. Formation en informatique ou CPGE prisée.
+Vous aurez de bonnes bases en C, Python et curiosité pour de nouvelles technologies.

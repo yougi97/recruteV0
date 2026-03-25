@@ -30,18 +30,18 @@ if __name__ == "__main__":
 
     # Test de l'extraction de texte
     text = cvvect.extract_text_from_pdf(str(cv_path))
-    print("Texte extrait du CV :")
-    print(text)
+    # print("Texte extrait du CV :")
+    # print(text)
 
     # Test du nettoyage de texte
     cleaned_text = cvvect.clean_text(text)
-    print("\nTexte nettoyé :")
-    print(cleaned_text)
+    # print("\nTexte nettoyé :")
+    # print(cleaned_text)
 
     # Test de l'embedding de texte
     embedding = cvvect.embed_text(cleaned_text)
-    print("\nEmbedding du texte :")
-    print(embedding)
+    # print("\nEmbedding du texte :")
+    # print(embedding)
 
     # Test du traitement complet du CV
     cv_embedding = cvvect.process_cv(str(cv_path))
@@ -50,16 +50,33 @@ if __name__ == "__main__":
 
     # Test du traitement complet du CV avec métadonnées
     cv_embedding_meta, metadata = cvvect.process_cv_with_metadata(str(cv_path))
-    print("\nEmbedding complet du CV avec métadonnées :")
-    print(cv_embedding_meta)
-    print("Métadonnées :")
-    print(metadata)
+    # print("\nEmbedding complet du CV avec métadonnées :")
+    # print(cv_embedding_meta)
+    # print("Métadonnées :")
+    # print(metadata)
     
-    job = "Développeur Python avec expérience en machine learning et traitement de données."
+    
+    job = "Développeur Python,C conaissance maths et info théorique stage débutant en anglais école d'ingénieur."
     job_embedding = cvvect.process_job_text(job)
     print("\nEmbedding du texte de la description de poste :")
     print(job_embedding)
     # Test de la similitude entre le CV et la description de poste
     similarity = simil_match.compute_similarity(cv_embedding, job_embedding)
-    print("\nSimilitude entre le CV et la description de poste :")
-    print(similarity)   
+    print("\nSimilitude entre le CV et la description de poste (simple) :")
+    print(similarity)
+    
+    # Enhanced similarity with keyword matching
+    cv_text = cvvect.extract_text_from_pdf(str(cv_path))
+    result = simil_match.compute_similarity_enhanced(
+        cv_text=cv_text,
+        job_text=job,
+        cv_vector=cv_embedding,
+        job_vector=job_embedding
+    )
+    print("\nSimilarité améliorée (avec bonus keywords):")
+    print(f"  Final Score: {result['combined']:.2%}")
+    print(f"  Semantic match: {result['embedding']:.2%}")
+    if result.get('keyword_bonus', 0) > 0:
+        print(f"  Keyword bonus: +{result['keyword_bonus']:.2%}")
+    if result['matched_keywords']:
+        print(f"  Matched keywords: {', '.join(sorted(result['matched_keywords']))}")
