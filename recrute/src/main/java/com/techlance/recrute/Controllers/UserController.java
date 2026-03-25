@@ -1,5 +1,6 @@
 package com.techlance.recrute.Controllers;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,5 +21,10 @@ public class UserController {
     @PostMapping
     public Users createUser(@RequestBody Users user) {
         return userService.createUser(user);
+    }
+
+    @GetMapping
+    public java.util.List<Users> getAllUsers() {
+        return userService.getAllUsers();
     }
 }

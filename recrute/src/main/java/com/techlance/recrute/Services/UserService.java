@@ -1,5 +1,7 @@
 package com.techlance.recrute.Services;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.techlance.recrute.Entities.Users;
@@ -15,5 +17,9 @@ public class UserService {
 
     public Users createUser(Users user) {
         return userRepository.save(user);
+    }
+
+    public List<Users> getAllUsers() {
+        return userRepository.findAll();
     }
 }
