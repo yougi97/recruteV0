@@ -4,4 +4,4 @@ pdfplumber
 pytesseract
 regex
 sentence-transformers
-google-generativeai
+google-genai

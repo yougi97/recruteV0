@@ -1,7 +1,12 @@
 import pdfplumber
 import pytesseract
 import re
-from sentence_transformers import SentenceTransformer
+import os
+
+# Avoid importing TensorFlow through transformers on environments where TF can crash.
+os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
+
+_MODEL = None
 
 def extract_text_from_pdf(pdf_path):
 
@@ -44,8 +49,11 @@ def clean_text(text):
     return text
 
 def embed_text(text, model_name='paraphrase-multilingual-MiniLM-L12-v2'):
-    model = SentenceTransformer(model_name)
-    embedding = model.encode(text)
+    global _MODEL
+    if _MODEL is None:
+        from sentence_transformers import SentenceTransformer
+        _MODEL = SentenceTransformer(model_name)
+    embedding = _MODEL.encode(text)
     return embedding
 
 def process_cv(pdf_path):

@@ -3,3 +3,5 @@ node_modules
 .venv/
 .empty/
 .env
+*.pyc
+__pycache__/
