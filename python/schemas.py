@@ -11,6 +11,17 @@ class NiveauEtudes(str, Enum):
     DOCTORAT = "doctorat"
     AUTRE = "autre"
 
+class NiveauExpertise(str, Enum):
+    NOTIONS = "notions"       # on connait la théorié mais on a peu ou pas pratiqué
+    INTERMEDIAIRE = "intermediaire"  # utilisé sur projets perso/académiques
+    AVANCE = "avance"         # utilisé en pro, autonome
+    EXPERT = "expert"         # maîtrise approfondie, peut former
+
+class Competence(BaseModel):
+    nom: str                         # "Python", "FAISS", "Spring Boot"...
+    niveau: NiveauExpertise
+    annees: Optional[float] = None   # années d'utilisation si déductible
+
 class Experience(BaseModel):
     titre: str
     entreprise: str
@@ -22,8 +33,8 @@ class CVParse(BaseModel):
     email: Optional[str] = None
     niveau_etudes: NiveauEtudes
     annees_experience: float = Field(ge=0)
-    competences_techniques: list[str]  # ["Python", "Java", "FAISS"...]
-    soft_skills: list[str]             # ["leadership", "communication"...]
+    competences: list[Competence]    # structuré avec niveau
+    soft_skills: list[str]
     langues: list[str]
     experiences: list[Experience]
-    resume_profil: str  # 2-3 phrases
+    resume_profil: str
