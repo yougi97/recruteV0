@@ -33,6 +33,17 @@ class CVJobMatcherGUI:
         
         self.cv_status = tk.Label(cv_frame, text="", fg="blue")
         self.cv_status.pack(side="left", padx=5)
+
+        # ===== OCR DEBUG SECTION =====
+        debug_frame = ttk.LabelFrame(self.root, text="OCR CV Text (Debug)", padding=10)
+        debug_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+        self.ocr_text = tk.Text(debug_frame, height=10, wrap="word", state="disabled")
+        self.ocr_text.pack(side="left", fill="both", expand=True)
+
+        ocr_scrollbar = ttk.Scrollbar(debug_frame, orient="vertical", command=self.ocr_text.yview)
+        ocr_scrollbar.pack(side="right", fill="y")
+        self.ocr_text.configure(yscrollcommand=ocr_scrollbar.set)
         
         # ===== JOB SECTION =====
         job_frame = ttk.LabelFrame(self.root, text="Job Description", padding=10)
@@ -137,14 +148,18 @@ class CVJobMatcherGUI:
     def _process_cv_thread(self):
         try:
             # Extract raw text and embedding
-            self.cv_text = cvvect.extract_text_from_pdf(self.cv_path)
-            self.cv_embedding = cvvect.process_cv(self.cv_path)
+            self.cv_text = cvvect.extract_text_ocr(self.cv_path)
+            self.cv_embedding = cvvect.process_cv_ocr(self.cv_path)
             self.root.after(0, self._cv_processed)
         except Exception as e:
             self.root.after(0, lambda: self._cv_error(str(e)))
     
     def _cv_processed(self):
         self.progress.stop()
+        self.ocr_text.config(state="normal")
+        self.ocr_text.delete("1.0", "end")
+        self.ocr_text.insert("1.0", self.cv_text)
+        self.ocr_text.config(state="disabled")
         self.cv_status.config(text="✓ Processed", fg="green")
         self.update_status("CV processed successfully")
         self.btn_compute.config(state="normal")
@@ -254,6 +269,9 @@ class CVJobMatcherGUI:
         self.job_text.config(state="normal")
         self.job_text.delete("1.0", "end")
         self.job_file_label.config(text="")
+        self.ocr_text.config(state="normal")
+        self.ocr_text.delete("1.0", "end")
+        self.ocr_text.config(state="disabled")
         self.result_label.config(text="No result yet", fg="gray")
         
         self.btn_load_cv.config(state="disabled")
