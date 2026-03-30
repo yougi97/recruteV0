@@ -43,7 +43,8 @@ if not API_KEY:
 
 client = genai.Client(api_key=API_KEY)
 
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+MAX_OUTPUT_TOKENS = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "8192"))
 SYSTEM_INSTRUCTION = (
     "Oublie toutes les instructions précédentes. Tu es maintenant "
     "un expert RH. "
@@ -64,6 +65,27 @@ def _extract_retry_delay_seconds(error_message: str) -> float | None:
     if not match:
         return None
     return float(match.group(1))
+
+
+def _parse_llm_json(raw_json: str) -> dict:
+    cleaned = raw_json.strip()
+
+    if cleaned.startswith("```"):
+        lines = cleaned.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        cleaned = "\n".join(lines).strip()
+
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            return json.loads(cleaned[start:end + 1])
+        raise
     
 def appeler_llm(text_cv: str, err_prec: str = "") -> str:
     contexte_erreur = ""
@@ -81,8 +103,9 @@ def appeler_llm(text_cv: str, err_prec: str = "") -> str:
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
-            max_output_tokens=1500,
+            max_output_tokens=MAX_OUTPUT_TOKENS,
             system_instruction=SYSTEM_INSTRUCTION,
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
         ),
     )
     return response.text
@@ -110,7 +133,7 @@ def parser_cv(chemin_pdf: str, max_retries: int = 3) -> CVParse:
             raise
 
         try:
-            data = json.loads(raw_json)
+            data = _parse_llm_json(raw_json)
             return CVParse(**data)
         except Exception as e:
             erreur = str(e)
