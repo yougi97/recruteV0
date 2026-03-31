@@ -6,9 +6,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.techlance.recrute.Entities.CandidateProfiles;
+import com.techlance.recrute.Entities.CompanyProfiles;
 import com.techlance.recrute.Entities.Users;
 import com.techlance.recrute.Services.UserService;
 
@@ -26,13 +27,23 @@ public class UserController {
         return userService.createUser(user);
     }
 
+    @PostMapping("/candidate")
+    public CandidateProfiles createCandidat(@RequestBody CandidateProfiles candidateProfiles) {
+        return userService.createCandidat(candidateProfiles);
+    }
+    
+    @PostMapping("/company")
+    public CompanyProfiles createCompany(@RequestBody CompanyProfiles companyProfiles){
+        return userService.createCompany(companyProfiles);
+    }
+
     @GetMapping
     public java.util.List<Users> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/email")
-    public Users getUserByEmail(@RequestParam String email) {
+    public Users getUserByEmail(@RequestBody String email) {
         return userService.getUserByEmail(email);
     }
 
