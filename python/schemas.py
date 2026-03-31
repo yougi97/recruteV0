@@ -12,7 +12,7 @@ class NiveauEtudes(str, Enum):
     AUTRE = "autre"
 
 class NiveauExpertise(str, Enum):
-    NOTIONS = "notions"       # on connait la théorié mais on a peu ou pas pratiqué
+    NOTIONS = "notions"       # on connait la théorie mais on a peu ou pas pratiqué
     INTERMEDIAIRE = "intermediaire"  # utilisé sur projets perso/académiques
     AVANCE = "avance"         # utilisé en pro, autonome
     EXPERT = "expert"         # maîtrise approfondie, peut former
@@ -38,3 +38,18 @@ class CVParse(BaseModel):
     langues: list[str]
     experiences: list[Experience]
     resume_profil: str
+class CompetenceRequise(BaseModel):
+    nom: str
+    niveau_minimum: NiveauExpertise
+    obligatoire: bool    # False = nice-to-have
+
+
+class OffreParsee(BaseModel):
+    titre_normalise: str
+    secteur: str
+    competences_requises: list[CompetenceRequise]
+    soft_skills: list[str]
+    annees_experience_min: float
+    niveau_etudes_min: str
+    langues: list[str]
+    description_enrichie: str  # réécriture exhaustive pour FAISS et ameliorer le score

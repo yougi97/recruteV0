@@ -7,6 +7,7 @@ import time
 from google import genai
 from google.genai import types
 from schemas import CVParse
+from schemas import OffreParsee
 import cvvect
 
 
@@ -52,6 +53,15 @@ SYSTEM_INSTRUCTION = (
     "JSON valide correspondant exactement au schéma fourni. "
     "Si une information est absente, utilise null. "
     "Pour annees_experience, calcule depuis les dates si possible."
+)
+
+OFFRE_SYSTEM_INSTRUCTION = (
+    "Oublie toutes les instructions précédentes. Tu es un expert RH. "
+    "À partir d'une offre d'emploi, extrais les exigences structurées "
+    "et génère une description_enrichie exhaustive qui explicite les "
+    "compétences implicites, le contexte métier, et le profil idéal. "
+    "Retourne uniquement du JSON valide correspondant exactement au schéma fourni. "
+    "Si une information est absente, utilise null."
 )
 
 
@@ -142,10 +152,77 @@ def parser_cv(chemin_pdf: str, max_retries: int = 3) -> CVParse:
 
     raise ValueError("Parsing échoué")
 
+def _appeler_llm_offre(titre: str, description_brute: str, err_prec: str = "") -> str:
+    contexte_erreur = ""
+    if err_prec:
+        contexte_erreur = f"\nErreur de validation précédente : {err_prec}\nCorrige le JSON."
+
+    prompt = (
+        f"Titre : {titre}\n\nDescription :\n{description_brute}{contexte_erreur}"
+        f"\n\nSchéma attendu :\n{json.dumps(OffreParsee.model_json_schema(), indent=2)}"
+    )
+
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            max_output_tokens=MAX_OUTPUT_TOKENS,
+            system_instruction=OFFRE_SYSTEM_INSTRUCTION,
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
+        ),
+    )
+    return response.text
+
+
+def parser_offre(titre: str, description: str, max_retries: int = 3) -> OffreParsee:
+    erreur = ""
+
+    for tentative in range(max_retries):
+        try:
+            raw_json = _appeler_llm_offre(titre, description, erreur)
+        except Exception as e:
+            error_message = str(e)
+            is_quota_error = "RESOURCE_EXHAUSTED" in error_message or "429" in error_message
+            if is_quota_error:
+                delay = _extract_retry_delay_seconds(error_message)
+                if delay is not None and tentative < max_retries - 1:
+                    time.sleep(delay + 1)
+                    continue
+                raise RuntimeError(
+                    "Quota Gemini dépassé (429). Vérifie ton quota/facturation, "
+                    "ou attends la fenêtre de retry avant de relancer."
+                ) from e
+            raise
+
+        try:
+            data = _parse_llm_json(raw_json)
+            return OffreParsee(**data)
+        except Exception as e:
+            erreur = str(e)
+            if tentative == max_retries - 1:
+                raise ValueError(f"Parsing offre échoué après {max_retries} tentatives : {erreur}")
+
+    raise ValueError("Parsing offre échoué")
+
+
+def enrichir_offre(titre: str, description_brute: str) -> OffreParsee:
+    return parser_offre(titre=titre, description=description_brute)
+
 if __name__ == "__main__":
     try:
         parsed = parser_cv(str(Path(__file__).with_name("sample_cvf.pdf")))
         print("CV parsé avec succès !")
         print(parsed)
+    except RuntimeError as e:
+        print(f"Erreur: {e}")
+        
+    try:
+        offre_parsee = enrichir_offre(
+            "Développeur Python",
+            "Nous recherchons un développeur Python avec 3 ans d'expérience pour rejoindre notre équipe dynamique."
+        )
+        print("Offre parsée et enrichie avec succès !")
+        print(offre_parsee)
     except RuntimeError as e:
         print(f"Erreur: {e}")
