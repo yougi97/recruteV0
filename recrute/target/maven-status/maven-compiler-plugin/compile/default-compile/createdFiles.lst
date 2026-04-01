@@ -1,0 +1,5 @@
+com\techlance\recrute\RecruteApplication.class
+com\techlance\recrute\Controllers\UserController.class
+com\techlance\recrute\Entities\Users.class
+com\techlance\recrute\Services\UserService.class
+com\techlance\recrute\Repositories\UserRepository.class
