@@ -1,11 +1,13 @@
 import { Component, signal } from '@angular/core';
-import { Navbar } from "./navbar/navbar";
+import { CommonModule } from '@angular/common';
 import { RouterModule } from "@angular/router";
+import { Navbar } from "./navbar/navbar";
 
 
 @Component({
   selector: 'app-root',
-  imports: [Navbar, RouterModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule, Navbar],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

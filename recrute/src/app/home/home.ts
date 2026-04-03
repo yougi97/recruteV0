@@ -1,4 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { UserApi } from '../services/user-api';
+import { User } from '../models/user';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -7,5 +10,9 @@ import { Component } from '@angular/core';
   styleUrl: './home.scss',
 })
 export class Home {
+
+  private readonly userApi = inject(UserApi);
+
+  users$: Observable<User[]> = this.userApi.getUsers();
 
 }
