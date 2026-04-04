@@ -22,11 +22,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public Users createUser(@RequestBody Users user) {
-        return userService.createUser(user);
-    }
-
     @PostMapping("/candidate")
     public CandidateProfiles createCandidat(@RequestBody CandidateProfiles candidateProfiles) {
         return userService.createCandidat(candidateProfiles);
@@ -47,9 +42,13 @@ public class UserController {
         return userService.getUserByEmail(email);
     }
 
-    @PutMapping("/{id}")
-    public Users updateUser(@RequestBody Users user, @PathVariable Long id) {
-        return userService.updatUsers(user, id);
+    @PutMapping("candidate/{id}")
+    public CandidateProfiles updateCandidateProfiles(@RequestBody CandidateProfiles user, @PathVariable Long id) {
+        return userService.updateCandidate(user, id);
     }
 
+    @PutMapping("/company/{id}")
+    public CompanyProfiles updateCompanyProfiles(@RequestBody CompanyProfiles user, @PathVariable Long id) {
+        return userService.updateCompany(user, id);
+    }
 }

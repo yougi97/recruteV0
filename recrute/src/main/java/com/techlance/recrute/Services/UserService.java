@@ -61,19 +61,47 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    public Users updatUsers(Users user, Long id) {
-        if(user.getEmail().contains("@") ==false) {
+    public CandidateProfiles updateCandidate(CandidateProfiles user, Long id) {
+        if(user.getUser().getEmail().contains("@") ==false) {
             throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         String.format("adresse email invalide")
                 );
         }
-        Users oldUsers = userRepository.getReferenceById(id);
-        oldUsers.setEmail(user.getEmail());
-        oldUsers.setPassword(user.getPassword());
-        oldUsers.setUserType(user.getUserType());
-        oldUsers.setFirstName(user.getFirstName());
-        oldUsers.setLastName(user.getLastName());
-        return userRepository.save(oldUsers);
+        CandidateProfiles oldCandidateProfiles = candidateProfilesRepository.getReferenceById(id);
+        Users oldUsers = userRepository.getReferenceById(oldCandidateProfiles.getUser().getId());
+        oldUsers.setEmail(user.getUser().getEmail());
+        oldUsers.setPassword(user.getUser().getPassword());
+        oldUsers.setUserType(user.getUser().getUserType());
+        oldUsers.setFirstName(user.getUser().getFirstName());
+        oldUsers.setLastName(user.getUser().getLastName());
+        userRepository.save(oldUsers);
+        oldCandidateProfiles.setTitle(user.getTitle());
+        oldCandidateProfiles.setLocation(user.getLocation());
+        oldCandidateProfiles.setTargetLocation(user.getTargetLocation());
+        oldCandidateProfiles.setBio(user.getBio());
+        return candidateProfilesRepository.save(oldCandidateProfiles);
+    }
+
+    public CompanyProfiles updateCompany(CompanyProfiles user, Long id) {
+        if(user.getUser().getEmail().contains("@") ==false) {
+            throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        String.format("adresse email invalide")
+                );
+        }
+        CompanyProfiles oldCompanyProfiles = companyProfilesRepository.getReferenceById(id);
+        Users oldUsers = userRepository.getReferenceById(oldCompanyProfiles.getUser().getId());
+        oldUsers.setEmail(user.getUser().getEmail());
+        oldUsers.setPassword(user.getUser().getPassword());
+        oldUsers.setUserType(user.getUser().getUserType());
+        oldUsers.setFirstName(user.getUser().getFirstName());
+        oldUsers.setLastName(user.getUser().getLastName());
+        userRepository.save(oldUsers);
+        oldCompanyProfiles.setCompanyName(user.getCompanyName());
+        oldCompanyProfiles.setLocation(user.getLocation());
+        oldCompanyProfiles.setIndustry(user.getIndustry());
+        oldCompanyProfiles.setDescription(user.getDescription());
+        return companyProfilesRepository.save(oldCompanyProfiles);
     }
 }
