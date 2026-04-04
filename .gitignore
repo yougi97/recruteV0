@@ -1,3 +1,9 @@
 .DS_Store
 .jar
 .jar.original
+node_modules
+.venv/
+.empty/
+.env
+*.pyc
+__pycache__/
