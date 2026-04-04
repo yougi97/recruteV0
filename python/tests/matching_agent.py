@@ -1,10 +1,10 @@
 # matching_agent.py
 from dataclasses import dataclass
-from schemas import CVParse
-from aimatch import OffreParsee
-from faiss_store import score_semantique
+from python.tests.schemas import CVParse
+from python.tests.aimatch import OffreParsee
+from python.tests.faiss_store import score_semantique
 from structured_scorer import score_structuré
-from llm_scorer import score_llm, ScoreLLM
+from python.tests.llm_scorer import score_llm, ScoreLLM
 
 POIDS = {
     "semantique": 0.40,

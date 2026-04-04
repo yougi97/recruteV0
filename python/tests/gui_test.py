@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from pathlib import Path
 import threading
-import cvvect
-import simil_match
+import python.tests.cvvect as cvvect
+import python.tests.simil_match as simil_match
 
 
 class CVJobMatcherGUI:

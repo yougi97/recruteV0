@@ -1,7 +1,7 @@
 # llm_scorer.py
 import google.generativeai as genai
 from pydantic import BaseModel
-from schemas import CVParse
+from python.tests.schemas import CVParse
 from job_enrichment_agent import OffreParsee
 import json
 

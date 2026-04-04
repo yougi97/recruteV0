@@ -1,8 +1,8 @@
 from pathlib import Path
 import argparse
 
-import cvvect
-import simil_match
+import python.tests.cvvect as cvvect
+import python.tests.simil_match as simil_match
 
 
 def resolve_cv_path(cli_path: str | None) -> Path:
