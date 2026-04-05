@@ -104,4 +104,12 @@ public class UserService {
         oldCompanyProfiles.setDescription(user.getDescription());
         return companyProfilesRepository.save(oldCompanyProfiles);
     }
+
+    public CompanyProfiles getCompanyProfilesByUserId(Long id) {
+        return companyProfilesRepository.findByUserId(id);
+    }
+
+    public CandidateProfiles getCandidateProfilesByUserId(Long id) {
+        return candidateProfilesRepository.findByUserId(id);
+    }
 }

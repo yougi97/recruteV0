@@ -1,6 +1,11 @@
 package com.techlance.recrute.Entities;
 
+import java.util.List;
+
+import com.techlance.recrute.Converter.StringListConverter;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,8 +24,30 @@ public class CandidateProfiles {
     private String title;
     private String location;
     @Column(columnDefinition="json")
-    private String targetLocation;
+    @Convert(converter = StringListConverter.class)
+    private List<String> targetLocation;
     private String bio;
+    private float anneesExperience;
+    private String niveauEtude;
+
+    public float getAnneesExperience() {
+        return anneesExperience;
+    }
+
+    public void setAnneesExperience(float anneesExperience) {
+        this.anneesExperience = anneesExperience;
+    }
+
+    public String getNiveauEtude() {
+        return niveauEtude;
+    }
+
+    public void setNiveauEtude(String niveauEtude) {
+        this.niveauEtude = niveauEtude;
+    }
+
+    public CandidateProfiles() {
+    }
 
     public Long getId() {
         return id;
@@ -54,11 +81,11 @@ public class CandidateProfiles {
         this.location = location;
     }
 
-    public String getTargetLocation() {
+    public List<String> getTargetLocation() {
         return targetLocation;
     }
 
-    public void setTargetLocation(String targetLocation) {
+    public void setTargetLocation(List<String> targetLocation) {
         this.targetLocation = targetLocation;
     }
 

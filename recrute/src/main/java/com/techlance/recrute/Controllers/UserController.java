@@ -42,6 +42,16 @@ public class UserController {
         return userService.getUserByEmail(email);
     }
 
+    @GetMapping("/candidate/{userId}")
+    public CandidateProfiles getCandidateProfilesByUserId(@PathVariable Long userId){
+        return userService.getCandidateProfilesByUserId(userId);
+    }
+
+    @GetMapping("/company/{userId}")
+    public CompanyProfiles getCompanyProfilesByUserId(@PathVariable Long userId){
+        return userService.getCompanyProfilesByUserId(userId);
+    }
+
     @PutMapping("candidate/{id}")
     public CandidateProfiles updateCandidateProfiles(@RequestBody CandidateProfiles user, @PathVariable Long id) {
         return userService.updateCandidate(user, id);
