@@ -12,7 +12,9 @@ C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Enum\ContratType.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Services\UserService.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Entities\CandidateProfiles.java
+C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Exception\ErrorResponse.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Entities\JobOffers.java
+C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Exception\GlobalExceptionHandler.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Repositories\JobOfferRepository.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Entities\Cvs.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\RecruteApplication.java

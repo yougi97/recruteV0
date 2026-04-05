@@ -34,6 +34,18 @@ public class UserService {
                         String.format("adresse email invalide")
                 );
         }
+        if(userRepository.findByEmail(user.getEmail()) != null) {
+            throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        String.format("Cette adresse est déja associé à un compte")
+                );
+        }
+        if(user.getEmail() ==null || user.getPassword() == null|| user.getUserType() == null) {
+            throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        String.format("Les champs obligatoires ne sont pas tous remplient")
+                );
+        }
         return userRepository.save(user);
     }
 
