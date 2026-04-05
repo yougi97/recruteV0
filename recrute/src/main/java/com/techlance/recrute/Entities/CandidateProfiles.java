@@ -28,7 +28,7 @@ public class CandidateProfiles {
     private List<String> targetLocation;
     private String bio;
     private float anneesExperience;
-    private String niveauEtude;
+    private String niveauEtudes;
 
     public float getAnneesExperience() {
         return anneesExperience;
@@ -38,12 +38,12 @@ public class CandidateProfiles {
         this.anneesExperience = anneesExperience;
     }
 
-    public String getNiveauEtude() {
-        return niveauEtude;
+    public String getNiveauEtudes() {
+        return niveauEtudes;
     }
 
-    public void setNiveauEtude(String niveauEtude) {
-        this.niveauEtude = niveauEtude;
+    public void setNiveauEtudes(String niveauEtudes) {
+        this.niveauEtudes = niveauEtudes;
     }
 
     public CandidateProfiles() {

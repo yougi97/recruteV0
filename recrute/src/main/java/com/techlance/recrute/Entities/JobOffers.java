@@ -21,6 +21,7 @@ public class JobOffers {
     @ManyToOne
     @JoinColumn(name= "company_id")
     private CompanyProfiles companyProfiles;
+    private String title;
     private String description;
     private String enrichedDescription;
     @Column(columnDefinition = "json")
@@ -29,9 +30,9 @@ public class JobOffers {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] embedding;
     private String location;
-    private ContratType contratType;
+    private ContratType contractType;
     private float anneesExperienceMin;
-    private String niveauEtude;
+    private String niveauEtudesMin;
     private boolean isActive;
     private Timestamp createdAt;
 
@@ -91,12 +92,12 @@ public class JobOffers {
         this.location = location;
     }
 
-    public ContratType getContratType() {
-        return contratType;
+    public ContratType getContractType() {
+        return contractType;
     }
 
-    public void setContratType(ContratType contratType) {
-        this.contratType = contratType;
+    public void setContractType(ContratType contractType) {
+        this.contractType = contractType;
     }
 
     public float getAnneesExperienceMin() {
@@ -107,12 +108,12 @@ public class JobOffers {
         this.anneesExperienceMin = anneesExperienceMin;
     }
 
-    public String getNiveauEtude() {
-        return niveauEtude;
+    public String getNiveauEtudesMin() {
+        return niveauEtudesMin;
     }
 
-    public void setNiveauEtude(String niveauEtude) {
-        this.niveauEtude = niveauEtude;
+    public void setNiveauEtudesMin(String niveauEtudesMin) {
+        this.niveauEtudesMin = niveauEtudesMin;
     }
 
     public boolean isIsActive() {
@@ -129,5 +130,13 @@ public class JobOffers {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

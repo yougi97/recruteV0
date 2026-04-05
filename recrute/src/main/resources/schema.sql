@@ -1,6 +1,6 @@
 -- ─── UTILISATEURS ─────────────────────────────────────────────────────────────
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id          INT PRIMARY KEY AUTO_INCREMENT,
     email       VARCHAR(255) UNIQUE NOT NULL,
     password    VARCHAR(255) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE users (
 
 -- ─── PROFILS ──────────────────────────────────────────────────────────────────
 
-CREATE TABLE candidate_profiles (
+CREATE TABLE IF NOT EXISTS candidate_profiles (
     id                  INT PRIMARY KEY AUTO_INCREMENT,
     user_id             INT UNIQUE NOT NULL,
     title               VARCHAR(255),
@@ -25,7 +25,7 @@ CREATE TABLE candidate_profiles (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE company_profiles (
+CREATE TABLE IF NOT EXISTS company_profiles (
     id           INT PRIMARY KEY AUTO_INCREMENT,
     user_id      INT UNIQUE NOT NULL,
     company_name VARCHAR(255) NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE company_profiles (
 
 -- ─── CVS ──────────────────────────────────────────────────────────────────────
 
-CREATE TABLE cvs (
+CREATE TABLE IF NOT EXISTS cvs (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     candidate_id    INT NOT NULL,
     file_url        VARCHAR(500),
@@ -52,7 +52,7 @@ CREATE TABLE cvs (
 
 -- ─── OFFRES D'EMPLOI ──────────────────────────────────────────────────────────
 
-CREATE TABLE job_offers (
+CREATE TABLE IF NOT EXISTS job_offers (
     id                      INT PRIMARY KEY AUTO_INCREMENT,
     company_id              INT NOT NULL,
     title                   VARCHAR(255) NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE job_offers (
 
 -- ─── CATÉGORIES IA ────────────────────────────────────────────────────────────
 
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
     id      INT PRIMARY KEY AUTO_INCREMENT,
     -- AJOUT : contrainte unique sur (name, type) pour les upserts propres
     name    VARCHAR(255) NOT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE categories (
     UNIQUE KEY uq_category (name, type)
 );
 
-CREATE TABLE cv_categories (
+CREATE TABLE IF NOT EXISTS cv_categories (
     id          INT PRIMARY KEY AUTO_INCREMENT,
     cv_id       INT NOT NULL,
     category_id INT NOT NULL,
@@ -95,7 +95,7 @@ CREATE TABLE cv_categories (
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
 
-CREATE TABLE job_categories (
+CREATE TABLE IF NOT EXISTS job_categories (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     job_offer_id    INT NOT NULL,
     category_id     INT NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE job_categories (
 
 -- ─── RECHERCHES MANUELLES ─────────────────────────────────────────────────────
 
-CREATE TABLE job_searches (
+CREATE TABLE IF NOT EXISTS job_searches (
     id          INT PRIMARY KEY AUTO_INCREMENT,
     user_id     INT NOT NULL,
     query       VARCHAR(500) NOT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE job_searches (
 
 -- ─── ÉVALUATIONS ──────────────────────────────────────────────────────────────
 
-CREATE TABLE candidate_job_ratings (
+CREATE TABLE IF NOT EXISTS candidate_job_ratings (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     user_id         INT NOT NULL,
     job_offer_id    INT NOT NULL,
@@ -138,7 +138,7 @@ CREATE TABLE candidate_job_ratings (
     FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
 );
 
-CREATE TABLE company_candidate_ratings (
+CREATE TABLE IF NOT EXISTS company_candidate_ratings (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     company_id      INT NOT NULL,
     job_offer_id    INT NOT NULL,
