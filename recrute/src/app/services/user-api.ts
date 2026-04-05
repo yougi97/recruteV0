@@ -11,6 +11,25 @@ export class UserApi {
   private readonly url = "http://localhost:8080/users";
   http: any;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
  getUsers(): Observable<User[]> {
   return this.httpClient.get<User[]>('...');
 }
