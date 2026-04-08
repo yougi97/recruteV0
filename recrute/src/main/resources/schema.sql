@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS cv_categories (
     cv_id       INT NOT NULL,
     category_id INT NOT NULL,
     confidence  FLOAT,
-    level       ENUM('débutant','intermédiaire','avancé','expert'),
+    level       ENUM('debutant','intermediaire','avance','expert'),
     -- AJOUT : évite les doublons cv/catégorie
     UNIQUE KEY uq_cv_category (cv_id, category_id),
     FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE,
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS job_categories (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     job_offer_id    INT NOT NULL,
     category_id     INT NOT NULL,
-    required_level  ENUM('débutant','intermédiaire','avancé','expert'),
+    required_level  ENUM('debutant','intermediaire','avance','expert'),
     is_mandatory    BOOLEAN DEFAULT TRUE,
     -- AJOUT : évite les doublons offre/catégorie
     UNIQUE KEY uq_job_category (job_offer_id, category_id),
@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS job_searches (
 
 CREATE TABLE IF NOT EXISTS candidate_job_ratings (
     id              INT PRIMARY KEY AUTO_INCREMENT,
-    user_id         INT NOT NULL,
+    candidate_id         INT NOT NULL,
     job_offer_id    INT NOT NULL,
     cv_id           INT NOT NULL,
     rating          ENUM('up','down') NOT NULL,
@@ -132,8 +132,8 @@ CREATE TABLE IF NOT EXISTS candidate_job_ratings (
     score_structure     FLOAT,
     score_llm           FLOAT,
     rated_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_candidate_rating (user_id, job_offer_id, cv_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_candidate_rating (candidate_id, job_offer_id, cv_id),
+    FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE,
     FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
     FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
 );

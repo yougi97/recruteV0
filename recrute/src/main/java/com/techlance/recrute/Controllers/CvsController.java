@@ -1,5 +1,6 @@
 package com.techlance.recrute.Controllers;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,5 +22,10 @@ public class CvsController {
     @PostMapping
     public Cvs creatOffers(@RequestBody Cvs cv, @PathVariable Long candidateId) {
         return cvsService.createCv(cv, candidateId);
+    }
+
+    @GetMapping("/cv")
+    public Cvs getcv(@PathVariable Long candidateId) {
+        return cvsService.getCvByUserId(candidateId);
     }
 }

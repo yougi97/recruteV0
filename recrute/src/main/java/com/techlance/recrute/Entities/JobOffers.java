@@ -6,6 +6,8 @@ import com.techlance.recrute.Enum.ContratType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,6 +32,7 @@ public class JobOffers {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] embedding;
     private String location;
+    @Enumerated(EnumType.STRING)
     private ContratType contractType;
     private float anneesExperienceMin;
     private String niveauEtudesMin;
