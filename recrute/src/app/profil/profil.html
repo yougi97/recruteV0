@@ -1,0 +1,283 @@
+<!-- profile.html -->
+<div class="profile-page">
+
+  <!-- ══════════════ PROFIL CANDIDAT ══════════════ -->
+  <ng-container *ngIf="user.user_type === 'candidate'">
+
+    <!-- HERO BANNER -->
+    <div class="profile-hero candidate-hero">
+      <div class="hero-bg-overlay"></div>
+      <div class="hero-content">
+        <div class="avatar-wrapper">
+          <div class="avatar">
+            <span *ngIf="!candidateProfile.photo_url">{{ initials }}</span>
+            <img *ngIf="candidateProfile.photo_url" [src]="candidateProfile.photo_url" alt="Photo de profil" />
+          </div>
+          <button class="avatar-edit-btn" title="Modifier la photo">✎</button>
+        </div>
+        <div class="hero-info">
+          <h1 class="hero-name">{{ user.first_name }} {{ user.last_name }}</h1>
+          <p class="hero-title">{{ candidateProfile.title || 'Titre non renseigné' }}</p>
+          <div class="hero-meta">
+            <span class="meta-chip" *ngIf="candidateProfile.location">
+              <i>📍</i> {{ candidateProfile.location }}
+            </span>
+            <span class="meta-chip member-since">
+              <i>🗓</i> Membre depuis {{ user.created_at | date:'MMMM yyyy' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="profile-body">
+
+      <!-- COLONNE GAUCHE -->
+      <aside class="profile-sidebar">
+
+        <!-- CV CARD -->
+        <div class="card cv-card">
+          <div class="card-header">
+            <span class="card-icon">📄</span>
+            <h2>Mon CV</h2>
+          </div>
+          <div class="cv-status" *ngIf="activeCV">
+            <div class="cv-file-info">
+              <span class="cv-icon-big">📋</span>
+              <div>
+                <p class="cv-filename">{{ activeCV.file_url }}</p>
+                <p class="cv-date">Ajouté le {{ activeCV.created_at | date:'dd/MM/yyyy' }}</p>
+              </div>
+            </div>
+            <div class="cv-actions">
+              <button class="btn-outline btn-sm" (click)="downloadCV()">⬇ Télécharger</button>
+              <button class="btn-danger btn-sm" (click)="deleteCV()">✕ Supprimer</button>
+            </div>
+          </div>
+          <div class="cv-empty" *ngIf="!activeCV">
+            <p>Aucun CV déposé pour l'instant.</p>
+          </div>
+          <label class="btn-upload" for="cvUpload">
+            <input type="file" id="cvUpload" accept=".pdf,.doc,.docx" (change)="onCVUpload($event)" hidden />
+            <span>{{ activeCV ? '🔄 Remplacer le CV' : '⬆ Ajouter mon CV' }}</span>
+          </label>
+        </div>
+
+        <!-- LOCALISATION CIBLE -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🎯</span>
+            <h2>Localisations cibles</h2>
+          </div>
+          <div class="target-locations">
+            <span class="location-tag" *ngFor="let loc of (candidateProfile.target_location || [])">{{ loc }}</span>
+            <span class="location-tag empty" *ngIf="!candidateProfile.target_location?.length">Non renseigné</span>
+          </div>
+          <button class="btn-ghost" (click)="editTargetLocations()">+ Modifier</button>
+        </div>
+
+      </aside>
+
+      <!-- COLONNE PRINCIPALE -->
+      <main class="profile-main">
+
+        <!-- À PROPOS -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">👤</span>
+            <h2>À propos</h2>
+            <button class="edit-btn" (click)="editBio()">✎ Modifier</button>
+          </div>
+          <p class="bio-text" *ngIf="candidateProfile.bio">{{ candidateProfile.bio }}</p>
+          <p class="bio-placeholder" *ngIf="!candidateProfile.bio">Ajoutez une courte présentation de vous-même...</p>
+        </div>
+
+        <!-- COMPÉTENCES IA -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🤖</span>
+            <h2>Compétences détectées par l'IA</h2>
+            <span class="badge-ai">IA</span>
+          </div>
+          <div class="skills-grid" *ngIf="cvCategories.length">
+            <div class="skill-chip" *ngFor="let cat of cvCategories" [class]="'level-' + cat.level">
+              <span class="skill-name">{{ cat.category.name }}</span>
+              <span class="skill-level">{{ cat.level }}</span>
+            </div>
+          </div>
+          <p class="bio-placeholder" *ngIf="!cvCategories.length">
+            Déposez votre CV pour que l'IA analyse vos compétences.
+          </p>
+        </div>
+
+        <!-- INFOS PERSONNELLES -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">✏️</span>
+            <h2>Informations personnelles</h2>
+            <button class="edit-btn" (click)="editPersonalInfo()">✎ Modifier</button>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Prénom</label>
+              <span>{{ user.first_name }}</span>
+            </div>
+            <div class="info-item">
+              <label>Nom</label>
+              <span>{{ user.last_name }}</span>
+            </div>
+            <div class="info-item">
+              <label>Email</label>
+              <span>{{ user.email }}</span>
+            </div>
+            <div class="info-item">
+              <label>Localisation</label>
+              <span>{{ candidateProfile.location || '—' }}</span>
+            </div>
+            <div class="info-item full-width">
+              <label>Poste recherché</label>
+              <span>{{ candidateProfile.title || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </ng-container>
+
+
+  <!-- ══════════════ PROFIL ENTREPRISE ══════════════ -->
+  <ng-container *ngIf="user.user_type === 'company'">
+
+    <!-- HERO BANNER -->
+    <div class="profile-hero company-hero">
+      <div class="hero-bg-overlay"></div>
+      <div class="hero-content">
+        <div class="avatar-wrapper company-avatar-wrapper">
+          <div class="avatar company-avatar">
+            <span>{{ companyInitials }}</span>
+          </div>
+          <button class="avatar-edit-btn" title="Modifier le logo">✎</button>
+        </div>
+        <div class="hero-info">
+          <h1 class="hero-name">{{ companyProfile.company_name }}</h1>
+          <p class="hero-title">{{ companyProfile.industry || 'Secteur non renseigné' }}</p>
+          <div class="hero-meta">
+            <span class="meta-chip" *ngIf="companyProfile.location">
+              <i>📍</i> {{ companyProfile.location }}
+            </span>
+            <span class="meta-chip">
+              <i>📋</i> {{ activeJobOffers }} offre(s) active(s)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="profile-body">
+
+      <!-- COLONNE GAUCHE -->
+      <aside class="profile-sidebar">
+
+        <!-- STATS -->
+        <div class="card stats-card">
+          <div class="card-header">
+            <span class="card-icon">📊</span>
+            <h2>Statistiques</h2>
+          </div>
+          <div class="stats-list">
+            <div class="stat-row">
+              <span class="stat-label">Offres publiées</span>
+              <span class="stat-value">{{ totalJobOffers }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Offres actives</span>
+              <span class="stat-value accent">{{ activeJobOffers }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Candidats évalués</span>
+              <span class="stat-value">{{ totalRatings }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INFOS RAPIDES -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🏢</span>
+            <h2>Fiche entreprise</h2>
+            <button class="edit-btn" (click)="editCompanyInfo()">✎</button>
+          </div>
+          <div class="info-grid">
+            <div class="info-item full-width">
+              <label>Entreprise</label>
+              <span>{{ companyProfile.company_name }}</span>
+            </div>
+            <div class="info-item full-width">
+              <label>Secteur</label>
+              <span>{{ companyProfile.industry || '—' }}</span>
+            </div>
+            <div class="info-item full-width">
+              <label>Localisation</label>
+              <span>{{ companyProfile.location || '—' }}</span>
+            </div>
+            <div class="info-item full-width">
+              <label>Email</label>
+              <span>{{ user.email }}</span>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- COLONNE PRINCIPALE -->
+      <main class="profile-main">
+
+        <!-- DESCRIPTION -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">📝</span>
+            <h2>Description de l'entreprise</h2>
+            <button class="edit-btn" (click)="editDescription()">✎ Modifier</button>
+          </div>
+          <p class="bio-text" *ngIf="companyProfile.description">{{ companyProfile.description }}</p>
+          <p class="bio-placeholder" *ngIf="!companyProfile.description">Décrivez votre entreprise, votre culture et vos valeurs...</p>
+        </div>
+
+        <!-- OFFRES D'EMPLOI -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">💼</span>
+            <h2>Offres d'emploi</h2>
+            <button class="btn-primary btn-sm" (click)="createJobOffer()">+ Nouvelle offre</button>
+          </div>
+          <div class="job-list" *ngIf="jobOffers.length">
+            <div class="job-item" *ngFor="let job of jobOffers">
+              <div class="job-info">
+                <h3>{{ job.title }}</h3>
+                <div class="job-meta">
+                  <span class="meta-chip">📍 {{ job.location || 'Remote' }}</span>
+                  <span class="contract-badge contract-{{ job.contract_type }}">{{ job.contract_type }}</span>
+                </div>
+              </div>
+              <div class="job-actions">
+                <span class="job-status" [class.active]="job.is_active">
+                  {{ job.is_active ? '● Active' : '○ Inactive' }}
+                </span>
+                <button class="btn-ghost btn-sm" (click)="editJob(job)">✎</button>
+                <button class="btn-danger btn-sm" (click)="deleteJob(job)">✕</button>
+              </div>
+            </div>
+          </div>
+          <p class="bio-placeholder" *ngIf="!jobOffers.length">
+            Aucune offre publiée. Créez votre première offre !
+          </p>
+        </div>
+
+      </main>
+    </div>
+  </ng-container>
+
+</div>
