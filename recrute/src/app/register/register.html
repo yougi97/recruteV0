@@ -1,16 +1,57 @@
 <div class="login-container">
   <div class="login-card">
+    
     <div class="logo">
-  <img src="icon..png" alt="logo" class="logo-icon">
+      <img src="icon..png" alt="logo" class="logo-icon">
       <h2>RECRUTE</h2>
     </div>
 
     <div class="tabs">
-      <button class="active">Entreprise</button>
-      <button>Candidat </button>
-    </div>
 
-    <form>
+  <button 
+    class="tab" 
+    [class.active]="activeTab === 'entreprise'" 
+    (click)="setTab('entreprise')">
+    
+    Entreprise
+  </button>
+
+  <button 
+    class="tab" 
+    [class.active]="activeTab === 'candidat'" 
+    (click)="setTab('candidat')">
+    Candidat
+  </button>
+</div>
+
+@if (activeTab === 'entreprise') {
+ <form>
+
+      <label>Nom de l'entreprise</label>
+      <input type="text" placeholder="Nom de l'entreprise" />
+
+      <label>Email professionnel</label>
+      <input type="email" placeholder="contact@entreprise.fr" />
+
+      <label>Mot de passe</label>
+      <input type="password" placeholder="••••••••" />
+
+      <label>Confirmer le mot de passe</label>
+      <input type="password" placeholder="••••••••" />
+      
+      <button class="login-btn" type="submit">
+        S'enregistrer →
+      </button>
+      
+      <div class="forgot">
+        <a href="#">Mot de passe oublié ?</a>
+      </div>
+
+    </form>
+}
+
+@if (activeTab === 'candidat') {
+  <form>
 
       <label>Nom</label>
       <input type="text" placeholder="Votre nom" />
@@ -36,7 +77,7 @@
       </div>
 
     </form>
+}
 
-   
   </div>
 </div>
