@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { UserApi } from '../services/user-api';
-import { User } from '../models/user';
+import { User } from '../model/user';
 import { Observable } from 'rxjs';
 import { RouterLink } from "@angular/router";
 

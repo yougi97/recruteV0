@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth';
+import { CandidateProfiles } from '../model/candidateProfiles';
+import { CompanyProfiles } from '../model/companyProfiles';
 import { User } from '../model/user';
 @Component({
   selector: 'app-register',
@@ -29,25 +32,33 @@ export class Register {
   }
   onSubmit() {
     if (this.registerForm.valid) {
-      const formValue = this.registerForm.value
-      const user: User;
-      user = {
-        "email": formValue.email,
-        "password": formValue.password,
-        "userType": "",
-        "firstName": formValue.name,
-        "lastName": formValue.lastName,
-        "createdAt": new Date,
-      }
+      const formValue = this.registerForm.value;
+      const user: User = {
+        email: formValue.email,
+        password: formValue.password,
+        userType: this.activeTab === 'entreprise' ? 'COMPANY' : 'CANDIDATE',
+        firstName: formValue.name,
+        lastName: formValue.lastname,
+        createdAt: new Date(),
+      };
 
-        .subscribe({
-          next: (res) => {
-            console.log('Inscription réussie', res);
-          },
-          error: (err) => {
-            console.error('Erreur lors de l\'inscription', err);
-          }
-        });
+      const request: Observable<CandidateProfiles | CompanyProfiles> = this.activeTab === 'entreprise'
+        ? this.authService.createCompany({
+          user,
+          companyName: formValue.name,
+        } as CompanyProfiles)
+        : this.authService.createCandidate({
+          user,
+        } as CandidateProfiles);
+
+      request.subscribe({
+        next: (res: CandidateProfiles | CompanyProfiles) => {
+          console.log('Inscription reussie', res);
+        },
+        error: (err: unknown) => {
+          console.error('Erreur lors de l\'inscription', err);
+        },
+      });
 
     }
   }

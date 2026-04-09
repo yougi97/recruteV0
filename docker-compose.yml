@@ -1,4 +1,59 @@
+version: '3.8'
+
 services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: recrute-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: recrute_db
+      MYSQL_USER: recrute_user
+      MYSQL_PASSWORD: mon_mdp
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - recrute-network
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./recrute
+      dockerfile: Dockerfile.backend
+    container_name: recrute-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/recrute_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: recrute_user
+      SPRING_DATASOURCE_PASSWORD: mon_mdp
+    ports:
+      - "8080:8080"
+    networks:
+      - recrute-network
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./recrute
+      dockerfile: Dockerfile.frontend
+    container_name: recrute-frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:4200"
+    networks:
+      - recrute-network
+
+  # Python AI Service (optional)
   python-ai:
     build:
       context: ./python
@@ -8,3 +63,12 @@ services:
     volumes:
       - ./python:/app/python
     command: sleep infinity
+    networks:
+      - recrute-network
+
+volumes:
+  mysql_data:
+
+networks:
+  recrute-network:
+    driver: bridge
