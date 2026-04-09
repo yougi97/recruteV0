@@ -9,6 +9,7 @@ NIVEAU_SCORE = {"notions": 1, "intermediaire": 2, "avance": 3, "expert": 4}
 def _niveau_mysql(niveau_str: str) -> str:
     """Convertit nos enums vers les enums MySQL français."""
     return (niveau_str
+            .replace("notions", "débutant")
             .replace("avance", "avancé")
             .replace("intermediaire", "intermédiaire"))
 
@@ -56,19 +57,12 @@ def sauvegarder_offre(offre: OffreParsee, offre_id: int):
     })
 
     categories = []
-    for comp in offre.competences_requises:
+    for comp in offre.categories:
         categories.append({
-            "name":           comp.nom,
-            "type":           "skill",
-            "required_level": _niveau_mysql(comp.niveau_minimum),
-            "is_mandatory":   comp.obligatoire,
-        })
-    for soft in offre.soft_skills:
-        categories.append({
-            "name":           soft,
-            "type":           "soft_skill",
-            "required_level": None,
-            "is_mandatory":   False,
+            "name":           comp.name,
+            "type":           comp.type,
+            "required_level": comp.required_level,
+            "is_mandatory":   comp.is_mandatory,
         })
 
     api.upsert_job_categories(offre_id, categories)

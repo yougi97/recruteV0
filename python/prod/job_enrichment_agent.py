@@ -6,16 +6,16 @@ import json
 
 genai.configure(api_key=GEMINI_API_KEY)
 
-class CompetenceRequise(BaseModel):
-    nom:             str
-    niveau_minimum:  str
-    obligatoire:     bool
+class CategorieOffre(BaseModel):
+    name:            str
+    type:            str
+    required_level:  Optional[str] = None
+    is_mandatory:    bool = False
 
 class OffreParsee(BaseModel):
     titre_normalise:         str
     secteur:                 str
-    competences_requises:    list[CompetenceRequise]
-    soft_skills:             list[str]
+    categories:              list[CategorieOffre]
     annees_experience_min:   float
     niveau_etudes_min:       str
     langues:                 list[str]

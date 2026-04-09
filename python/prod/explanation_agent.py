@@ -40,7 +40,7 @@ Candidat : {cv.nom}, {cv.annees_experience} ans d'XP
 Compétences : {[f"{c.nom} ({c.niveau.value})" for c in cv.competences]}
 
 Poste : {offre.titre_normalise} ({offre.secteur})
-Exigences : {[f"{c.nom} {c.niveau_minimum}{'*' if c.obligatoire else ''}" for c in offre.competences_requises]}
+Exigences : {[f"{c.name} {c.required_level}{'*' if c.is_mandatory else ''}" for c in offre.categories]}
 
 Schéma : {json.dumps(ExplicationMatching.model_json_schema(), indent=2)}
 """
