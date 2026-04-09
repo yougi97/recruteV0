@@ -124,4 +124,12 @@ public class UserService {
     public CandidateProfiles getCandidateProfilesByUserId(Long id) {
         return candidateProfilesRepository.findByUserId(id);
     }
+
+    public CompanyProfiles getCompanyProfiles(Long id) {
+        return companyProfilesRepository.findById(id).orElseThrow();
+    }
+
+    public CandidateProfiles gCandidateProfiles(Long id) {
+        return candidateProfilesRepository.findById(id).orElseThrow();
+    }
 }

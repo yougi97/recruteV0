@@ -1,5 +1,6 @@
 package com.techlance.recrute.Controllers;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import com.techlance.recrute.Entities.CompanyProfiles;
 import com.techlance.recrute.Entities.Users;
 import com.techlance.recrute.Services.UserService;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/users")
 public class UserController {

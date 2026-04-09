@@ -1,0 +1,99 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f8;
+    /* bleu clair discret */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    /* bleu-gris doux */
+    margin-bottom: 15px;
+    font-size: 1.6em;
+}
+
+.form-container {
+    background-color: #ffffff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    width: 300px;
+    /* largeur du container */
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.form-group label {
+    margin-bottom: 4px;
+    font-weight: bold;
+    color: #34495e;
+    /* bleu foncé doux */
+    font-size: 0.9em;
+    text-align: left;
+    /* texte à gauche */
+    margin-left: auto;
+    margin-right: auto;
+    width: 85%;
+    /* même largeur que les inputs */
+}
+
+.form-control {
+    padding: 6px 8px;
+    font-size: 0.9em;
+    border: 1px solid #b0c4de;
+    /* bleu doux */
+    border-radius: 5px;
+    outline: none;
+    transition: border 0.3s, box-shadow 0.3s;
+    width: 85%;
+    /* largeur des inputs */
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    border-color: #5dade2;
+    box-shadow: 0 0 4px #5dade2;
+}
+
+button.btn {
+    width: 60%;
+    /* plus court que le formulaire */
+    padding: 8px;
+    background-color: #5dade2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 10px auto 0;
+    /* centre horizontalement */
+    display: block;
+}
+
+button.btn:hover {
+    background-color: #3498db;
+}
+
+/* Ajustement pour petits écrans */
+@media (max-height: 600px) {
+    .form-container {
+        width: 90%;
+        padding: 12px;
+    }
+}
