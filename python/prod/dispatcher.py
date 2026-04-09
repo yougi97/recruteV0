@@ -50,7 +50,6 @@ def sauvegarder_offre(offre: OffreParsee, offre_id: int):
 
     api.update_job_parsed(offre_id, {
         "parsed_json":            offre.model_dump(),
-        "enriched_description":   offre.description_enrichie,
         "embedding":              vecteur_b64,
         "annees_experience_min":  offre.annees_experience_min,
         "niveau_etudes_min":      offre.niveau_etudes_min,

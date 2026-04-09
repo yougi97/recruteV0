@@ -51,6 +51,14 @@ def get_job_offer(offre_id: int) -> dict:
     return r.json()
 
 def update_job_parsed(offre_id: int, payload: dict):
+    """
+    payload = {
+        parsed_json (OffreParsee.model_dump(), contient description_enrichie),
+        embedding (base64),
+        annees_experience_min,
+        niveau_etudes_min
+    }
+    """
     r = requests.put(
         _url(f"/api/internal/jobs/{offre_id}/parsed"),
         json=payload, headers=HEADERS
@@ -82,10 +90,13 @@ def get_job_categories(offre_id: int) -> list[dict]:
 def save_matching_result(cv_id: int, offre_id: int, payload: dict):
     """
     payload = {
-        ai_score, score_semantique, score_structure, score_llm,
-        rating_type = 'ai'
+        ai_score (float, score pondéré final),
+        score_semantique (float),
+        score_structure (float),
+        score_llm (float),
+        rating (str or null, optionnel: 'up'/'down' si le candidat a voté)
     }
-    Spring insère dans candidate_job_ratings avec rating=null (non encore voté)
+    Insère dans candidate_job_ratings avec les scores IA et le rating utilisateur si fourni.
     """
     r = requests.post(
         _url(f"/api/internal/match"),
