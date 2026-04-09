@@ -1,4 +1,12 @@
 .DS_Store
+.jar
+.jar.original
+node_modules
+.venv/
+.empty/
+.env
+*.pyc
+__pycache__/
 .venv/
 __pycache__/
 *.pyc

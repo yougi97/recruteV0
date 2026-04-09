@@ -1,0 +1,10 @@
+services:
+  python-ai:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: recrutev0-python-ai
+    working_dir: /app/python
+    volumes:
+      - ./python:/app/python
+    command: sleep infinity
