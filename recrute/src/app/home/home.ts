@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { UserApi } from '../services/user-api';
-import { User } from '../models/user';
+
 import { Observable } from 'rxjs';
 import { RouterLink } from "@angular/router";
+import { User } from '../model/user';
 
 @Component({
   selector: 'app-home',

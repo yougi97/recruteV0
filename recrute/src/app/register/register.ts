@@ -25,20 +25,4 @@ setTab(tab: string) {
       passwordConfirm: ['', [Validators.required, Validators.minLength(6)]]
     });
 
-} 
-onSubmit() {
-    if (this.registerForm.valid) {
-       this.authService.register(this.registerForm.value)
-        .subscribe({
-          next: (res) => {
-            console.log('Inscription réussie', res);
-          },
-          error: (err) => {
-            console.error('Erreur lors de l\'inscription', err);
-          }
-        });
-
-    }
-  }
-}
-
+}}
