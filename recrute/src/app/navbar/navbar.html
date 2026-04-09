@@ -9,9 +9,12 @@
     <a href="#">À Propos</a>
     
     @if (!isLoggedIn()) {
+      <button class="home-btn" routerLink="/">Home</button>
       <button class="login-btn" routerLink="/login">Connexion</button>
     } @else {
       <div class="user-section">
+        <button class="home-btn" routerLink="/">Home</button>
+        <button class="profile-btn" routerLink="/profil">Profil</button>
         <span class="user-email">{{ getCurrentUser() }}</span>
         <button class="logout-btn" (click)="logout()">Déconnexion</button>
       </div>

@@ -68,6 +68,40 @@
   white-space: nowrap;
 }
 
+.profile-btn {
+  padding: 6px 14px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(37, 99, 235, 0.85);
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.profile-btn:hover {
+  background: rgba(37, 99, 235, 1);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.home-btn {
+  padding: 6px 14px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(16, 185, 129, 0.85);
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.home-btn:hover {
+  background: rgba(16, 185, 129, 1);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
 .logout-btn {
   padding: 6px 14px;
   border-radius: 15px;

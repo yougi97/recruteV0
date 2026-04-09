@@ -33,7 +33,7 @@ export class Login {
       this.authService.login(email, password).subscribe({
         next: () => {
           this.toastr.success('Connexion réussie!', 'Bienvenue');
-          setTimeout(() => this.router.navigate(['/home']), 1500);
+          setTimeout(() => this.router.navigate(['/profil']), 1500);
         },
         error: (err: unknown) => {
           console.error('Login error:', err);

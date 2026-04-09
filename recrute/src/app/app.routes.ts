@@ -15,5 +15,6 @@ export const routes: Routes = [
     { path: 'users/company/:id/update', component: UpdateCompany },
     { path: 'users/company/:id', component: CompanyHome },
     { path: 'register', component: Register },
-    {path: 'profile', component: Profile}
+    { path: 'profil', component: Profile },
+    { path: 'profile', redirectTo: 'profil', pathMatch: 'full' }
 ];
