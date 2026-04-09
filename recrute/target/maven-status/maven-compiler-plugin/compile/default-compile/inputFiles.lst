@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+/Users/adam/Documents/EPF/Projet/recruteV0/recrute/src/main/java/com/techlance/recrute/RecruteApplication.java
+/Users/adam/Documents/EPF/Projet/recruteV0/recrute/src/main/java/com/techlance/recrute/Services/UserService.java
+/Users/adam/Documents/EPF/Projet/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/UserController.java
+/Users/adam/Documents/EPF/Projet/recruteV0/recrute/src/main/java/com/techlance/recrute/Entities/Users.java
+/Users/adam/Documents/EPF/Projet/recruteV0/recrute/src/main/java/com/techlance/recrute/Repositories/UserRepository.java
+=======
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/DTO/LoginRequest.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Repositories/CandidateJobRatingsRepository.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/RecruteApplication.java
@@ -48,3 +55,4 @@
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Entities/JobOffers.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/DTO/LoginResponse.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Enum/ContratType.java
+>>>>>>> temp-angular
