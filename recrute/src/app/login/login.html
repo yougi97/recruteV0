@@ -7,24 +7,24 @@
 
     
 
-    <form>
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
       <label>Email professionnel</label>
-      <input type="email" placeholder="contact@entreprise.fr" />
+      <input type="email" placeholder="contact@entreprise.fr" formControlName="email" />
 
       <label>Mot de passe</label>
-      <input type="password" placeholder="••••••••" />
+      <input type="password" placeholder="••••••••" formControlName="password" />
 
       <div class="forgot">
         <a href="#">Mot de passe oublié ?</a>
       </div>
 
-      <button class="login-btn" type="submit">
+      <button class="login-btn" type="submit" [disabled]="!loginForm.valid">
         Se connecter →
       </button>
     </form>
 
     <p class="signup">
-      Pas encore de compte ? <a  href="/register">Créer un compte</a>
+      Pas encore de compte ? <a routerLink="/register">Créer un compte</a>
     </p>
   </div>
 </div>

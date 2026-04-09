@@ -25,19 +25,19 @@
 </div>
 
 @if (activeTab === 'entreprise') {
- <form>
+ <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
 
       <label>Nom de l'entreprise</label>
-      <input type="text" placeholder="Nom de l'entreprise" />
+      <input type="text" placeholder="Nom de l'entreprise" formControlName="name" />
 
       <label>Email professionnel</label>
-      <input type="email" placeholder="contact@entreprise.fr" />
+      <input type="email" placeholder="contact@entreprise.fr" formControlName="email" />
 
       <label>Mot de passe</label>
-      <input type="password" placeholder="••••••••" />
+      <input type="password" placeholder="••••••••" formControlName="password" />
 
       <label>Confirmer le mot de passe</label>
-      <input type="password" placeholder="••••••••" />
+      <input type="password" placeholder="••••••••" formControlName="passwordConfirm" />
       
       <button class="login-btn" type="submit">
         S'enregistrer →
@@ -51,22 +51,22 @@
 }
 
 @if (activeTab === 'candidat') {
-  <form>
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
 
       <label>Nom</label>
-      <input type="text" placeholder="Votre nom" />
+      <input type="text" placeholder="Votre nom" formControlName="name" />
 
       <label>Prenom</label>
-      <input type="text" placeholder="Votre prenom" />
+      <input type="text" placeholder="Votre prenom" formControlName="lastname" />
 
       <label>Email professionnel</label>
-      <input type="email" placeholder="contact@entreprise.fr" />
+      <input type="email" placeholder="contact@entreprise.fr" formControlName="email" />
 
       <label>Mot de passe</label>
-      <input type="password" placeholder="••••••••" />
+      <input type="password" placeholder="••••••••" formControlName="password" />
 
       <label>Confirmer le mot de passe</label>
-      <input type="password" placeholder="••••••••" />
+      <input type="password" placeholder="••••••••" formControlName="passwordConfirm" />
       
       <button class="login-btn" type="submit">
         S'enregistrer →

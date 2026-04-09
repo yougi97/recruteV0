@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.techlance.recrute.DTO.LoginResponse;
 import com.techlance.recrute.Entities.CandidateProfiles;
 import com.techlance.recrute.Entities.CompanyProfiles;
 import com.techlance.recrute.Entities.Users;
@@ -131,5 +132,26 @@ public class UserService {
 
     public CandidateProfiles gCandidateProfiles(Long id) {
         return candidateProfilesRepository.findById(id).orElseThrow();
+    }
+
+    public LoginResponse login(String email, String password) {
+        Users user = userRepository.findByEmail(email);
+        
+        if (user == null) {
+            throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Email ou mot de passe incorrect"
+            );
+        }
+        
+        if (!user.getPassword().equals(password)) {
+            throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Email ou mot de passe incorrect"
+            );
+        }
+        
+        return new LoginResponse(user.getId(), user.getEmail(), user.getUserType(), 
+                                user.getFirstName(), user.getLastName());
     }
 }

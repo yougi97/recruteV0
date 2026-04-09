@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.techlance.recrute.DTO.LoginRequest;
+import com.techlance.recrute.DTO.LoginResponse;
 import com.techlance.recrute.Entities.CandidateProfiles;
 import com.techlance.recrute.Entities.CompanyProfiles;
 import com.techlance.recrute.Entities.Users;
@@ -32,6 +34,11 @@ public class UserController {
     @PostMapping("/company")
     public CompanyProfiles createCompany(@RequestBody CompanyProfiles companyProfiles){
         return userService.createCompany(companyProfiles);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@RequestBody LoginRequest loginRequest) {
+        return userService.login(loginRequest.getEmail(), loginRequest.getPassword());
     }
 
     @GetMapping
