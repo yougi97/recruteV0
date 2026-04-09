@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer
-from schemas import CVParse
-from schemas import OffreParsee
+from python.tests.schemas import CVParse
+from python.tests.schemas import OffreParsee
 import faiss, numpy as np
 
 embedder = SentenceTransformer("all-MiniLM-L6-v2")

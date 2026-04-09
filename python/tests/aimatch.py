@@ -6,9 +6,9 @@ import time
 
 from google import genai
 from google.genai import types
-from schemas import CVParse
-from schemas import OffreParsee
-import cvvect
+from python.tests.schemas import CVParse
+from python.tests.schemas import OffreParsee
+import python.tests.cvvect as cvvect
 
 
 def _load_dotenv() -> None:

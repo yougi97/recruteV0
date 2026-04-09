@@ -1,0 +1,26 @@
+<<<<<<< HEAD
+=======
+com\techlance\recrute\Controllers\CvsController.class
+com\techlance\recrute\Controllers\JobOffersController.class
+com\techlance\recrute\Entities\CandidateProfiles.class
+com\techlance\recrute\Converter\StringListConverter$1.class
+com\techlance\recrute\Repositories\CvsRepository.class
+com\techlance\recrute\Repositories\JobOfferRepository.class
+com\techlance\recrute\Filtre\JobOffersSpecification.class
+com\techlance\recrute\Services\UserService.class
+com\techlance\recrute\Enum\ContratType.class
+com\techlance\recrute\Filtre\JobOfferFilter.class
+com\techlance\recrute\Repositories\CandidateProfilesRepository.class
+com\techlance\recrute\Controllers\UserController.class
+com\techlance\recrute\Enum\NiveauEtude.class
+com\techlance\recrute\Entities\Cvs.class
+com\techlance\recrute\Repositories\UserRepository.class
+com\techlance\recrute\Entities\JobOffers.class
+com\techlance\recrute\Entities\CompanyProfiles.class
+com\techlance\recrute\Converter\StringListConverter.class
+com\techlance\recrute\Entities\Users.class
+com\techlance\recrute\Repositories\CompanyProfilesRepository.class
+com\techlance\recrute\RecruteApplication.class
+com\techlance\recrute\Services\JobOfferService.class
+com\techlance\recrute\Services\CvsService.class
+>>>>>>> temp-angular
