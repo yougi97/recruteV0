@@ -5,7 +5,7 @@ import { Profile } from './profil/profil';
 
 
 export const routes: Routes = [
-    {path:'home', component: Home},
+    {path:'', component: Home},
     {path:'login', component: Login},
     {path:'profile', component: Profile },
 ];
