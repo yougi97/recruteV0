@@ -1,6 +1,6 @@
 <div class="login-container">
   <div class="login-card">
-    
+
     <div class="logo">
       <img src="icon..png" alt="logo" class="logo-icon">
       <h2>RECRUTE</h2>
@@ -8,76 +8,70 @@
 
     <div class="tabs">
 
-  <button 
-    class="tab" 
-    [class.active]="activeTab === 'entreprise'" 
-    (click)="setTab('entreprise')">
-    
-    Entreprise
-  </button>
+      <button class="tab" [class.active]="activeTab === 'entreprise'" (click)="setTab('entreprise')">
 
-  <button 
-    class="tab" 
-    [class.active]="activeTab === 'candidat'" 
-    (click)="setTab('candidat')">
-    Candidat
-  </button>
-</div>
+        Entreprise
+      </button>
 
-@if (activeTab === 'entreprise') {
- <form>
+      <button class="tab" [class.active]="activeTab === 'candidat'" (click)="setTab('candidat')">
+        Candidat
+      </button>
+    </div>
+
+    @if (activeTab === 'entreprise') {
+    <form [formGroup]="registerEntrepriseForm" (ngSubmit)="onSubmit()">
 
       <label>Nom de l'entreprise</label>
-      <input type="text" placeholder="Nom de l'entreprise" />
+      <input type="text" formControlName="name" placeholder="Nom de l'entreprise" />
 
       <label>Email professionnel</label>
-      <input type="email" placeholder="contact@entreprise.fr" />
+      <input type="email" formControlName="email" placeholder="contact@entreprise.fr" />
 
       <label>Mot de passe</label>
-      <input type="password" placeholder="••••••••" />
+      <input type="password" formControlName="password" placeholder="••••••••" />
 
       <label>Confirmer le mot de passe</label>
-      <input type="password" placeholder="••••••••" />
-      
+      <input type="password" formControlName="passwordConfirm" placeholder="••••••••" />
+
       <button class="login-btn" type="submit">
         S'enregistrer →
       </button>
-      
+
       <div class="forgot">
         <a href="#">Mot de passe oublié ?</a>
       </div>
 
     </form>
-}
+    }
 
-@if (activeTab === 'candidat') {
-  <form>
+    @if (activeTab === 'candidat') {
+    <form [formGroup]="registerCandidatForm" (ngSubmit)="onSubmit()">
 
       <label>Nom</label>
-      <input type="text" placeholder="Votre nom" />
+      <input type="text" formControlName="name" placeholder="Votre nom" />
 
       <label>Prenom</label>
-      <input type="text" placeholder="Votre prenom" />
+      <input type="text" formControlName="lastname" placeholder="Votre prenom" />
 
       <label>Email professionnel</label>
-      <input type="email" placeholder="contact@entreprise.fr" />
+      <input type="email" formControlName="email" placeholder="contact@entreprise.fr" />
 
       <label>Mot de passe</label>
-      <input type="password" placeholder="••••••••" />
+      <input type="password" formControlName="password" placeholder="••••••••" />
 
       <label>Confirmer le mot de passe</label>
-      <input type="password" placeholder="••••••••" />
-      
+      <input type="password" formControlName="passwordConfirm" placeholder="••••••••" />
+
       <button class="login-btn" type="submit">
         S'enregistrer →
       </button>
-      
+
       <div class="forgot">
         <a href="#">Mot de passe oublié ?</a>
       </div>
 
     </form>
-}
+    }
 
   </div>
 </div>
