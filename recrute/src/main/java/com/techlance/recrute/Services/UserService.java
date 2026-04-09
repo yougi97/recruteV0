@@ -3,6 +3,8 @@ package com.techlance.recrute.Services;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,15 +22,23 @@ public class UserService {
     private final UserRepository userRepository;
     private final CandidateProfilesRepository candidateProfilesRepository;
     private final CompanyProfilesRepository companyProfilesRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, CandidateProfilesRepository candidateProfilesRepository,
             CompanyProfilesRepository companyProfilesRepository) {
         this.userRepository = userRepository;
         this.candidateProfilesRepository = candidateProfilesRepository;
         this.companyProfilesRepository = companyProfilesRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     public Users createUser(Users user) {
+        if(user.getEmail() ==null || user.getPassword() == null|| user.getUserType() == null) {
+            throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        String.format("Les champs obligatoires ne sont pas tous remplient")
+                );
+        }
         if(user.getEmail().contains("@") ==false) {
             throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -41,12 +51,7 @@ public class UserService {
                         String.format("Cette adresse est déja associé à un compte")
                 );
         }
-        if(user.getEmail() ==null || user.getPassword() == null|| user.getUserType() == null) {
-            throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        String.format("Les champs obligatoires ne sont pas tous remplient")
-                );
-        }
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -84,7 +89,7 @@ public class UserService {
         CandidateProfiles oldCandidateProfiles = candidateProfilesRepository.getReferenceById(id);
         Users oldUsers = userRepository.getReferenceById(oldCandidateProfiles.getUser().getId());
         oldUsers.setEmail(user.getUser().getEmail());
-        oldUsers.setPassword(user.getUser().getPassword());
+        oldUsers.setPassword(passwordEncoder.encode(user.getUser().getPassword()));
         oldUsers.setUserType(user.getUser().getUserType());
         oldUsers.setFirstName(user.getUser().getFirstName());
         oldUsers.setLastName(user.getUser().getLastName());
@@ -106,7 +111,7 @@ public class UserService {
         CompanyProfiles oldCompanyProfiles = companyProfilesRepository.getReferenceById(id);
         Users oldUsers = userRepository.getReferenceById(oldCompanyProfiles.getUser().getId());
         oldUsers.setEmail(user.getUser().getEmail());
-        oldUsers.setPassword(user.getUser().getPassword());
+        oldUsers.setPassword(passwordEncoder.encode(user.getUser().getPassword()));
         oldUsers.setUserType(user.getUser().getUserType());
         oldUsers.setFirstName(user.getUser().getFirstName());
         oldUsers.setLastName(user.getUser().getLastName());
@@ -144,7 +149,7 @@ public class UserService {
             );
         }
         
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new ResponseStatusException(
                 HttpStatus.UNAUTHORIZED,
                 "Email ou mot de passe incorrect"
