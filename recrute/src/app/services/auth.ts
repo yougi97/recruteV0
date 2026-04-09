@@ -32,8 +32,14 @@ export class AuthService {
     return this.httpClient.get<any>(`${this.url}/users/candidate/${candidateId}/cv`);
   }
 
-  createCandidateCv(candidateId: number, cv: any): Observable<any> {
-    return this.httpClient.post<any>(`${this.url}/users/candidate/${candidateId}`, cv);
+  createCandidateCv(candidateId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.httpClient.post<any>(`${this.url}/users/candidate/${candidateId}`, formData);
+  }
+
+  getCandidateCvDownloadUrl(candidateId: number): string {
+    return `${this.url}/users/candidate/${candidateId}/cv/download`;
   }
 
   getCompanyJobs(companyId: number): Observable<any[]> {

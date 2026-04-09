@@ -17,6 +17,19 @@ def get_cv(cv_id: int) -> dict:
     r.raise_for_status()
     return r.json()
 
+def get_cv_pdf(cv_id: int) -> tuple[bytes, str, str]:
+    """Retourne (pdf_bytes, filename, content_type) depuis la BDD Spring."""
+    r = requests.get(_url(f"/api/internal/cvs/{cv_id}/file"), headers=HEADERS)
+    r.raise_for_status()
+
+    content_disposition = r.headers.get("Content-Disposition", "")
+    file_name = "cv.pdf"
+    if "filename=" in content_disposition:
+        file_name = content_disposition.split("filename=")[-1].strip('"')
+
+    content_type = r.headers.get("Content-Type", "application/pdf")
+    return r.content, file_name, content_type
+
 def update_cv_parsed(cv_id: int, payload: dict):
     """
     payload = {

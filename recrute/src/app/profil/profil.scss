@@ -231,7 +231,12 @@ $shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
 .cv-icon-big { font-size: 28px; }
 .cv-filename { font-size: 13px; font-weight: 600; color: $white; margin: 0 0 2px; word-break: break-all; }
 .cv-date { font-size: 12px; color: $white-40; margin: 0; }
-.cv-actions { display: flex; gap: 8px; }
+.cv-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cv-actions .btn-outline,
+.cv-actions .btn-danger,
+.btn-upload,
+.btn-ghost,
+.edit-btn { white-space: nowrap; }
 .cv-empty { text-align: center; padding: 16px 0; color: $white-40; font-size: 13px; }
 
 // ─── UPLOAD BTN ───────────────────────────────────────────────────────────────

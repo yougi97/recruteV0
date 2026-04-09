@@ -1,12 +1,12 @@
-<div class="description-form-card">
+<div class="candidate-card">
   <div class="header-row">
-    <h3>Modifier la description</h3>
+    <h3>Modifier localisations cibles</h3>
     <button type="button" class="close-btn" (click)="onCancel()">✕</button>
   </div>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
-    <label>Description entreprise</label>
-    <textarea rows="5" formControlName="description" placeholder="Décrivez votre entreprise"></textarea>
+    <label>Localisations (séparées par des virgules)</label>
+    <input type="text" formControlName="locations" placeholder="Paris, Lyon, Remote" />
 
     <div class="actions">
       <button type="button" class="btn-secondary" (click)="onCancel()">Annuler</button>

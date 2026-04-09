@@ -14,7 +14,6 @@ export type CompanyInfoFormValue = {
   industry: string;
   location: string;
   email: string;
-  password: string;
 };
 
 @Component({
@@ -37,7 +36,6 @@ export class CompanyInfoFormCard implements OnChanges {
       industry: [''],
       location: [''],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
@@ -48,7 +46,6 @@ export class CompanyInfoFormCard implements OnChanges {
         industry: this.initialValue.industry,
         location: this.initialValue.location,
         email: this.initialValue.email,
-        password: '',
       });
     }
   }
@@ -69,7 +66,6 @@ export class CompanyInfoFormCard implements OnChanges {
       industry: value.industry ?? '',
       location: value.location ?? '',
       email: value.email ?? '',
-      password: value.password ?? '',
     });
   }
 }

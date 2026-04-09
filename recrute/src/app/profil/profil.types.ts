@@ -36,6 +36,8 @@ export interface CV {
   id: number;
   candidate_id: number;
   file_url?: string;
+  file_name?: string;
+  content_type?: string;
   is_active: boolean;
   created_at: string;
 }
@@ -131,6 +133,8 @@ export function mapCv(cv: any): CV {
     id: Number(cv.id ?? 0),
     candidate_id: Number(cv.candidateProfiles?.id ?? 0),
     file_url: cv.file_url ?? '',
+    file_name: cv.fileName ?? cv.file_name ?? '',
+    content_type: cv.contentType ?? cv.content_type ?? '',
     is_active: Boolean(cv.isActive),
     created_at: cv.createdAt ? new Date(cv.createdAt).toISOString() : new Date().toISOString(),
   };

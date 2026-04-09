@@ -1,0 +1,28 @@
+<div class="candidate-card">
+  <div class="header-row">
+    <h3>Modifier infos personnelles</h3>
+    <button type="button" class="close-btn" (click)="onCancel()">✕</button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+    <label>Prénom</label>
+    <input type="text" formControlName="firstName" />
+
+    <label>Nom</label>
+    <input type="text" formControlName="lastName" />
+
+    <label>Email</label>
+    <input type="email" formControlName="email" />
+
+    <label>Poste recherché</label>
+    <input type="text" formControlName="title" />
+
+    <label>Localisation</label>
+    <input type="text" formControlName="location" />
+
+    <div class="actions">
+      <button type="button" class="btn-secondary" (click)="onCancel()">Annuler</button>
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">Enregistrer</button>
+    </div>
+  </form>
+</div>

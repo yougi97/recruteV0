@@ -1,0 +1,25 @@
+<div class="candidate-card">
+  <div class="header-row">
+    <h3>Ajouter / modifier CV</h3>
+    <button type="button" class="close-btn" (click)="onCancel()">✕</button>
+  </div>
+
+  <p class="hint" *ngIf="currentCvFileName">
+    CV actuel: {{ currentCvFileName.split('/').pop() || currentCvFileName }}
+  </p>
+
+  <form class="form-grid" novalidate>
+    <label>PDF du CV</label>
+    <input #fileInput type="file" accept="application/pdf,.pdf" (change)="onFileSelected($event)" hidden />
+    <button type="button" class="file-picker" (click)="fileInput.click()">
+      {{ selectedFileLabel }}
+    </button>
+
+    <p class="hint" *ngIf="selectedFile">Fichier sélectionné: {{ selectedFile.name }}</p>
+
+    <div class="actions">
+      <button type="button" class="btn-secondary" (click)="onCancel()">Annuler</button>
+      <button type="button" class="btn-primary" [disabled]="!selectedFile" (click)="onSubmit()">Téléverser</button>
+    </div>
+  </form>
+</div>

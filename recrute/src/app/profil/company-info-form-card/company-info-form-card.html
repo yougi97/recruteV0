@@ -17,9 +17,6 @@
     <label>Email</label>
     <input type="email" formControlName="email" placeholder="contact@entreprise.com" />
 
-    <label>Mot de passe (confirmation)</label>
-    <input type="password" formControlName="password" placeholder="••••••••" />
-
     <div class="actions">
       <button type="button" class="btn-secondary" (click)="onCancel()">Annuler</button>
       <button type="submit" class="btn-primary" [disabled]="form.invalid">Enregistrer</button>

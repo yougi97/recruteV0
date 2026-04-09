@@ -41,6 +41,9 @@ CREATE TABLE cvs (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     candidate_id    INT NOT NULL,
     file_url        VARCHAR(500),
+    file_name       VARCHAR(255),
+    content_type    VARCHAR(100),
+    file_data       LONGBLOB,
     raw_text        LONGTEXT,
     -- MODIF : parsed_json stocke le CVParse Pydantic complet
     parsed_json     JSON,
@@ -49,6 +52,10 @@ CREATE TABLE cvs (
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE
 );
+
+ALTER TABLE cvs ADD COLUMN IF NOT EXISTS file_name VARCHAR(255) NULL;
+ALTER TABLE cvs ADD COLUMN IF NOT EXISTS content_type VARCHAR(100) NULL;
+ALTER TABLE cvs ADD COLUMN IF NOT EXISTS file_data LONGBLOB NULL;
 
 -- ─── OFFRES D'EMPLOI ──────────────────────────────────────────────────────────
 

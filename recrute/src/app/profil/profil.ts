@@ -8,6 +8,10 @@ import { CompanyProfiles } from '../model/companyProfiles';
 import { JobOfferFormCard, JobOfferCreateFormValue, JobOfferFormMode } from './job-offer-form-card/job-offer-form-card';
 import { CompanyInfoFormCard, CompanyInfoFormValue } from './company-info-form-card/company-info-form-card';
 import { CompanyDescriptionFormCard, CompanyDescriptionFormValue } from './company-description-form-card/company-description-form-card';
+import { CandidateBioFormCard, CandidateBioFormValue } from './candidate-bio-form-card/candidate-bio-form-card';
+import { CandidatePersonalInfoFormCard, CandidatePersonalInfoFormValue } from './candidate-personal-info-form-card/candidate-personal-info-form-card';
+import { CandidateTargetLocationsFormCard, CandidateTargetLocationsFormValue } from './candidate-target-locations-form-card/candidate-target-locations-form-card';
+import { CandidateCvUploadFormCard, CandidateCvUploadFormValue } from './candidate-cv-upload-form-card/candidate-cv-upload-form-card';
 import {
   CV,
   CvCategory,
@@ -36,6 +40,10 @@ import { buildCandidateUpdatePayload, buildCompanyUpdatePayload } from './profil
     JobOfferFormCard,
     CompanyInfoFormCard,
     CompanyDescriptionFormCard,
+    CandidateBioFormCard,
+    CandidatePersonalInfoFormCard,
+    CandidateTargetLocationsFormCard,
+    CandidateCvUploadFormCard,
   ],
   templateUrl: './profil.html',
   styleUrl: './profil.scss',
@@ -61,6 +69,11 @@ export class Profile implements OnInit {
   jobOfferFormInitialValue: Partial<JobOfferCreateFormValue> | null = null;
   showCompanyInfoFormCard = false;
   showCompanyDescriptionFormCard = false;
+  showCandidateBioFormCard = false;
+  showCandidatePersonalInfoFormCard = false;
+  showCandidateTargetLocationsFormCard = false;
+  showCandidateCvUploadFormCard = false;
+  selectedCandidateCvFile: File | null = null;
 
   constructor(
     private authService: AuthService,
@@ -90,34 +103,48 @@ export class Profile implements OnInit {
 
   // ─── ACTIONS CANDIDAT ──────────────────────────────────────────────────────
 
-  onCVUpload(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file || !this.user) return;
+  openCvUploadCard(): void {
+    this.showCandidateCvUploadFormCard = true;
+  }
 
-    const payload = {
-      file_url: file.name,
-      rawText: '',
-      parsedJson: '{}',
-      embedding: null,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-    };
+  cancelCandidateCvUpload(): void {
+    this.showCandidateCvUploadFormCard = false;
+    this.selectedCandidateCvFile = null;
+  }
 
-    this.authService.createCandidateCv(this.user.id, payload).subscribe({
+  saveCandidateCvUpload(formValue: CandidateCvUploadFormValue): void {
+    if (!this.user) return;
+    const candidateId = this.candidateProfile.id;
+
+    if (!candidateId) {
+      this.toastr.error('Profil candidat introuvable.', 'Erreur');
+      return;
+    }
+
+    this.selectedCandidateCvFile = formValue.file;
+
+    if (!this.selectedCandidateCvFile) {
+      this.toastr.warning('Sélectionne un fichier PDF avant d\'enregistrer.', 'Attention');
+      return;
+    }
+
+    this.authService.createCandidateCv(candidateId, this.selectedCandidateCvFile).subscribe({
       next: () => {
         this.toastr.success('CV enregistré avec succès.', 'Succès');
-        this.loadCandidateCv(this.user!.id);
+        this.showCandidateCvUploadFormCard = false;
+        this.selectedCandidateCvFile = null;
+        this.loadCandidateCv(candidateId);
       },
-      error: () => {
-        this.toastr.error('Impossible d\'enregistrer le CV.', 'Erreur');
+      error: (err: unknown) => {
+        this.toastr.error(this.getHttpErrorMessage(err, 'Impossible d\'enregistrer le CV.'), 'Erreur');
       },
     });
   }
 
   downloadCV(): void {
-    if (!this.activeCV?.file_url) return;
-    window.open(this.activeCV.file_url, '_blank');
+    if (!this.activeCV || !this.candidateProfile.id) return;
+    const baseUrl = this.authService.getCandidateCvDownloadUrl(this.candidateProfile.id);
+    window.open(`${baseUrl}?t=${Date.now()}`, '_blank');
   }
 
   deleteCV(): void {
@@ -127,47 +154,69 @@ export class Profile implements OnInit {
   }
 
   editBio(): void {
-    if (!this.user) return;
-
-    const nextBio = window.prompt('Modifier la bio', this.candidateProfile.bio ?? '');
-    if (nextBio === null) return;
-
-    this.updateCandidateProfile({ bio: nextBio });
+    this.showCandidateBioFormCard = true;
   }
 
   editPersonalInfo(): void {
-    if (!this.user) return;
-
-    const firstName = window.prompt('Prénom', this.user.first_name ?? '');
-    if (firstName === null) return;
-    const lastName = window.prompt('Nom', this.user.last_name ?? '');
-    if (lastName === null) return;
-    const email = window.prompt('Email', this.user.email ?? '');
-    if (email === null) return;
-    const title = window.prompt('Poste recherché', this.candidateProfile.title ?? '');
-    if (title === null) return;
-    const location = window.prompt('Localisation', this.candidateProfile.location ?? '');
-    if (location === null) return;
-
-    this.updateCandidateProfile(
-      { title, location },
-      { firstName, lastName, email }
-    );
+    this.showCandidatePersonalInfoFormCard = true;
   }
 
   editTargetLocations(): void {
+    this.showCandidateTargetLocationsFormCard = true;
+  }
+
+  cancelCandidateBioEdit(): void {
+    this.showCandidateBioFormCard = false;
+  }
+
+  cancelCandidatePersonalInfoEdit(): void {
+    this.showCandidatePersonalInfoFormCard = false;
+  }
+
+  cancelCandidateTargetLocationsEdit(): void {
+    this.showCandidateTargetLocationsFormCard = false;
+  }
+
+  saveCandidateBioEdit(formValue: CandidateBioFormValue): void {
+    if (!this.user) return;
+    this.updateCandidateProfile(
+      { bio: formValue.bio },
+      undefined,
+      () => {
+        this.showCandidateBioFormCard = false;
+      }
+    );
+  }
+
+  saveCandidatePersonalInfoEdit(formValue: CandidatePersonalInfoFormValue): void {
     if (!this.user) return;
 
-    const current = (this.candidateProfile.target_location ?? []).join(', ');
-    const raw = window.prompt('Localisations cibles (séparées par des virgules)', current);
-    if (raw === null) return;
+    this.updateCandidateProfile(
+      {
+        title: formValue.title,
+        location: formValue.location,
+      },
+      {
+        firstName: formValue.firstName,
+        lastName: formValue.lastName,
+        email: formValue.email,
+      },
+      () => {
+        this.showCandidatePersonalInfoFormCard = false;
+      }
+    );
+  }
 
-    const targetLocation = raw
-      .split(',')
-      .map(item => item.trim())
-      .filter(Boolean);
+  saveCandidateTargetLocationsEdit(formValue: CandidateTargetLocationsFormValue): void {
+    if (!this.user) return;
 
-    this.updateCandidateProfile({ targetLocation: targetLocation as unknown as JSON });
+    this.updateCandidateProfile(
+          { targetLocation: formValue.targetLocations as unknown as JSON },
+      undefined,
+      () => {
+        this.showCandidateTargetLocationsFormCard = false;
+      }
+    );
   }
 
   // ─── ACTIONS ENTREPRISE ────────────────────────────────────────────────────
@@ -290,45 +339,29 @@ export class Profile implements OnInit {
   saveCompanyInfoEdit(formValue: CompanyInfoFormValue): void {
     if (!this.user) return;
 
-    this.authService.login(this.user.email, formValue.password).subscribe({
-      next: () => {
-        this.updateCompanyProfile(
-          {
-            companyName: formValue.companyName,
-            industry: formValue.industry as unknown as JSON,
-            location: formValue.location,
-          },
-          { email: formValue.email },
-          formValue.password,
-          () => {
-            this.showCompanyInfoFormCard = false;
-          }
-        );
+    this.updateCompanyProfile(
+      {
+        companyName: formValue.companyName,
+        industry: formValue.industry as unknown as JSON,
+        location: formValue.location,
       },
-      error: () => {
-        this.toastr.error('Mot de passe de confirmation incorrect.', 'Erreur');
-      },
-    });
+      { email: formValue.email },
+      () => {
+        this.showCompanyInfoFormCard = false;
+      }
+    );
   }
 
   saveCompanyDescriptionEdit(formValue: CompanyDescriptionFormValue): void {
     if (!this.user) return;
 
-    this.authService.login(this.user.email, formValue.password).subscribe({
-      next: () => {
-        this.updateCompanyProfile(
-          { description: formValue.description },
-          undefined,
-          formValue.password,
-          () => {
-            this.showCompanyDescriptionFormCard = false;
-          }
-        );
-      },
-      error: () => {
-        this.toastr.error('Mot de passe de confirmation incorrect.', 'Erreur');
-      },
-    });
+    this.updateCompanyProfile(
+      { description: formValue.description },
+      undefined,
+      () => {
+        this.showCompanyDescriptionFormCard = false;
+      }
+    );
   }
 
   // ─── UTILS ─────────────────────────────────────────────────────────────────
@@ -363,7 +396,7 @@ export class Profile implements OnInit {
 
         this.activeCV = null;
         this.cvCategories = [];
-        this.loadCandidateCv(userId);
+        this.loadCandidateCv(this.candidateProfile.id);
         this.isLoading = false;
       },
       error: () => {
@@ -391,8 +424,8 @@ export class Profile implements OnInit {
     });
   }
 
-  private loadCandidateCv(userId: number): void {
-    this.authService.getCandidateCv(userId).subscribe({
+  private loadCandidateCv(candidateProfileId: number): void {
+    this.authService.getCandidateCv(candidateProfileId).subscribe({
       next: (cv: any) => {
         if (!cv) {
           this.activeCV = null;
@@ -421,20 +454,14 @@ export class Profile implements OnInit {
 
   private updateCandidateProfile(
     profilePatch: Partial<CandidateProfiles>,
-    userPatch?: { firstName?: string; lastName?: string; email?: string }
+    userPatch?: { firstName?: string; lastName?: string; email?: string },
+    onSuccess?: () => void
   ): void {
     if (!this.user) return;
-
-    const password = window.prompt('Confirmez votre mot de passe pour enregistrer les modifications');
-    if (!password) {
-      this.toastr.warning('Modification annulée (mot de passe requis).', 'Attention');
-      return;
-    }
 
     const payload = buildCandidateUpdatePayload(
       this.candidateProfile,
       this.user,
-      password,
       profilePatch,
       userPatch
     );
@@ -442,10 +469,11 @@ export class Profile implements OnInit {
     this.authService.updateCandidateProfile(this.candidateProfile.id, payload).subscribe({
       next: () => {
         this.toastr.success('Profil candidat mis à jour.', 'Succès');
+        onSuccess?.();
         this.loadCandidateProfile(this.user!.id);
       },
-      error: () => {
-        this.toastr.error('Impossible de mettre à jour le profil candidat.', 'Erreur');
+      error: (err: unknown) => {
+        this.toastr.error(this.getHttpErrorMessage(err, 'Impossible de mettre à jour le profil candidat.'), 'Erreur');
       },
     });
   }
@@ -453,19 +481,13 @@ export class Profile implements OnInit {
   private updateCompanyProfile(
     profilePatch: Partial<CompanyProfiles>,
     userPatch?: { firstName?: string; lastName?: string; email?: string },
-    password?: string,
     onSuccess?: () => void
   ): void {
     if (!this.user) return;
-    if (!password) {
-      this.toastr.warning('Modification annulée (mot de passe requis).', 'Attention');
-      return;
-    }
 
     const payload = buildCompanyUpdatePayload(
       this.companyProfile,
       this.user,
-      password,
       profilePatch,
       userPatch
     );

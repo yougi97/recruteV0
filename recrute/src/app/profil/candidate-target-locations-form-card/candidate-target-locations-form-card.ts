@@ -2,34 +2,34 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-export type CompanyDescriptionFormValue = {
-  description: string;
+export type CandidateTargetLocationsFormValue = {
+  targetLocations: string[];
 };
 
 @Component({
-  selector: 'app-company-description-form-card',
+  selector: 'app-candidate-target-locations-form-card',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './company-description-form-card.html',
-  styleUrl: './company-description-form-card.scss',
+  templateUrl: './candidate-target-locations-form-card.html',
+  styleUrl: './candidate-target-locations-form-card.scss',
 })
-export class CompanyDescriptionFormCard implements OnChanges {
-  @Input() initialDescription = '';
+export class CandidateTargetLocationsFormCard implements OnChanges {
+  @Input() initialLocations: string[] = [];
   @Output() cancel = new EventEmitter<void>();
-  @Output() save = new EventEmitter<CompanyDescriptionFormValue>();
+  @Output() save = new EventEmitter<CandidateTargetLocationsFormValue>();
 
   readonly form;
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
-      description: ['', [Validators.required, Validators.minLength(10)]],
+      locations: ['', [Validators.required]],
     });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['initialDescription']) {
+    if (changes['initialLocations']) {
       this.form.patchValue({
-        description: this.initialDescription,
+        locations: (this.initialLocations ?? []).join(', '),
       });
     }
   }
@@ -45,8 +45,13 @@ export class CompanyDescriptionFormCard implements OnChanges {
     }
 
     const value = this.form.getRawValue();
+    const targetLocations = (value.locations ?? '')
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean);
+
     this.save.emit({
-      description: value.description ?? '',
+      targetLocations,
     });
   }
 }

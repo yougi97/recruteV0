@@ -2,8 +2,12 @@ package com.techlance.recrute.Entities;
 
 import java.sql.Timestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,6 +24,13 @@ public class Cvs {
     @JoinColumn(name= "candidate_id")
     private CandidateProfiles candidateProfiles;
     private String file_url;
+    private String fileName;
+    private String contentType;
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @JsonIgnore
+    @Column(name = "file_data", columnDefinition = "LONGBLOB")
+    private byte[] fileData;
     private String rawText;
     @Column(columnDefinition = "json")
     private String parsedJson;
@@ -91,5 +102,29 @@ public class Cvs {
 
     public void setFile_url(String file_url) {
         this.file_url = file_url;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public byte[] getFileData() {
+        return fileData;
+    }
+
+    public void setFileData(byte[] fileData) {
+        this.fileData = fileData;
     }
 }

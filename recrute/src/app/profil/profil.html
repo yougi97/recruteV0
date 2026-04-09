@@ -54,7 +54,7 @@
             <div class="cv-file-info">
               <span class="cv-icon-big">📋</span>
               <div>
-                <p class="cv-filename">{{ activeCV.file_url }}</p>
+                <p class="cv-filename">{{ activeCV.file_name || activeCV.file_url?.split('/')?.pop() || 'CV' }}</p>
                 <p class="cv-date">Ajouté le {{ activeCV.created_at | date:'dd/MM/yyyy' }}</p>
               </div>
             </div>
@@ -66,10 +66,17 @@
           <div class="cv-empty" *ngIf="!activeCV">
             <p>Aucun CV déposé pour l'instant.</p>
           </div>
-          <label class="btn-upload" for="cvUpload">
-            <input type="file" id="cvUpload" accept=".pdf,.doc,.docx" (change)="onCVUpload($event)" hidden />
-            <span>{{ activeCV ? '🔄 Remplacer le CV' : '⬆ Ajouter mon CV' }}</span>
-          </label>
+
+          <button class="btn-upload" (click)="openCvUploadCard()">
+            {{ activeCV ? '🔄 Remplacer le CV' : '⬆ Ajouter mon CV' }}
+          </button>
+
+          <app-candidate-cv-upload-form-card
+            *ngIf="showCandidateCvUploadFormCard"
+            [currentCvFileName]="activeCV?.file_name || activeCV?.file_url || ''"
+            (cancel)="cancelCandidateCvUpload()"
+            (save)="saveCandidateCvUpload($event)">
+          </app-candidate-cv-upload-form-card>
         </div>
 
         <!-- LOCALISATION CIBLE -->
@@ -78,6 +85,14 @@
             <span class="card-icon">🎯</span>
             <h2>Localisations cibles</h2>
           </div>
+
+          <app-candidate-target-locations-form-card
+            *ngIf="showCandidateTargetLocationsFormCard"
+            [initialLocations]="candidateProfile.target_location || []"
+            (cancel)="cancelCandidateTargetLocationsEdit()"
+            (save)="saveCandidateTargetLocationsEdit($event)">
+          </app-candidate-target-locations-form-card>
+
           <div class="target-locations">
             <span class="location-tag" *ngFor="let loc of (candidateProfile.target_location || [])">{{ loc }}</span>
             <span class="location-tag empty" *ngIf="!candidateProfile.target_location?.length">Non renseigné</span>
@@ -97,6 +112,14 @@
             <h2>À propos</h2>
             <button class="edit-btn" (click)="editBio()">✎ Modifier</button>
           </div>
+
+          <app-candidate-bio-form-card
+            *ngIf="showCandidateBioFormCard"
+            [initialBio]="candidateProfile.bio || ''"
+            (cancel)="cancelCandidateBioEdit()"
+            (save)="saveCandidateBioEdit($event)">
+          </app-candidate-bio-form-card>
+
           <p class="bio-text" *ngIf="candidateProfile.bio">{{ candidateProfile.bio }}</p>
           <p class="bio-placeholder" *ngIf="!candidateProfile.bio">Ajoutez une courte présentation de vous-même...</p>
         </div>
@@ -126,6 +149,20 @@
             <h2>Informations personnelles</h2>
             <button class="edit-btn" (click)="editPersonalInfo()">✎ Modifier</button>
           </div>
+
+          <app-candidate-personal-info-form-card
+            *ngIf="showCandidatePersonalInfoFormCard"
+            [initialValue]="{
+              firstName: user?.first_name || '',
+              lastName: user?.last_name || '',
+              email: user?.email || '',
+              title: candidateProfile.title || '',
+              location: candidateProfile.location || ''
+            }"
+            (cancel)="cancelCandidatePersonalInfoEdit()"
+            (save)="saveCandidatePersonalInfoEdit($event)">
+          </app-candidate-personal-info-form-card>
+
           <div class="info-grid">
             <div class="info-item">
               <label>Prénom</label>

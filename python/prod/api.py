@@ -6,17 +6,29 @@ from job_enrichment_agent import enrichir_offre
 from dispatcher import sauvegarder_cv, sauvegarder_offre
 from matching_agent import matcher, _charger_cv, _charger_offre
 from explanation_agent import expliquer
+import spring_client as api
 
 app = Flask(__name__)
 
 @app.post("/parse-cv")
 def parse_cv_endpoint():
-    fichier      = request.files["cv"]
-    cv_id        = int(request.form["cv_id"])
+    cv_id = request.form.get("cv_id", type=int) if request.form else None
+    fichier = request.files.get("cv") if request.files else None
 
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-        fichier.save(tmp.name)
-        chemin = tmp.name
+    if cv_id is None:
+        return jsonify({"erreur": "cv_id manquant"}), 400
+
+    if fichier is not None:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            fichier.save(tmp.name)
+            chemin = tmp.name
+    else:
+        pdf_bytes, file_name, _ = api.get_cv_pdf(cv_id)
+        suffix = ".pdf" if file_name.lower().endswith(".pdf") else ".pdf"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp.write(pdf_bytes)
+            tmp.flush()
+            chemin = tmp.name
 
     try:
         cv = parser_cv(chemin)

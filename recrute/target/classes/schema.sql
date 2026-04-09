@@ -41,6 +41,9 @@ CREATE TABLE IF NOT EXISTS cvs (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     candidate_id    INT NOT NULL,
     file_url        VARCHAR(500),
+    file_name       VARCHAR(255),
+    content_type    VARCHAR(100),
+    file_data       LONGBLOB,
     raw_text        LONGTEXT,
     -- MODIF : parsed_json stocke le CVParse Pydantic complet
     parsed_json     JSON,
@@ -49,6 +52,53 @@ CREATE TABLE IF NOT EXISTS cvs (
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE
 );
+
+SET @schema_name := DATABASE();
+
+SET @file_name_exists := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = @schema_name
+      AND TABLE_NAME = 'cvs'
+      AND COLUMN_NAME = 'file_name'
+);
+SET @sql := IF(@file_name_exists = 0,
+    'ALTER TABLE cvs ADD COLUMN file_name VARCHAR(255) NULL',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @content_type_exists := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = @schema_name
+      AND TABLE_NAME = 'cvs'
+      AND COLUMN_NAME = 'content_type'
+);
+SET @sql := IF(@content_type_exists = 0,
+    'ALTER TABLE cvs ADD COLUMN content_type VARCHAR(100) NULL',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @file_data_exists := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = @schema_name
+      AND TABLE_NAME = 'cvs'
+      AND COLUMN_NAME = 'file_data'
+);
+SET @sql := IF(@file_data_exists = 0,
+    'ALTER TABLE cvs ADD COLUMN file_data LONGBLOB NULL',
+    'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ─── OFFRES D'EMPLOI ──────────────────────────────────────────────────────────
 
