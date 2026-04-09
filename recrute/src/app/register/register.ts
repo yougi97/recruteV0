@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../services/auth';
+import { User } from '../model/user';
 @Component({
   selector: 'app-register',
   imports: [],
@@ -11,9 +12,9 @@ export class Register {
 
   activeTab: string = 'entreprise';
 
-setTab(tab: string) {
-  this.activeTab = tab;
-}
+  setTab(tab: string) {
+    this.activeTab = tab;
+  }
   registerForm: FormGroup;
 
   constructor(private fb: FormBuilder, private authService: AuthService) {
@@ -25,10 +26,20 @@ setTab(tab: string) {
       passwordConfirm: ['', [Validators.required, Validators.minLength(6)]]
     });
 
-} 
-onSubmit() {
+  }
+  onSubmit() {
     if (this.registerForm.valid) {
-       this.authService.register(this.registerForm.value)
+      const formValue = this.registerForm.value
+      const user: User;
+      user = {
+        "email": formValue.email,
+        "password": formValue.password,
+        "userType": "",
+        "firstName": formValue.name,
+        "lastName": formValue.lastName,
+        "createdAt": new Date,
+      }
+
         .subscribe({
           next: (res) => {
             console.log('Inscription réussie', res);
