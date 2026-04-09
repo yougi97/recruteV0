@@ -2,7 +2,9 @@ package com.techlance.recrute.Services;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.techlance.recrute.Entities.CompanyProfiles;
 import com.techlance.recrute.Entities.JobOffers;
@@ -36,5 +38,52 @@ public class JobOfferService {
     // }
     public List<JobOffers> getJobOffers(Long id) {
         return jobOfferRepository.findByCompanyProfilesId(id);
+    }
+
+    public JobOffers getJobOffer(Long id) {
+        return jobOfferRepository.findById(id).orElseThrow(()->
+        new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        String.format("Offre non trouver"))
+    );}
+
+    public JobOffers updateJobOffers(Long id, JobOffers job) {
+        JobOffers oldjob=getJobOffer(id);
+
+        if (job.getTitle()!=null) {
+            oldjob.setTitle(job.getTitle());
+        }
+
+        if(job.getDescription()!=null) {
+            oldjob.setDescription(job.getDescription());
+        }
+
+        if(job.getEnrichedDescription()!=null) {
+            oldjob.setEnrichedDescription(job.getEnrichedDescription());
+        }
+
+        if (job.getParsedJson()!=null) {
+            oldjob.setParsedJson(job.getParsedJson());
+        }
+
+        if (job.getEmbedding()!=null) {
+            oldjob.setEmbedding(job.getEmbedding());
+        }
+
+        if (job.getContractType()!=null) {
+            oldjob.setContractType(job.getContractType());
+        }
+
+        if (job.getAnneesExperienceMin()!=0.0) {
+            oldjob.getAnneesExperienceMin();
+        }
+
+        if(job.getNiveauEtudesMin()!=null) {
+            oldjob.setNiveauEtudesMin(job.getNiveauEtudesMin());
+        }
+
+        return jobOfferRepository.save(oldjob);
+
+
     }
 }

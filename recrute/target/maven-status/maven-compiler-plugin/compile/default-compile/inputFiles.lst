@@ -1,9 +1,12 @@
+C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Controllers\MatchController.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Enum\Type.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Controllers\CvsController.java
+C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Services\MatchService.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Entities\CompanyCandidateRatings.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Enum\NiveauEtude.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Filtre\JobOffersSpecification.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Repositories\CompanyCandidateRatingsRepository.java
+C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Controllers\JobOfferIAController.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Repositories\CandidateJobRatingsRepository.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Repositories\CategoriesRepository.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Entities\CandidateProfiles.java
@@ -20,6 +23,7 @@ C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Entities\JobCategories.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Entities\Categories.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Controllers\CvsIAController.java
+C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\DTO\payload.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Controllers\UserController.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Repositories\CompanyProfilesRepository.java
 C:\Users\prune\Documents\EPF\4A\Semestre_2\Projet recrute\recruteV0\recrute\src\main\java\com\techlance\recrute\Entities\Users.java
