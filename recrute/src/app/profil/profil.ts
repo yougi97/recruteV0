@@ -1,95 +1,71 @@
-// profile.ts
 import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule, DatePipe } from '@angular/common';
-
-// ─── INTERFACES (alignées sur le schéma BDD) ──────────────────────────────────
-
-export interface User {
-  id: number;
-  email: string;
-  user_type: 'candidate' | 'company';
-  first_name?: string;
-  last_name?: string;
-  created_at: string;
-}
-
-export interface CandidateProfile {
-  id: number;
-  user_id: number;
-  title?: string;
-  location?: string;
-  target_location?: string[];   // JSON dans la BDD
-  bio?: string;
-  photo_url?: string;           // non présent en BDD, à ajouter si besoin
-}
-
-export interface CompanyProfile {
-  id: number;
-  user_id: number;
-  company_name: string;
-  industry?: string;
-  location?: string;
-  description?: string;
-}
-
-export interface CV {
-  id: number;
-  candidate_id: number;
-  file_url?: string;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-  type: 'skill' | 'domain' | 'soft_skill';
-}
-
-export interface CvCategory {
-  id: number;
-  cv_id: number;
-  category: Category;
-  confidence?: number;
-  level?: 'débutant' | 'intermédiaire' | 'avancé' | 'expert';
-}
-
-export interface JobOffer {
-  id: number;
-  company_id: number;
-  title: string;
-  description?: string;
-  location?: string;
-  contract_type?: 'CDI' | 'CDD' | 'freelance' | 'stage' | 'alternance';
-  is_active: boolean;
-  created_at: string;
-}
+import { ToastrService } from 'ngx-toastr';
+import { AuthService } from '../services/auth';
+import { CandidateProfiles } from '../model/candidateProfiles';
+import { CompanyProfiles } from '../model/companyProfiles';
+import { JobOfferFormCard, JobOfferCreateFormValue, JobOfferFormMode } from './job-offer-form-card/job-offer-form-card';
+import { CompanyInfoFormCard, CompanyInfoFormValue } from './company-info-form-card/company-info-form-card';
+import { CompanyDescriptionFormCard, CompanyDescriptionFormValue } from './company-description-form-card/company-description-form-card';
+import {
+  CV,
+  CvCategory,
+  EMPTY_CANDIDATE_PROFILE,
+  EMPTY_COMPANY_PROFILE,
+  JobOffer,
+  User,
+  computeJobStats,
+  getConnectedUserContext,
+  mapApiUser,
+  mapCandidateProfile,
+  mapCompanyProfile,
+  mapCv,
+  mapJobOffers,
+} from './profil.types';
+import { buildCandidateUpdatePayload, buildCompanyUpdatePayload } from './profil.payloads';
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [
+    CommonModule,
+    DatePipe,
+    JobOfferFormCard,
+    CompanyInfoFormCard,
+    CompanyDescriptionFormCard,
+  ],
   templateUrl: './profil.html',
   styleUrl: './profil.scss',
 })
 export class Profile implements OnInit {
+  isLoading = true;
+  errorMessage = '';
 
-  // ── Données utilisateur ─────────────────────────────────────────────────────
-  user!: User;
+  user: User | null = null;
 
-  // ── Candidat ────────────────────────────────────────────────────────────────
-  candidateProfile!: CandidateProfile;
+  candidateProfile = { ...EMPTY_CANDIDATE_PROFILE };
   activeCV: CV | null = null;
   cvCategories: CvCategory[] = [];
 
-  // ── Entreprise ──────────────────────────────────────────────────────────────
-  companyProfile!: CompanyProfile;
+  companyProfile = { ...EMPTY_COMPANY_PROFILE };
   jobOffers: JobOffer[] = [];
   totalJobOffers = 0;
   activeJobOffers = 0;
   totalRatings = 0;
+  showJobOfferFormCard = false;
+  jobOfferFormMode: JobOfferFormMode = 'create';
+  editingJobOfferId: number | null = null;
+  jobOfferFormInitialValue: Partial<JobOfferCreateFormValue> | null = null;
+  showCompanyInfoFormCard = false;
+  showCompanyDescriptionFormCard = false;
+
+  constructor(
+    private authService: AuthService,
+    private toastr: ToastrService
+  ) {}
 
   // ── Getters utilitaires ─────────────────────────────────────────────────────
   get initials(): string {
@@ -109,8 +85,7 @@ export class Profile implements OnInit {
 
   // ─── CYCLE DE VIE ──────────────────────────────────────────────────────────
   ngOnInit(): void {
-    // TODO : remplacer par un appel à ton AuthService / ProfileService
-    this.loadMockData();
+    this.loadProfile();
   }
 
   // ─── ACTIONS CANDIDAT ──────────────────────────────────────────────────────
@@ -118,11 +93,26 @@ export class Profile implements OnInit {
   onCVUpload(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file) return;
+    if (!file || !this.user) return;
 
-    console.log('CV sélectionné :', file.name);
-    // TODO : appeler ton CVService.upload(file)
-    // Puis rafraîchir this.activeCV
+    const payload = {
+      file_url: file.name,
+      rawText: '',
+      parsedJson: '{}',
+      embedding: null,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.authService.createCandidateCv(this.user.id, payload).subscribe({
+      next: () => {
+        this.toastr.success('CV enregistré avec succès.', 'Succès');
+        this.loadCandidateCv(this.user!.id);
+      },
+      error: () => {
+        this.toastr.error('Impossible d\'enregistrer le CV.', 'Erreur');
+      },
+    });
   }
 
   downloadCV(): void {
@@ -132,113 +122,389 @@ export class Profile implements OnInit {
 
   deleteCV(): void {
     if (!this.activeCV) return;
-    // TODO : appeler ton CVService.delete(this.activeCV.id)
+    this.toastr.info('Suppression CV non disponible côté API pour le moment.', 'Info');
     this.activeCV = null;
   }
 
   editBio(): void {
-    // TODO : ouvrir modale ou champ inline
-    console.log('Modifier bio');
+    if (!this.user) return;
+
+    const nextBio = window.prompt('Modifier la bio', this.candidateProfile.bio ?? '');
+    if (nextBio === null) return;
+
+    this.updateCandidateProfile({ bio: nextBio });
   }
 
   editPersonalInfo(): void {
-    // TODO : ouvrir modale d'édition
-    console.log('Modifier infos personnelles');
+    if (!this.user) return;
+
+    const firstName = window.prompt('Prénom', this.user.first_name ?? '');
+    if (firstName === null) return;
+    const lastName = window.prompt('Nom', this.user.last_name ?? '');
+    if (lastName === null) return;
+    const email = window.prompt('Email', this.user.email ?? '');
+    if (email === null) return;
+    const title = window.prompt('Poste recherché', this.candidateProfile.title ?? '');
+    if (title === null) return;
+    const location = window.prompt('Localisation', this.candidateProfile.location ?? '');
+    if (location === null) return;
+
+    this.updateCandidateProfile(
+      { title, location },
+      { firstName, lastName, email }
+    );
   }
 
   editTargetLocations(): void {
-    // TODO : ouvrir modale de sélection de villes
-    console.log('Modifier localisations cibles');
+    if (!this.user) return;
+
+    const current = (this.candidateProfile.target_location ?? []).join(', ');
+    const raw = window.prompt('Localisations cibles (séparées par des virgules)', current);
+    if (raw === null) return;
+
+    const targetLocation = raw
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean);
+
+    this.updateCandidateProfile({ targetLocation: targetLocation as unknown as JSON });
   }
 
   // ─── ACTIONS ENTREPRISE ────────────────────────────────────────────────────
 
   createJobOffer(): void {
-    // TODO : naviguer vers /jobs/create
-    console.log('Créer une offre');
+    this.jobOfferFormMode = 'create';
+    this.editingJobOfferId = null;
+    this.jobOfferFormInitialValue = {
+      title: '',
+      description: '',
+      location: '',
+      contractType: 'CDI',
+    };
+    this.showJobOfferFormCard = true;
+  }
+
+  cancelCreateJobOffer(): void {
+    this.showJobOfferFormCard = false;
+    this.editingJobOfferId = null;
+    this.jobOfferFormInitialValue = null;
+  }
+
+  submitCreateJobOffer(formValue: JobOfferCreateFormValue): void {
+    if (this.jobOfferFormMode === 'edit' && this.editingJobOfferId !== null) {
+      if (!this.user) return;
+
+      const payload = {
+        title: formValue.title,
+        description: formValue.description,
+        location: formValue.location,
+        contractType: formValue.contractType,
+      };
+
+      this.authService.updateCompanyJob(this.companyProfile.id, this.editingJobOfferId, payload).subscribe({
+        next: () => {
+          this.showJobOfferFormCard = false;
+          this.editingJobOfferId = null;
+          this.jobOfferFormInitialValue = null;
+          this.toastr.success('Offre modifiée.', 'Succès');
+              this.loadCompanyJobs(this.companyProfile.id);
+        },
+        error: (err: unknown) => {
+          this.toastr.error(this.getHttpErrorMessage(err, 'Impossible de modifier l\'offre.'), 'Erreur');
+        },
+      });
+      return;
+    }
+
+    if (!this.user) return;
+
+    const payload = {
+      title: formValue.title,
+      description: formValue.description,
+      location: formValue.location,
+      contractType: formValue.contractType,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.authService.createCompanyJob(this.companyProfile.id, payload).subscribe({
+      next: () => {
+        this.toastr.success('Offre créée.', 'Succès');
+        this.showJobOfferFormCard = false;
+        this.editingJobOfferId = null;
+        this.jobOfferFormInitialValue = null;
+            this.loadCompanyJobs(this.companyProfile.id);
+      },
+      error: (err: unknown) => {
+        this.toastr.error(this.getHttpErrorMessage(err, 'Impossible de créer l\'offre.'), 'Erreur');
+      },
+    });
   }
 
   editJob(job: JobOffer): void {
-    console.log('Modifier offre', job.id);
+    this.jobOfferFormMode = 'edit';
+    this.editingJobOfferId = job.id;
+    this.jobOfferFormInitialValue = {
+      title: job.title,
+      description: job.description ?? '',
+      location: job.location ?? '',
+      contractType: job.contract_type ?? 'CDI',
+    };
+    this.showJobOfferFormCard = true;
   }
 
   deleteJob(job: JobOffer): void {
-    this.jobOffers = this.jobOffers.filter(j => j.id !== job.id);
-    this.updateJobStats();
-    // TODO : appeler ton JobService.delete(job.id)
+    if (!this.user) return;
+
+    const nextStatus = !job.is_active;
+    this.authService.updateCompanyJobStatus(this.companyProfile.id, job.id, nextStatus).subscribe({
+      next: () => {
+        this.toastr.success(
+          nextStatus ? 'Offre activée.' : 'Offre désactivée.',
+          'Succès'
+        );
+            this.loadCompanyJobs(this.companyProfile.id);
+      },
+      error: (err: unknown) => {
+        this.toastr.error(this.getHttpErrorMessage(err, 'Impossible de changer le statut de l\'offre.'), 'Erreur');
+      },
+    });
   }
 
   editCompanyInfo(): void {
-    console.log('Modifier fiche entreprise');
+    this.showCompanyInfoFormCard = true;
   }
 
   editDescription(): void {
-    console.log('Modifier description entreprise');
+    this.showCompanyDescriptionFormCard = true;
+  }
+
+  cancelCompanyInfoEdit(): void {
+    this.showCompanyInfoFormCard = false;
+  }
+
+  cancelCompanyDescriptionEdit(): void {
+    this.showCompanyDescriptionFormCard = false;
+  }
+
+  saveCompanyInfoEdit(formValue: CompanyInfoFormValue): void {
+    if (!this.user) return;
+
+    this.authService.login(this.user.email, formValue.password).subscribe({
+      next: () => {
+        this.updateCompanyProfile(
+          {
+            companyName: formValue.companyName,
+            industry: formValue.industry as unknown as JSON,
+            location: formValue.location,
+          },
+          { email: formValue.email },
+          formValue.password,
+          () => {
+            this.showCompanyInfoFormCard = false;
+          }
+        );
+      },
+      error: () => {
+        this.toastr.error('Mot de passe de confirmation incorrect.', 'Erreur');
+      },
+    });
+  }
+
+  saveCompanyDescriptionEdit(formValue: CompanyDescriptionFormValue): void {
+    if (!this.user) return;
+
+    this.authService.login(this.user.email, formValue.password).subscribe({
+      next: () => {
+        this.updateCompanyProfile(
+          { description: formValue.description },
+          undefined,
+          formValue.password,
+          () => {
+            this.showCompanyDescriptionFormCard = false;
+          }
+        );
+      },
+      error: () => {
+        this.toastr.error('Mot de passe de confirmation incorrect.', 'Erreur');
+      },
+    });
   }
 
   // ─── UTILS ─────────────────────────────────────────────────────────────────
 
-  private updateJobStats(): void {
-    this.totalJobOffers  = this.jobOffers.length;
-    this.activeJobOffers = this.jobOffers.filter(j => j.is_active).length;
+  private loadProfile(): void {
+    const context = getConnectedUserContext();
+    if (!context) {
+      this.isLoading = false;
+      this.errorMessage = 'Utilisateur non connecté.';
+      return;
+    }
+
+    if (context.type === 'candidate') {
+      this.loadCandidateProfile(context.id);
+      return;
+    }
+
+    if (context.type === 'company') {
+      this.loadCompanyProfile(context.id);
+      return;
+    }
+
+    this.isLoading = false;
+    this.errorMessage = 'Type de profil inconnu.';
   }
 
-  // ─── MOCK DATA (à remplacer par des services API) ──────────────────────────
-  private loadMockData(): void {
-    // Changer 'candidate' en 'company' pour voir l'autre vue
-    this.user = {
-      id: 1,
-      email: 'jean.dupont@email.com',
-      user_type: 'company',
-      first_name: 'Jean',
-      last_name: 'Dupont',
-      created_at: '2024-09-15T10:00:00Z',
-    };
+  private loadCandidateProfile(userId: number): void {
+    this.authService.getCandidatebyId(userId).subscribe({
+      next: (profile: CandidateProfiles) => {
+        this.user = mapApiUser(profile.user, 'candidate');
+        this.candidateProfile = mapCandidateProfile(profile, userId);
 
-    if (this.user.user_type === 'candidate') {
-      this.candidateProfile = {
-        id: 1,
-        user_id: 1,
-        title: 'Développeur Full-Stack',
-        location: 'Paris, France',
-        target_location: ['Paris', 'Lyon', 'Remote'],
-        bio: 'Passionné par le développement web, je cherche une opportunité dans une startup innovante.',
-      };
+        this.activeCV = null;
+        this.cvCategories = [];
+        this.loadCandidateCv(userId);
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+        this.errorMessage = 'Impossible de charger le profil candidat.';
+      },
+    });
+  }
 
-      this.activeCV = {
-        id: 1,
-        candidate_id: 1,
-        file_url: 'cv_jean_dupont_2024.pdf',
-        is_active: true,
-        created_at: '2024-11-01T09:30:00Z',
-      };
+  private loadCompanyProfile(userId: number): void {
+    this.authService.getCompanybyId(userId).subscribe({
+      next: (profile: CompanyProfiles) => {
+        this.user = mapApiUser(profile.user, 'company');
+        this.companyProfile = mapCompanyProfile(profile, userId);
 
-      this.cvCategories = [
-        { id: 1, cv_id: 1, category: { id: 1, name: 'Angular', type: 'skill' }, level: 'avancé', confidence: 0.92 },
-        { id: 2, cv_id: 1, category: { id: 2, name: 'TypeScript', type: 'skill' }, level: 'expert', confidence: 0.95 },
-        { id: 3, cv_id: 1, category: { id: 3, name: 'Node.js', type: 'skill' }, level: 'intermédiaire', confidence: 0.78 },
-        { id: 4, cv_id: 1, category: { id: 4, name: 'Travail en équipe', type: 'soft_skill' }, level: 'expert', confidence: 0.88 },
-        { id: 5, cv_id: 1, category: { id: 5, name: 'Développement Web', type: 'domain' }, level: 'avancé', confidence: 0.91 },
-      ];
+        this.jobOffers = [];
+        this.totalRatings = 0;
+            this.loadCompanyJobs(this.companyProfile.id);
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+        this.errorMessage = 'Impossible de charger le profil entreprise.';
+      },
+    });
+  }
 
-    } else {
-      this.companyProfile = {
-        id: 1,
-        user_id: 1,
-        company_name: 'TechVision SAS',
-        industry: 'Logiciels & Technologies',
-        location: 'Paris, France',
-        description: 'TechVision est une startup spécialisée dans l\'intelligence artificielle appliquée aux RH.',
-      };
+  private loadCandidateCv(userId: number): void {
+    this.authService.getCandidateCv(userId).subscribe({
+      next: (cv: any) => {
+        if (!cv) {
+          this.activeCV = null;
+          return;
+        }
+        this.activeCV = mapCv(cv);
+      },
+      error: () => {
+        this.activeCV = null;
+      },
+    });
+  }
 
-      this.jobOffers = [
-        { id: 1, company_id: 1, title: 'Développeur Full-Stack', location: 'Paris', contract_type: 'CDI',  is_active: true,  created_at: '2024-11-10T00:00:00Z' },
-        { id: 2, company_id: 1, title: 'UX Designer',            location: 'Remote', contract_type: 'CDD', is_active: true,  created_at: '2024-11-05T00:00:00Z' },
-        { id: 3, company_id: 1, title: 'Data Scientist',          location: 'Lyon',  contract_type: 'CDI', is_active: false, created_at: '2024-10-01T00:00:00Z' },
-      ];
+  private loadCompanyJobs(userId: number): void {
+    this.authService.getCompanyJobs(userId).subscribe({
+      next: (jobs: any[]) => {
+        this.jobOffers = mapJobOffers(jobs);
+        this.updateJobStats();
+      },
+      error: () => {
+        this.jobOffers = [];
+        this.updateJobStats();
+      },
+    });
+  }
 
-      this.totalRatings = 47;
-      this.updateJobStats();
+  private updateCandidateProfile(
+    profilePatch: Partial<CandidateProfiles>,
+    userPatch?: { firstName?: string; lastName?: string; email?: string }
+  ): void {
+    if (!this.user) return;
+
+    const password = window.prompt('Confirmez votre mot de passe pour enregistrer les modifications');
+    if (!password) {
+      this.toastr.warning('Modification annulée (mot de passe requis).', 'Attention');
+      return;
     }
+
+    const payload = buildCandidateUpdatePayload(
+      this.candidateProfile,
+      this.user,
+      password,
+      profilePatch,
+      userPatch
+    );
+
+    this.authService.updateCandidateProfile(this.candidateProfile.id, payload).subscribe({
+      next: () => {
+        this.toastr.success('Profil candidat mis à jour.', 'Succès');
+        this.loadCandidateProfile(this.user!.id);
+      },
+      error: () => {
+        this.toastr.error('Impossible de mettre à jour le profil candidat.', 'Erreur');
+      },
+    });
+  }
+
+  private updateCompanyProfile(
+    profilePatch: Partial<CompanyProfiles>,
+    userPatch?: { firstName?: string; lastName?: string; email?: string },
+    password?: string,
+    onSuccess?: () => void
+  ): void {
+    if (!this.user) return;
+    if (!password) {
+      this.toastr.warning('Modification annulée (mot de passe requis).', 'Attention');
+      return;
+    }
+
+    const payload = buildCompanyUpdatePayload(
+      this.companyProfile,
+      this.user,
+      password,
+      profilePatch,
+      userPatch
+    );
+
+    this.authService.updateCompanyProfile(this.companyProfile.id, payload).subscribe({
+      next: () => {
+        this.toastr.success('Profil entreprise mis à jour.', 'Succès');
+        onSuccess?.();
+        this.loadCompanyProfile(this.user!.id);
+      },
+      error: () => {
+        this.toastr.error('Impossible de mettre à jour le profil entreprise.', 'Erreur');
+      },
+    });
+  }
+
+  private updateJobStats(): void {
+    const stats = computeJobStats(this.jobOffers);
+    this.totalJobOffers = stats.total;
+    this.activeJobOffers = stats.active;
+  }
+
+  private getHttpErrorMessage(err: unknown, fallback: string): string {
+    if (!(err instanceof HttpErrorResponse)) {
+      return fallback;
+    }
+
+    if (err.status === 0) {
+      return `${fallback} (backend injoignable ou CORS).`;
+    }
+
+    if (typeof err.error === 'string' && err.error.trim()) {
+      return `${fallback} (${err.error})`;
+    }
+
+    if (err.error && typeof err.error === 'object' && 'message' in err.error) {
+      return `${fallback} (${String((err.error as { message?: unknown }).message ?? '')})`;
+    }
+
+    return `${fallback} (HTTP ${err.status})`;
   }
 }

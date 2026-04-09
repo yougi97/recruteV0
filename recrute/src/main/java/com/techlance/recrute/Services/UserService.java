@@ -80,6 +80,12 @@ public class UserService {
     }
 
     public CandidateProfiles updateCandidate(CandidateProfiles user, Long id) {
+        if (user.getUser() == null || user.getUser().getPassword() == null || user.getUser().getPassword().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    String.format("Mot de passe de confirmation requis")
+            );
+        }
         if(user.getUser().getEmail().contains("@") ==false) {
             throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -88,8 +94,8 @@ public class UserService {
         }
         CandidateProfiles oldCandidateProfiles = candidateProfilesRepository.getReferenceById(id);
         Users oldUsers = userRepository.getReferenceById(oldCandidateProfiles.getUser().getId());
+        validateCurrentPassword(user.getUser().getPassword(), oldUsers.getPassword());
         oldUsers.setEmail(user.getUser().getEmail());
-        oldUsers.setPassword(passwordEncoder.encode(user.getUser().getPassword()));
         oldUsers.setUserType(user.getUser().getUserType());
         oldUsers.setFirstName(user.getUser().getFirstName());
         oldUsers.setLastName(user.getUser().getLastName());
@@ -102,6 +108,12 @@ public class UserService {
     }
 
     public CompanyProfiles updateCompany(CompanyProfiles user, Long id) {
+        if (user.getUser() == null || user.getUser().getPassword() == null || user.getUser().getPassword().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    String.format("Mot de passe de confirmation requis")
+            );
+        }
         if(user.getUser().getEmail().contains("@") ==false) {
             throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -110,8 +122,8 @@ public class UserService {
         }
         CompanyProfiles oldCompanyProfiles = companyProfilesRepository.getReferenceById(id);
         Users oldUsers = userRepository.getReferenceById(oldCompanyProfiles.getUser().getId());
+        validateCurrentPassword(user.getUser().getPassword(), oldUsers.getPassword());
         oldUsers.setEmail(user.getUser().getEmail());
-        oldUsers.setPassword(passwordEncoder.encode(user.getUser().getPassword()));
         oldUsers.setUserType(user.getUser().getUserType());
         oldUsers.setFirstName(user.getUser().getFirstName());
         oldUsers.setLastName(user.getUser().getLastName());
@@ -158,5 +170,14 @@ public class UserService {
         
         return new LoginResponse(user.getId(), user.getEmail(), user.getUserType(), 
                                 user.getFirstName(), user.getLastName());
+    }
+
+    private void validateCurrentPassword(String providedPassword, String storedPasswordHash) {
+        if (!passwordEncoder.matches(providedPassword, storedPasswordHash)) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Mot de passe de confirmation invalide"
+            );
+        }
     }
 }

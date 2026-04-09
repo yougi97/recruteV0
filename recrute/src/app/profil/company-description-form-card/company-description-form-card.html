@@ -1,0 +1,19 @@
+<div class="description-form-card">
+  <div class="header-row">
+    <h3>Modifier la description</h3>
+    <button type="button" class="close-btn" (click)="onCancel()">✕</button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+    <label>Description entreprise</label>
+    <textarea rows="5" formControlName="description" placeholder="Décrivez votre entreprise"></textarea>
+
+    <label>Mot de passe (confirmation)</label>
+    <input type="password" formControlName="password" placeholder="••••••••" />
+
+    <div class="actions">
+      <button type="button" class="btn-secondary" (click)="onCancel()">Annuler</button>
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">Enregistrer</button>
+    </div>
+  </form>
+</div>

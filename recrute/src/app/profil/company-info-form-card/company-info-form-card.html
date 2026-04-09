@@ -1,0 +1,28 @@
+<div class="company-form-card">
+  <div class="header-row">
+    <h3>Modifier la fiche entreprise</h3>
+    <button type="button" class="close-btn" (click)="onCancel()">✕</button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+    <label>Entreprise</label>
+    <input type="text" formControlName="companyName" placeholder="Nom entreprise" />
+
+    <label>Secteur</label>
+    <input type="text" formControlName="industry" placeholder="Secteur" />
+
+    <label>Localisation</label>
+    <input type="text" formControlName="location" placeholder="Ville, pays" />
+
+    <label>Email</label>
+    <input type="email" formControlName="email" placeholder="contact@entreprise.com" />
+
+    <label>Mot de passe (confirmation)</label>
+    <input type="password" formControlName="password" placeholder="••••••••" />
+
+    <div class="actions">
+      <button type="button" class="btn-secondary" (click)="onCancel()">Annuler</button>
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">Enregistrer</button>
+    </div>
+  </form>
+</div>

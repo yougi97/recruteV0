@@ -47,6 +47,17 @@ public class JobOfferService {
                         String.format("Offre non trouver"))
     );}
 
+    public JobOffers getCompanyJobOffer(Long companyId, Long jobId) {
+        JobOffers jobOffer = getJobOffer(jobId);
+        if (jobOffer.getCompanyProfiles() == null || !jobOffer.getCompanyProfiles().getId().equals(companyId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    String.format("Offre non trouver pour cette entreprise")
+            );
+        }
+        return jobOffer;
+    }
+
     public JobOffers updateJobOffers(Long id, JobOffers job) {
         JobOffers oldjob=getJobOffer(id);
 
@@ -75,8 +86,14 @@ public class JobOfferService {
         }
 
         if (job.getAnneesExperienceMin()!=0.0) {
-            oldjob.getAnneesExperienceMin();
+            oldjob.setAnneesExperienceMin(job.getAnneesExperienceMin());
         }
+
+        if (job.getLocation() != null) {
+            oldjob.setLocation(job.getLocation());
+        }
+
+        oldjob.setIsActive(job.isIsActive());
 
         if(job.getNiveauEtudesMin()!=null) {
             oldjob.setNiveauEtudesMin(job.getNiveauEtudesMin());
@@ -85,5 +102,30 @@ public class JobOfferService {
         return jobOfferRepository.save(oldjob);
 
 
+    }
+
+    public JobOffers updateCompanyJobOffer(Long companyId, Long jobId, JobOffers job) {
+        JobOffers oldJob = getCompanyJobOffer(companyId, jobId);
+
+        if (job.getTitle() != null) {
+            oldJob.setTitle(job.getTitle());
+        }
+        if (job.getDescription() != null) {
+            oldJob.setDescription(job.getDescription());
+        }
+        if (job.getLocation() != null) {
+            oldJob.setLocation(job.getLocation());
+        }
+        if (job.getContractType() != null) {
+            oldJob.setContractType(job.getContractType());
+        }
+
+        return jobOfferRepository.save(oldJob);
+    }
+
+    public JobOffers updateCompanyJobOfferStatus(Long companyId, Long jobId, boolean active) {
+        JobOffers oldJob = getCompanyJobOffer(companyId, jobId);
+        oldJob.setIsActive(active);
+        return jobOfferRepository.save(oldJob);
     }
 }

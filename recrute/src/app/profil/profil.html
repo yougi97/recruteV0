@@ -1,8 +1,16 @@
 <!-- profile.html -->
 <div class="profile-page">
 
+  <div class="card" *ngIf="isLoading">
+    <p class="bio-placeholder">Chargement du profil...</p>
+  </div>
+
+  <div class="card" *ngIf="!isLoading && errorMessage">
+    <p class="bio-placeholder">{{ errorMessage }}</p>
+  </div>
+
   <!-- ══════════════ PROFIL CANDIDAT ══════════════ -->
-  <ng-container *ngIf="user.user_type === 'candidate'">
+  <ng-container *ngIf="!isLoading && !errorMessage && user?.user_type === 'candidate'">
 
     <!-- HERO BANNER -->
     <div class="profile-hero candidate-hero">
@@ -16,14 +24,14 @@
           <button class="avatar-edit-btn" title="Modifier la photo">✎</button>
         </div>
         <div class="hero-info">
-          <h1 class="hero-name">{{ user.first_name }} {{ user.last_name }}</h1>
+          <h1 class="hero-name">{{ user?.first_name }} {{ user?.last_name }}</h1>
           <p class="hero-title">{{ candidateProfile.title || 'Titre non renseigné' }}</p>
           <div class="hero-meta">
             <span class="meta-chip" *ngIf="candidateProfile.location">
               <i>📍</i> {{ candidateProfile.location }}
             </span>
             <span class="meta-chip member-since">
-              <i>🗓</i> Membre depuis {{ user.created_at | date:'MMMM yyyy' }}
+              <i>🗓</i> Membre depuis {{ user?.created_at | date:'MMMM yyyy' }}
             </span>
           </div>
         </div>
@@ -121,15 +129,15 @@
           <div class="info-grid">
             <div class="info-item">
               <label>Prénom</label>
-              <span>{{ user.first_name }}</span>
+              <span>{{ user?.first_name }}</span>
             </div>
             <div class="info-item">
               <label>Nom</label>
-              <span>{{ user.last_name }}</span>
+              <span>{{ user?.last_name }}</span>
             </div>
             <div class="info-item">
               <label>Email</label>
-              <span>{{ user.email }}</span>
+              <span>{{ user?.email }}</span>
             </div>
             <div class="info-item">
               <label>Localisation</label>
@@ -148,7 +156,7 @@
 
 
   <!-- ══════════════ PROFIL ENTREPRISE ══════════════ -->
-  <ng-container *ngIf="user.user_type === 'company'">
+  <ng-container *ngIf="!isLoading && !errorMessage && user?.user_type === 'company'">
 
     <!-- HERO BANNER -->
     <div class="profile-hero company-hero">
@@ -210,6 +218,19 @@
             <h2>Fiche entreprise</h2>
             <button class="edit-btn" (click)="editCompanyInfo()">✎</button>
           </div>
+
+          <app-company-info-form-card
+            *ngIf="showCompanyInfoFormCard"
+            [initialValue]="{
+              companyName: companyProfile.company_name,
+              industry: companyProfile.industry || '',
+              location: companyProfile.location || '',
+              email: user?.email || ''
+            }"
+            (cancel)="cancelCompanyInfoEdit()"
+            (save)="saveCompanyInfoEdit($event)">
+          </app-company-info-form-card>
+
           <div class="info-grid">
             <div class="info-item full-width">
               <label>Entreprise</label>
@@ -225,7 +246,7 @@
             </div>
             <div class="info-item full-width">
               <label>Email</label>
-              <span>{{ user.email }}</span>
+              <span>{{ user?.email }}</span>
             </div>
           </div>
         </div>
@@ -242,6 +263,14 @@
             <h2>Description de l'entreprise</h2>
             <button class="edit-btn" (click)="editDescription()">✎ Modifier</button>
           </div>
+
+          <app-company-description-form-card
+            *ngIf="showCompanyDescriptionFormCard"
+            [initialDescription]="companyProfile.description || ''"
+            (cancel)="cancelCompanyDescriptionEdit()"
+            (save)="saveCompanyDescriptionEdit($event)">
+          </app-company-description-form-card>
+
           <p class="bio-text" *ngIf="companyProfile.description">{{ companyProfile.description }}</p>
           <p class="bio-placeholder" *ngIf="!companyProfile.description">Décrivez votre entreprise, votre culture et vos valeurs...</p>
         </div>
@@ -253,6 +282,15 @@
             <h2>Offres d'emploi</h2>
             <button class="btn-primary btn-sm" (click)="createJobOffer()">+ Nouvelle offre</button>
           </div>
+
+          <app-job-offer-form-card
+            *ngIf="showJobOfferFormCard"
+            [mode]="jobOfferFormMode"
+            [initialValue]="jobOfferFormInitialValue"
+            (cancel)="cancelCreateJobOffer()"
+            (submitOffer)="submitCreateJobOffer($event)">
+          </app-job-offer-form-card>
+
           <div class="job-list" *ngIf="jobOffers.length">
             <div class="job-item" *ngFor="let job of jobOffers">
               <div class="job-info">
@@ -267,7 +305,9 @@
                   {{ job.is_active ? '● Active' : '○ Inactive' }}
                 </span>
                 <button class="btn-ghost btn-sm" (click)="editJob(job)">✎</button>
-                <button class="btn-danger btn-sm" (click)="deleteJob(job)">✕</button>
+                <button class="btn-danger btn-sm" (click)="deleteJob(job)">
+                  {{ job.is_active ? 'Désactiver' : 'Activer' }}
+                </button>
               </div>
             </div>
           </div>

@@ -16,6 +16,42 @@ export class AuthService {
     return this.httpClient.get<CandidateProfiles>(`${this.url}/users/candidate/${id}`);
   }
 
+  getCompanybyId(id: number): Observable<CompanyProfiles> {
+    return this.httpClient.get<CompanyProfiles>(`${this.url}/users/company/${id}`);
+  }
+
+  updateCandidateProfile(id: number, candidate: CandidateProfiles): Observable<CandidateProfiles> {
+    return this.httpClient.put<CandidateProfiles>(`${this.url}/users/candidate/${id}`, candidate);
+  }
+
+  updateCompanyProfile(id: number, company: CompanyProfiles): Observable<CompanyProfiles> {
+    return this.httpClient.put<CompanyProfiles>(`${this.url}/users/company/${id}`, company);
+  }
+
+  getCandidateCv(candidateId: number): Observable<any> {
+    return this.httpClient.get<any>(`${this.url}/users/candidate/${candidateId}/cv`);
+  }
+
+  createCandidateCv(candidateId: number, cv: any): Observable<any> {
+    return this.httpClient.post<any>(`${this.url}/users/candidate/${candidateId}`, cv);
+  }
+
+  getCompanyJobs(companyId: number): Observable<any[]> {
+    return this.httpClient.get<any[]>(`${this.url}/users/company/${companyId}/jobs`);
+  }
+
+  createCompanyJob(companyId: number, job: any): Observable<any> {
+    return this.httpClient.post<any>(`${this.url}/users/company/${companyId}/jobs`, job);
+  }
+
+  updateCompanyJob(companyId: number, jobId: number, job: any): Observable<any> {
+    return this.httpClient.put<any>(`${this.url}/users/company/${companyId}/jobs/${jobId}`, job);
+  }
+
+  updateCompanyJobStatus(companyId: number, jobId: number, isActive: boolean): Observable<any> {
+    return this.httpClient.patch<any>(`${this.url}/users/company/${companyId}/jobs/${jobId}/status`, { isActive });
+  }
+
   createCandidate(candidate: CandidateProfiles): Observable<CandidateProfiles> {
     return this.httpClient.post<CandidateProfiles>(`${this.url}/users/candidate`, candidate);
   }
