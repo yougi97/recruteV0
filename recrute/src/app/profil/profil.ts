@@ -1,6 +1,7 @@
 // profile.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { DevAuth } from '../services/dev-auth';
 
 // ─── INTERFACES (alignées sur le schéma BDD) ──────────────────────────────────
 
@@ -76,16 +77,18 @@ export interface JobOffer {
 })
 export class Profile implements OnInit {
 
+  constructor(private devAuth: DevAuth) {}
+
   // ── Données utilisateur ─────────────────────────────────────────────────────
   user!: User;
 
   // ── Candidat ────────────────────────────────────────────────────────────────
-  candidateProfile!: CandidateProfile;
+  candidateProfile: CandidateProfile | null = null;
   activeCV: CV | null = null;
   cvCategories: CvCategory[] = [];
 
   // ── Entreprise ──────────────────────────────────────────────────────────────
-  companyProfile!: CompanyProfile;
+  companyProfile: CompanyProfile | null = null;
   jobOffers: JobOffer[] = [];
   totalJobOffers = 0;
   activeJobOffers = 0;
@@ -109,8 +112,64 @@ export class Profile implements OnInit {
 
   // ─── CYCLE DE VIE ──────────────────────────────────────────────────────────
   ngOnInit(): void {
-    // TODO : remplacer par un appel à ton AuthService / ProfileService
-    this.loadMockData();
+    // Si un utilisateur de démo a été sélectionné via DevAuth, l'utiliser
+    const devUser = this.devAuth?.getCurrentUser?.();
+    if (devUser) {
+      // mappe le MockUser vers User
+      this.user = {
+        id: devUser.id,
+        email: devUser.email,
+        user_type: devUser.user_type,
+        first_name: devUser.first_name,
+        last_name: devUser.last_name,
+        created_at: devUser.created_at,
+      };
+
+      // Remplir les données affichées selon le type
+      if (this.user.user_type === 'candidate') {
+        this.candidateProfile = {
+          id: 1,
+          user_id: this.user.id,
+          title: 'Développeur Full-Stack (demo)',
+          location: 'Paris, France',
+          target_location: ['Paris', 'Remote'],
+          bio: 'Profil de démonstration pour le candidat.',
+        };
+
+        this.activeCV = {
+          id: 1,
+          candidate_id: this.user.id,
+          file_url: 'cv_demo.pdf',
+          is_active: true,
+          created_at: new Date().toISOString(),
+        };
+
+        this.cvCategories = [
+          { id: 1, cv_id: 1, category: { id: 1, name: 'Angular', type: 'skill' }, level: 'avancé', confidence: 0.9 },
+          { id: 2, cv_id: 1, category: { id: 2, name: 'TypeScript', type: 'skill' }, level: 'expert', confidence: 0.95 },
+        ];
+      } else {
+        this.companyProfile = {
+          id: 1,
+          user_id: this.user.id,
+          company_name: 'Entreprise Demo',
+          industry: 'Technologie',
+          location: 'Paris, France',
+          description: 'Fiche entreprise (démonstration).',
+        };
+
+        this.jobOffers = [
+          { id: 1, company_id: 1, title: 'Développeur Front', location: 'Remote', contract_type: 'CDI', is_active: true, created_at: new Date().toISOString() },
+        ];
+
+        this.totalRatings = 0;
+        this.updateJobStats();
+      }
+
+    } else {
+      // Aucun utilisateur de démo sélectionné : charger les données de démonstration
+      this.loadMockData();
+    }
   }
 
   // ─── ACTIONS CANDIDAT ──────────────────────────────────────────────────────
@@ -182,10 +241,10 @@ export class Profile implements OnInit {
     this.totalJobOffers  = this.jobOffers.length;
     this.activeJobOffers = this.jobOffers.filter(j => j.is_active).length;
   }
-
+  
   // ─── MOCK DATA (à remplacer par des services API) ──────────────────────────
   private loadMockData(): void {
-    // Changer 'candidate' en 'company' pour voir l'autre vue
+    // Données de démonstration (identiques à l'ancien bloc supprimé)
     this.user = {
       id: 1,
       email: 'jean.dupont@email.com',
@@ -241,4 +300,5 @@ export class Profile implements OnInit {
       this.updateJobStats();
     }
   }
+  
 }

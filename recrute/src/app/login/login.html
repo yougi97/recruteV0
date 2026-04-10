@@ -7,16 +7,18 @@
 
     
 
-    <form>
+    <form (ngSubmit)="submit()" #f="ngForm">
       <label>Email professionnel</label>
-      <input type="email" placeholder="contact@entreprise.fr" />
+      <input name="email" [(ngModel)]="email" type="email" placeholder="contact@entreprise.fr" required />
 
       <label>Mot de passe</label>
-      <input type="password" placeholder="••••••••" />
+      <input name="password" [(ngModel)]="password" type="password" placeholder="••••••••" required />
 
       <div class="forgot">
         <a href="#">Mot de passe oublié ?</a>
       </div>
+
+      <div class="form-error" *ngIf="error">{{ error }}</div>
 
       <button class="login-btn" type="submit">
         Se connecter →

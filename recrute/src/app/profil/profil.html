@@ -10,20 +10,20 @@
       <div class="hero-content">
         <div class="avatar-wrapper">
           <div class="avatar">
-            <span *ngIf="!candidateProfile.photo_url">{{ initials }}</span>
-            <img *ngIf="candidateProfile.photo_url" [src]="candidateProfile.photo_url" alt="Photo de profil" />
+            <span *ngIf="!candidateProfile?.photo_url">{{ initials }}</span>
+            <img *ngIf="candidateProfile?.photo_url" [src]="candidateProfile?.photo_url" alt="Photo de profil" />
           </div>
           <button class="avatar-edit-btn" title="Modifier la photo">✎</button>
         </div>
         <div class="hero-info">
           <h1 class="hero-name">{{ user.first_name }} {{ user.last_name }}</h1>
-          <p class="hero-title">{{ candidateProfile.title || 'Titre non renseigné' }}</p>
+          <p class="hero-title">{{ candidateProfile?.title || 'Titre non renseigné' }}</p>
           <div class="hero-meta">
-            <span class="meta-chip" *ngIf="candidateProfile.location">
-              <i>📍</i> {{ candidateProfile.location }}
+            <span class="meta-chip" *ngIf="candidateProfile?.location">
+              <i>📍</i> {{ candidateProfile?.location }}
             </span>
             <span class="meta-chip member-since">
-              <i>🗓</i> Membre depuis {{ user.created_at | date:'MMMM yyyy' }}
+              <i>🗓</i> Membre depuis {{ user.created_at | date:'MMMM yyyy':'' :'fr' }}
             </span>
           </div>
         </div>
@@ -71,8 +71,8 @@
             <h2>Localisations cibles</h2>
           </div>
           <div class="target-locations">
-            <span class="location-tag" *ngFor="let loc of (candidateProfile.target_location || [])">{{ loc }}</span>
-            <span class="location-tag empty" *ngIf="!candidateProfile.target_location?.length">Non renseigné</span>
+            <span class="location-tag" *ngFor="let loc of (candidateProfile?.target_location || [])">{{ loc }}</span>
+            <span class="location-tag empty" *ngIf="!candidateProfile?.target_location?.length">Non renseigné</span>
           </div>
           <button class="btn-ghost" (click)="editTargetLocations()">+ Modifier</button>
         </div>
@@ -89,8 +89,8 @@
             <h2>À propos</h2>
             <button class="edit-btn" (click)="editBio()">✎ Modifier</button>
           </div>
-          <p class="bio-text" *ngIf="candidateProfile.bio">{{ candidateProfile.bio }}</p>
-          <p class="bio-placeholder" *ngIf="!candidateProfile.bio">Ajoutez une courte présentation de vous-même...</p>
+          <p class="bio-text" *ngIf="candidateProfile?.bio">{{ candidateProfile?.bio }}</p>
+          <p class="bio-placeholder" *ngIf="!candidateProfile?.bio">Ajoutez une courte présentation de vous-même...</p>
         </div>
 
         <!-- COMPÉTENCES IA -->
@@ -133,11 +133,11 @@
             </div>
             <div class="info-item">
               <label>Localisation</label>
-              <span>{{ candidateProfile.location || '—' }}</span>
+              <span>{{ candidateProfile?.location || '—' }}</span>
             </div>
             <div class="info-item full-width">
               <label>Poste recherché</label>
-              <span>{{ candidateProfile.title || '—' }}</span>
+              <span>{{ candidateProfile?.title || '—' }}</span>
             </div>
           </div>
         </div>
@@ -161,11 +161,11 @@
           <button class="avatar-edit-btn" title="Modifier le logo">✎</button>
         </div>
         <div class="hero-info">
-          <h1 class="hero-name">{{ companyProfile.company_name }}</h1>
-          <p class="hero-title">{{ companyProfile.industry || 'Secteur non renseigné' }}</p>
+          <h1 class="hero-name">{{ companyProfile?.company_name }}</h1>
+          <p class="hero-title">{{ companyProfile?.industry || 'Secteur non renseigné' }}</p>
           <div class="hero-meta">
-            <span class="meta-chip" *ngIf="companyProfile.location">
-              <i>📍</i> {{ companyProfile.location }}
+            <span class="meta-chip" *ngIf="companyProfile?.location">
+              <i>📍</i> {{ companyProfile?.location }}
             </span>
             <span class="meta-chip">
               <i>📋</i> {{ activeJobOffers }} offre(s) active(s)
@@ -213,15 +213,15 @@
           <div class="info-grid">
             <div class="info-item full-width">
               <label>Entreprise</label>
-              <span>{{ companyProfile.company_name }}</span>
+              <span>{{ companyProfile?.company_name }}</span>
             </div>
             <div class="info-item full-width">
               <label>Secteur</label>
-              <span>{{ companyProfile.industry || '—' }}</span>
+              <span>{{ companyProfile?.industry || '—' }}</span>
             </div>
             <div class="info-item full-width">
               <label>Localisation</label>
-              <span>{{ companyProfile.location || '—' }}</span>
+              <span>{{ companyProfile?.location || '—' }}</span>
             </div>
             <div class="info-item full-width">
               <label>Email</label>
@@ -242,8 +242,8 @@
             <h2>Description de l'entreprise</h2>
             <button class="edit-btn" (click)="editDescription()">✎ Modifier</button>
           </div>
-          <p class="bio-text" *ngIf="companyProfile.description">{{ companyProfile.description }}</p>
-          <p class="bio-placeholder" *ngIf="!companyProfile.description">Décrivez votre entreprise, votre culture et vos valeurs...</p>
+          <p class="bio-text" *ngIf="companyProfile?.description">{{ companyProfile?.description }}</p>
+          <p class="bio-placeholder" *ngIf="!companyProfile?.description">Décrivez votre entreprise, votre culture et vos valeurs...</p>
         </div>
 
         <!-- OFFRES D'EMPLOI -->

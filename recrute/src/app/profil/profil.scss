@@ -236,11 +236,11 @@ $shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
 
 // ─── UPLOAD BTN ───────────────────────────────────────────────────────────────
 .btn-upload {
-  display: flex;
+  /* make the label inline and center it in its container */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 12px;
+  padding: 10px 18px;
   border-radius: $radius-btn;
   background: linear-gradient(135deg, $blue-2, $blue-3);
   color: $white;
@@ -249,7 +249,11 @@ $shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: all 0.25s;
   border: none;
-  margin-top: 4px;
+  /* place near the left side of the card like before, but keep a small inset
+    so it's not glued to the card border */
+  margin: 12px 0 0 8px;
+  max-width: 260px;
+  width: auto;
 
   &:hover {
     filter: brightness(1.15);

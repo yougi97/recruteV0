@@ -1,13 +1,19 @@
 <nav class="navbar">
   <div class="nav-left">
-    <img src="/icon..png" class="logo" />
-    <span class="brand"routerLink="/home">RECRUTE</span>
+    <a class="brand-link" [routerLink]="homeRoute()">
+      <img src="/icon..png" class="logo" />
+      <span class="brand">RECRUTE</span>
+    </a>
   </div>
-
   <div class="nav-links">
     <a href="#">Contactez-nous</a>
     <a href="#">À Propos</a>
-    <button class="login-btn"routerLink="/login">Connexion</button>
+    <ng-container *ngIf="!isAuth">
+      <button class="login-btn" routerLink="/login">Connexion</button>
+    </ng-container>
+    <ng-container *ngIf="isAuth">
+      <button class="btn-link" [routerLink]="['/profile']">{{ displayName }}</button>
+      <button class="login-btn" (click)="logout()">Déconnexion</button>
+    </ng-container>
   </div>
 </nav>
-
