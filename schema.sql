@@ -53,10 +53,6 @@ CREATE TABLE cvs (
     FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE
 );
 
-ALTER TABLE cvs ADD COLUMN IF NOT EXISTS file_name VARCHAR(255) NULL;
-ALTER TABLE cvs ADD COLUMN IF NOT EXISTS content_type VARCHAR(100) NULL;
-ALTER TABLE cvs ADD COLUMN IF NOT EXISTS file_data LONGBLOB NULL;
-
 -- ─── OFFRES D'EMPLOI ──────────────────────────────────────────────────────────
 
 CREATE TABLE job_offers (

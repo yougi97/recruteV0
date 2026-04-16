@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -14,5 +14,5 @@ COPY . .
 # Expose port
 EXPOSE 4200
 
-# Run Angular dev server
-CMD ["npm", "start"]
+# Run Angular dev server accessible from host
+CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "4200"]
