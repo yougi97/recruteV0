@@ -158,3 +158,46 @@ CREATE TABLE company_candidate_ratings (
     FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
     FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
 );
+
+-- ─── CANDIDATURES (candidat postule à une offre) ──────────────────────────────
+
+CREATE TABLE applications (
+    id              INT PRIMARY KEY AUTO_INCREMENT,
+    candidate_id    INT NOT NULL,
+    job_offer_id    INT NOT NULL,
+    cv_id           INT NOT NULL,
+    status          ENUM('attente', 'encours', 'accepte', 'refuse') DEFAULT 'pending',
+    ai_score        FLOAT,
+    score_semantique FLOAT,
+    score_structure  FLOAT,
+    score_llm        FLOAT,
+    applied_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_application (candidate_id, job_offer_id),
+    FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
+    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
+);
+
+-- ─── DEMANDES ENTRANTES (entreprise contacte un candidat) ─────────────────────
+
+CREATE TABLE company_requests (
+    id              INT PRIMARY KEY AUTO_INCREMENT,
+    company_id      INT NOT NULL,
+    candidate_id    INT NOT NULL,
+    job_offer_id    INT NOT NULL,
+    cv_id           INT NOT NULL,
+    status          ENUM('attente', 'encours', 'accepte', 'refuse') DEFAULT 'pending',
+    message         TEXT,
+    ai_score        FLOAT,
+    score_semantique FLOAT,
+    score_structure  FLOAT,
+    score_llm        FLOAT,
+    requested_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_request (company_id, candidate_id, job_offer_id),
+    FOREIGN KEY (company_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
+    FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
+    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
+);
