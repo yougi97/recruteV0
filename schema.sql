@@ -129,11 +129,6 @@ CREATE TABLE candidate_job_ratings (
     job_offer_id    INT NOT NULL,
     cv_id           INT NOT NULL,
     rating          ENUM('up','down') NOT NULL,
-    ai_score        FLOAT,
-    -- AJOUT : détail des sous-scores pour le feedback loop IA
-    score_semantique    FLOAT,
-    score_structure     FLOAT,
-    score_llm           FLOAT,
     rated_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_candidate_rating (user_id, job_offer_id, cv_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -147,11 +142,6 @@ CREATE TABLE company_candidate_ratings (
     job_offer_id    INT NOT NULL,
     cv_id           INT NOT NULL,
     rating          ENUM('up','down') NOT NULL,
-    ai_score        FLOAT,
-    -- AJOUT : détail des sous-scores pour le feedback loop IA
-    score_semantique    FLOAT,
-    score_structure     FLOAT,
-    score_llm           FLOAT,
     rated_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_company_rating (company_id, job_offer_id, cv_id),
     FOREIGN KEY (company_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
@@ -167,16 +157,15 @@ CREATE TABLE applications (
     job_offer_id    INT NOT NULL,
     cv_id           INT NOT NULL,
     status          ENUM('attente', 'encours', 'accepte', 'refuse') DEFAULT 'pending',
-    ai_score        FLOAT,
-    score_semantique FLOAT,
-    score_structure  FLOAT,
-    score_llm        FLOAT,
+    message         TEXT,
+    ai_score_id     INT UNIQUE,
     applied_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_application (candidate_id, job_offer_id),
     FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE,
     FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
-    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
+    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE,
+    FOREIGN KEY (ai_score_id) REFERENCES ai_scores(id) ON DELETE SET NULL
 );
 
 -- ─── DEMANDES ENTRANTES (entreprise contacte un candidat) ─────────────────────
@@ -189,15 +178,31 @@ CREATE TABLE company_requests (
     cv_id           INT NOT NULL,
     status          ENUM('attente', 'encours', 'accepte', 'refuse') DEFAULT 'pending',
     message         TEXT,
-    ai_score        FLOAT,
-    score_semantique FLOAT,
-    score_structure  FLOAT,
-    score_llm        FLOAT,
+    ai_score_id     INT UNIQUE,
     requested_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_request (company_id, candidate_id, job_offer_id),
     FOREIGN KEY (company_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
     FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
+    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE,
+    FOREIGN KEY (ai_score_id) REFERENCES ai_scores(id) ON DELETE SET NULL
+);
+
+-- ─── SCORES IA ────────────────────────────────────────────────────────────────
+
+CREATE TABLE ai_scores (
+    id                  INT PRIMARY KEY AUTO_INCREMENT,
+    evaluator_type      ENUM('candidate', 'company') NOT NULL,
+    evaluator_id        INT NOT NULL,
+    job_offer_id        INT NOT NULL,
+    cv_id               INT NOT NULL,
+    ai_score            FLOAT,
+    score_semantique    FLOAT,
+    score_structure     FLOAT,
+    score_llm           FLOAT,
+    scored_at           DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_ai_score (evaluator_type, evaluator_id, job_offer_id, cv_id),
     FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
     FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
 );
