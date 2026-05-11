@@ -1,0 +1,33 @@
+<div class="filters-bar">
+  <div class="filter-group">
+    <span class="filter-label">Contrat</span>
+    <button
+      *ngFor="let type of contractTypes"
+      class="filter-btn"
+      [class.on]="filters.contractType === type"
+      (click)="setContract(type)"
+    >{{ type }}</button>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Lieu</span>
+    <button
+      *ngFor="let mode of workModes"
+      class="filter-btn"
+      [class.on]="filters.workMode === mode"
+      (click)="setWorkMode(mode)"
+    >{{ mode }}</button>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Match minimum</span>
+    <button
+      *ngFor="let t of matchThresholds"
+      class="filter-btn"
+      [class.on]="filters.minMatch === t.value"
+      (click)="setMinMatch(t.value)"
+    >{{ t.label }}</button>
+  </div>
+
+  <button class="reset-btn" (click)="reset()">✕ Réinitialiser</button>
+</div>

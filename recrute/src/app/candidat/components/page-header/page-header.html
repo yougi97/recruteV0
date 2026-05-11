@@ -1,0 +1,19 @@
+<div class="page-header">
+  <div class="eyebrow">
+    <span>✦</span> Intelligence Artificielle
+  </div>
+  <h1>Vos opportunités<br><span class="highlight">sélectionnées pour vous</span></h1>
+  <p>
+    Notre IA a analysé votre profil et présélectionné les offres avec le
+    meilleur potentiel de correspondance. Indiquez votre intérêt pour que
+    nous alertions l'entreprise.
+  </p>
+
+  <div class="header-meta">
+    <div class="meta-chip">🎯 {{ totalCount }} offres correspondantes</div>
+    <div class="meta-chip" *ngIf="lastUpdated">🕒 {{ lastUpdated }}</div>
+    <div class="meta-chip" *ngIf="interestedCount > 0">
+      ✉ {{ interestedCount }} intérêt(s) envoyé(s)
+    </div>
+  </div>
+</div>
