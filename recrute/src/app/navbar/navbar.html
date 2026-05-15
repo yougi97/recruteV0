@@ -1,14 +1,14 @@
 <nav class="navbar">
   <div class="nav-left">
     <a class="brand-link" routerLink="/">
-      <img src="/icon.png" class="logo" />
+      <img src="/icon..png" class="logo" />
       <span class="brand">RECRUTE</span>
     </a>
   </div>
 
   <div class="nav-links">
     <a href="#">Contactez-nous</a>
-    <a href="#">À Propos</a>
+    <a routerLink="/about">À Propos</a>
 
     @if (!isLoggedIn()) {
       <button class="login-btn" routerLink="/login">Connexion</button>
