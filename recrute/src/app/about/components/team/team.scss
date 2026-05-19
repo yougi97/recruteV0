@@ -1,0 +1,105 @@
+$colors: (
+  blue:   (#38bdf8, rgba(56,  189, 248, 0.15)),
+  green:  (#34d399, rgba(52,  211, 153, 0.15)),
+  purple: (#a78bfa, rgba(139,  92, 246, 0.15)),
+  sky:    (#7dd3fc, rgba(125, 211, 252, 0.15)),
+  amber:  (#fbbf24, rgba(251, 191,  36, 0.15)),
+  coral:  (#fb923c, rgba(251, 146,  60, 0.15)),
+);
+
+.team-section {
+  padding: 20px 80px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) { padding: 20px 24px 60px; }
+}
+
+.section-header {
+  margin-bottom: 36px;
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #38bdf8;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    font-family: 'Syne', sans-serif;
+  }
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.member-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 22px 20px;
+  transition: transform 0.25s, border-color 0.25s;
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: 'Syne', sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  @each $name, $vals in $colors {
+    &.color-#{$name} {
+      color: nth($vals, 1);
+      background: nth($vals, 2);
+    }
+  }
+}
+
+.member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.member-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  font-family: 'Syne', sans-serif;
+}
+
+.member-role {
+  font-size: 13px;
+  color: #38bdf8;
+  font-weight: 500;
+}
+
+.member-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 4px;
+}

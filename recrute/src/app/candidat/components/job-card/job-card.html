@@ -1,0 +1,71 @@
+<div
+  class="job-card"
+  [class.match-high]="offer?.matchLevel === 'high'"
+  [class.match-mid]="offer?.matchLevel === 'mid'"
+  [class.match-low]="offer?.matchLevel === 'low'"
+  [class.is-dismissed]="offer?.status === 'dismissed'"
+>
+  <div class="card-top">
+    <div class="company-logo" [ngClass]="'color-' + offer?.companyColor">
+      {{ offer?.companyInitial }}
+    </div>
+    <div class="match-badge" [ngClass]="offer?.matchLevel">
+      {{ matchIcon }} {{ offer?.matchScore }}% match
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="job-title">{{ offer?.title }}</div>
+    <div class="company-name">{{ offer?.company }}</div>
+    <div class="job-location">
+      📍 {{ offer?.location }} · {{ offer?.contractType }} · {{ offer?.workMode }}
+    </div>
+  </div>
+
+  <div class="tags">
+    <span *ngFor="let tag of offer?.tags" class="tag" [class.accent]="tag.accent">
+      {{ tag.label }}
+    </span>
+  </div>
+
+  <div class="match-bar-wrap">
+    <div class="match-bar-label">
+      <span>Compatibilité profil</span>
+  <span>{{ offer?.matchScore }}%</span>
+    </div>
+    <div class="match-bar-track">
+      <div
+        class="match-bar-fill"
+        [ngClass]="offer?.matchLevel"
+        [style.width.%]="offer?.matchScore"
+      ></div>
+    </div>
+  </div>
+
+  <div class="ai-reason">
+    <strong>✦ Pourquoi l'IA vous suggère cette offre</strong>
+  {{ offer?.aiReason }}
+  </div>
+
+  <div class="card-actions">
+    <button
+      class="btn-interest btn-yes"
+  [class.sent]="offer?.status === 'interested'"
+  [disabled]="offer?.status !== 'pending'"
+      (click)="onInterest()"
+    >
+  <ng-container *ngIf="offer?.status !== 'interested'">✉ Je suis intéressé(e)</ng-container>
+  <ng-container *ngIf="offer?.status === 'interested'">✓ Intérêt envoyé</ng-container>
+    </button>
+
+    <button
+      class="btn-interest btn-no"
+  [class.dismissed]="offer?.status === 'dismissed'"
+  [disabled]="offer?.status !== 'pending'"
+      (click)="onDismiss()"
+    >
+  <ng-container *ngIf="offer?.status !== 'dismissed'">✕ Pas intéressé(e)</ng-container>
+  <ng-container *ngIf="offer?.status === 'dismissed'">✕ Ignoré</ng-container>
+    </button>
+  </div>
+</div>

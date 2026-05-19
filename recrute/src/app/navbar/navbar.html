@@ -1,19 +1,25 @@
 <nav class="navbar">
   <div class="nav-left">
-    <img src="/icon..png" class="logo" />
-    <span class="brand" routerLink="/home">RECRUTE</span>
+    <a class="brand-link" routerLink="/">
+      <img src="/icon..png" class="logo" />
+      <span class="brand">RECRUTE</span>
+    </a>
   </div>
 
   <div class="nav-links">
     <a href="#">Contactez-nous</a>
-    <a href="#">À Propos</a>
-    
+    <a routerLink="/about">À Propos</a>
+
     @if (!isLoggedIn()) {
-      <button class="home-btn" routerLink="/">Home</button>
       <button class="login-btn" routerLink="/login">Connexion</button>
     } @else {
       <div class="user-section">
-        <button class="home-btn" routerLink="/">Home</button>
+        <button class="nav-pill" routerLink="/candidat">
+          <span class="dot"></span> Mes suggestions IA
+        </button>
+        <button class="nav-pill secondary" routerLink="/offres">
+          🔍 Toutes les offres
+        </button>
         <button class="profile-btn" routerLink="/profil">Profil</button>
         <span class="user-email">{{ getCurrentUser() }}</span>
         <button class="logout-btn" (click)="logout()">Déconnexion</button>
@@ -21,4 +27,3 @@
     }
   </div>
 </nav>
-
