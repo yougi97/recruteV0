@@ -58,8 +58,11 @@
                 <p class="cv-date">Ajouté le {{ activeCV.created_at | date:'dd/MM/yyyy' : "fr" }}</p>
               </div>
             </div>
-            <div class="cv-actions">
+          <div class="cv-actions">
               <button class="btn-outline btn-sm" (click)="downloadCV()">⬇ Télécharger</button>
+              <button class="btn-primary btn-sm" (click)="computeCv()" [disabled]="isComputingCv">
+                {{ isComputingCv ? '⏳ Analyse...' : '🤖 Analyser' }}
+              </button>
               <button class="btn-danger btn-sm" (click)="deleteCV()">✕ Supprimer</button>
             </div>
           </div>
@@ -129,12 +132,14 @@
           <div class="card-header">
             <span class="card-icon">🤖</span>
             <h2>Compétences détectées par l'IA</h2>
-            <span class="badge-ai">IA</span>
+            <span class="badge-ai" [class.badge-heuristic]="activeCV?.parsed_json?.parsing_source === 'heuristic'">
+              {{ activeCV?.parsed_json?.parsing_source === 'heuristic' ? 'Heuristique' : 'IA' }}
+            </span>
           </div>
           <div class="skills-grid" *ngIf="cvCategories.length">
-            <div class="skill-chip" *ngFor="let cat of cvCategories" [class]="'level-' + cat.level">
+            <div class="skill-chip" *ngFor="let cat of cvCategories" [ngClass]="'level-' + skillLevelClass(cat.level)">
               <span class="skill-name">{{ cat.category.name }}</span>
-              <span class="skill-level">{{ cat.level }}</span>
+              <span class="skill-level">{{ skillLevelLabel(cat.level) }}</span>
             </div>
           </div>
           <p class="bio-placeholder" *ngIf="!cvCategories.length">

@@ -233,6 +233,7 @@ $shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
 .cv-date { font-size: 12px; color: $white-40; margin: 0; }
 .cv-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .cv-actions .btn-outline,
+.cv-actions .btn-primary,
 .cv-actions .btn-danger,
 .btn-upload,
 .btn-ghost,
@@ -288,6 +289,12 @@ $shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
   margin-left: auto;
 }
 
+.badge-ai.badge-heuristic {
+  background: rgba($white-10, 0.12);
+  color: $white-80;
+  border: 1px solid rgba($white-15, 0.24);
+}
+
 .skills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 
 .skill-chip {
@@ -302,15 +309,29 @@ $shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
   color: $white-80;
   transition: all 0.2s;
 
-  &.level-expert        { border-color: rgba($accent, 0.6); }
-  &.level-avancé        { border-color: rgba(#22d3ee, 0.5); }
-  &.level-intermédiaire { border-color: $white-20; }
-  &.level-débutant      { border-color: $white-15; }
+  &.level-expert        { border-color: rgba($accent, 0.6); background: rgba($accent, 0.12); }
+  &.level-avance        { border-color: rgba(#22d3ee, 0.55); background: rgba(#22d3ee, 0.10); }
+  &.level-intermediaire { border-color: $white-20; background: rgba($white, 0.08); }
+  &.level-debutant      { border-color: $white-15; background: rgba($white, 0.05); }
   &:hover { background: $white-15; }
 }
 
-.skill-name { font-weight: 600; }
-.skill-level { font-size: 10px; color: $accent; text-transform: uppercase; letter-spacing: 0.5px; }
+.skill-name { font-weight: 700; color: $white; }
+.skill-level {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: $white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba($white, 0.14);
+}
+
+.level-expert .skill-level { background: rgba($accent, 0.28); }
+.level-avance .skill-level { background: rgba(#22d3ee, 0.25); }
+.level-intermediaire .skill-level { background: rgba($white, 0.14); }
+.level-debutant .skill-level { background: rgba($white, 0.10); }
 
 // ─── STATS ────────────────────────────────────────────────────────────────────
 .stats-list { display: flex; flex-direction: column; gap: 14px; }
@@ -374,7 +395,8 @@ $shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  &:hover { filter: brightness(1.15); transform: translateY(-1px); }
+  &:hover:not(:disabled) { filter: brightness(1.15); transform: translateY(-1px); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
 .btn-outline {

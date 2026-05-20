@@ -60,9 +60,9 @@ public class CategoriesService {
             newCategory.setType(categorie.getType());
             categoriesRepository.save(newCategory);
          }
-        
 
-        CvCategories newCvCategories = new CvCategories();
+        CvCategories existingCvCategories = cvCategoriesRepository.findByCvIdAndCategoryId(id, newCategory.getId());
+        CvCategories newCvCategories = existingCvCategories != null ? existingCvCategories : new CvCategories();
         newCvCategories.setCv(cv);
         newCvCategories.setCategory(newCategory);
         newCvCategories.setConfidence(categorie.getConfidence());

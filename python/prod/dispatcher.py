@@ -9,12 +9,16 @@ NIVEAU_SCORE = {"notions": 1, "intermediaire": 2, "avance": 3, "expert": 4}
 def _niveau_mysql(niveau_str: str) -> str:
     """Convertit nos enums vers les enums MySQL français."""
     return (niveau_str
-            .replace("notions", "débutant")
-            .replace("avance", "avancé")
-            .replace("intermediaire", "intermédiaire"))
+            .replace("notions", "debutant")
+            .replace("avance", "avance")
+            .replace("intermediaire", "intermediaire"))
 
 def sauvegarder_cv(cv: CVParse, cv_id: int):
     vecteur_b64 = base64.b64encode(encoder_vecteur(texte_candidat(cv))).decode()
+
+    cv_data = api.get_cv(cv_id)
+    candidate_profile = cv_data.get("candidateProfiles") or {}
+    candidate_user = candidate_profile.get("user") or {}
 
     # 1. Met à jour cvs via Spring
     api.update_cv_parsed(cv_id, {
@@ -24,8 +28,23 @@ def sauvegarder_cv(cv: CVParse, cv_id: int):
         "niveau_etudes":     cv.niveau_etudes.value,
     })
 
-    # 2. Met à jour candidate_profiles via Spring
-    # (Spring déduit le candidate_id depuis cv_id)
+    # 2. Met à jour candidate_profiles avec les champs extraits du CV
+    if candidate_profile.get("id"):
+        api.update_candidate_profile(candidate_profile["id"], {
+            "user": {
+                "id": candidate_user.get("id"),
+                "email": candidate_user.get("email"),
+                "userType": candidate_user.get("userType") or candidate_user.get("user_type"),
+                "firstName": candidate_user.get("firstName") or candidate_user.get("first_name"),
+                "lastName": candidate_user.get("lastName") or candidate_user.get("last_name"),
+            },
+            "title": candidate_profile.get("title"),
+            "location": candidate_profile.get("location"),
+            "targetLocation": candidate_profile.get("targetLocation") or candidate_profile.get("target_location") or [],
+            "bio": candidate_profile.get("bio"),
+            "anneesExperience": cv.annees_experience,
+            "niveauEtudes": cv.niveau_etudes.value,
+        })
 
     # 3. Upsert catégories
     categories = []

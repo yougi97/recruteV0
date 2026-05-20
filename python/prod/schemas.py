@@ -37,3 +37,4 @@ class CVParse(BaseModel):
     langues:                list[str]
     experiences:            list[Experience]
     resume_profil:          str
+    parsing_source:         Optional[str] = None

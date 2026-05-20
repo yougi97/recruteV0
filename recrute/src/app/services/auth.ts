@@ -11,6 +11,7 @@ import { CompanyProfiles } from '../model/companyProfiles';
 export class AuthService {
   private readonly httpClient = inject(HttpClient)
   private readonly url = "http://localhost:8080"
+  private readonly pythonUrl = "http://localhost:5001"
 
   getCandidatebyId(id: number): Observable<CandidateProfiles> {
     return this.httpClient.get<CandidateProfiles>(`${this.url}/users/candidate/${id}`);
@@ -40,6 +41,16 @@ export class AuthService {
 
   getCandidateCvDownloadUrl(candidateId: number): string {
     return `${this.url}/users/candidate/${candidateId}/cv/download`;
+  }
+
+  computeCandidateCv(cvId: number): Observable<any> {
+    const formData = new FormData();
+    formData.append('cv_id', cvId.toString());
+    return this.httpClient.post<any>(`${this.pythonUrl}/parse-cv`, formData);
+  }
+
+  getCvCategories(cvId: number): Observable<any[]> {
+    return this.httpClient.get<any[]>(`${this.url}/api/internal/cvs/${cvId}/categories`);
   }
 
   getCompanyJobs(companyId: number): Observable<any[]> {

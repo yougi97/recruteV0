@@ -1,7 +1,10 @@
+flask
+flask-cors
 faiss-cpu
 numpy
 pdfplumber
 pytesseract
 regex
 sentence-transformers
-google-genai
+google-generativeai
+python-dotenv

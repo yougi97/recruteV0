@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import tempfile, os
 
 from parsing_agent import parser_cv
@@ -9,6 +10,7 @@ from explanation_agent import expliquer
 import spring_client as api
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": ["http://localhost:4200", "http://localhost:8080"]}})
 
 @app.post("/parse-cv")
 def parse_cv_endpoint():
@@ -74,3 +76,7 @@ def match_endpoint():
         },
         "explication": explication,
     }), 200
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)

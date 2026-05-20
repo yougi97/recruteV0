@@ -97,6 +97,8 @@ public class UserService {
         oldCandidateProfiles.setLocation(user.getLocation());
         oldCandidateProfiles.setTargetLocation(user.getTargetLocation());
         oldCandidateProfiles.setBio(user.getBio());
+        oldCandidateProfiles.setAnneesExperience(user.getAnneesExperience());
+        oldCandidateProfiles.setNiveauEtudes(user.getNiveauEtudes());
         return candidateProfilesRepository.save(oldCandidateProfiles);
     }
 

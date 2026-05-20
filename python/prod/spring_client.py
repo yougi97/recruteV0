@@ -36,8 +36,15 @@ def update_cv_parsed(cv_id: int, payload: dict):
         parsed_json, embedding (base64), annees_experience, niveau_etudes
     }
     """
-    r = requests.put(
+    r = requests.patch(
         _url(f"/api/internal/cvs/{cv_id}/parsed"),
+        json=payload, headers=HEADERS
+    )
+    r.raise_for_status()
+
+def update_candidate_profile(candidate_profile_id: int, payload: dict):
+    r = requests.put(
+        _url(f"/users/candidate/{candidate_profile_id}"),
         json=payload, headers=HEADERS
     )
     r.raise_for_status()
@@ -72,7 +79,7 @@ def update_job_parsed(offre_id: int, payload: dict):
         niveau_etudes_min
     }
     """
-    r = requests.put(
+    r = requests.patch(
         _url(f"/api/internal/jobs/{offre_id}/parsed"),
         json=payload, headers=HEADERS
     )

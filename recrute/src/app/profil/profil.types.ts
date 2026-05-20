@@ -40,6 +40,10 @@ export interface CV {
   content_type?: string;
   is_active: boolean;
   created_at: string;
+  parsed_json?: {
+    parsing_source?: 'gemini' | 'heuristic' | string;
+    [key: string]: unknown;
+  };
 }
 
 export interface Category {
@@ -129,6 +133,16 @@ export function mapCompanyProfile(profile: CompanyProfiles, userId: number): Com
 }
 
 export function mapCv(cv: any): CV {
+  const parsedJson = typeof cv.parsedJson === 'string' && cv.parsedJson.trim().length
+    ? (() => {
+        try {
+          return JSON.parse(cv.parsedJson);
+        } catch {
+          return undefined;
+        }
+      })()
+    : cv.parsedJson ?? cv.parsed_json;
+
   return {
     id: Number(cv.id ?? 0),
     candidate_id: Number(cv.candidateProfiles?.id ?? 0),
@@ -137,6 +151,7 @@ export function mapCv(cv: any): CV {
     content_type: cv.contentType ?? cv.content_type ?? '',
     is_active: Boolean(cv.isActive),
     created_at: cv.createdAt ? new Date(cv.createdAt).toISOString() : new Date().toISOString(),
+    parsed_json: parsedJson,
   };
 }
 

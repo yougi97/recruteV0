@@ -74,6 +74,7 @@ export class Profile implements OnInit {
   showCandidateTargetLocationsFormCard = false;
   showCandidateCvUploadFormCard = false;
   selectedCandidateCvFile: File | null = null;
+  isComputingCv = false;
 
   constructor(
     private authService: AuthService,
@@ -94,6 +95,27 @@ export class Profile implements OnInit {
       .map(w => w[0])
       .join('')
       .toUpperCase() ?? '?';
+  }
+
+  skillLevelClass(level?: string): string {
+    const normalized = (level || 'intermediaire').toLowerCase();
+    if (normalized.includes('expert')) return 'expert';
+    if (normalized.includes('avance')) return 'avance';
+    if (normalized.includes('debut')) return 'debutant';
+    return 'intermediaire';
+  }
+
+  skillLevelLabel(level?: string): string {
+    switch (this.skillLevelClass(level)) {
+      case 'expert':
+        return 'Expert';
+      case 'avance':
+        return 'Avancé';
+      case 'debutant':
+        return 'Débutant';
+      default:
+        return 'Intermédiaire';
+    }
   }
 
   // ─── CYCLE DE VIE ──────────────────────────────────────────────────────────
@@ -151,6 +173,48 @@ export class Profile implements OnInit {
     if (!this.activeCV) return;
     this.toastr.info('Suppression CV non disponible côté API pour le moment.', 'Info');
     this.activeCV = null;
+  }
+
+  computeCv(): void {
+    if (!this.activeCV) {
+      this.toastr.warning('Aucun CV trouvé.', 'Attention');
+      return;
+    }
+
+    this.isComputingCv = true;
+    this.authService.computeCandidateCv(this.activeCV.id).subscribe({
+      next: (response: any) => {
+        this.toastr.success('CV analysé avec succès !', 'Succès');
+        // Fetch the categories after computing
+        this.loadCvCategories(this.activeCV!.id);
+        this.isComputingCv = false;
+      },
+      error: (err: unknown) => {
+        this.toastr.error(this.getHttpErrorMessage(err, 'Impossible d\'analyser le CV.'), 'Erreur');
+        this.isComputingCv = false;
+      },
+    });
+  }
+
+  private loadCvCategories(cvId: number): void {
+    this.authService.getCvCategories(cvId).subscribe({
+      next: (categories: any[]) => {
+        this.cvCategories = categories.map((cat: any) => ({
+          id: cat.id,
+          cv_id: cvId,
+          category: {
+            id: cat.category?.id,
+            name: cat.name || cat.category?.name || cat.category_name,
+            type: cat.category?.type || 'skill',
+          },
+          level: cat.level || 'intermediaire',
+          confidence: cat.confidence,
+        }));
+      },
+      error: () => {
+        this.toastr.warning('Impossible de charger les compétences détectées.', 'Info');
+      },
+    });
   }
 
   editBio(): void {
@@ -429,12 +493,16 @@ export class Profile implements OnInit {
       next: (cv: any) => {
         if (!cv) {
           this.activeCV = null;
+          this.cvCategories = [];
           return;
         }
         this.activeCV = mapCv(cv);
+        // Load categories for the CV
+        this.loadCvCategories(cv.id);
       },
       error: () => {
         this.activeCV = null;
+        this.cvCategories = [];
       },
     });
   }

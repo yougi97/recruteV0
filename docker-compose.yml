@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MySQL Database
   mysql:
@@ -50,6 +48,9 @@ services:
       - backend
     ports:
       - "4200:4200"
+    volumes:
+      - ./recrute:/app
+      - /app/node_modules
     networks:
       - recrute-network
 
@@ -60,9 +61,13 @@ services:
       dockerfile: Dockerfile
     container_name: recrutev0-python-ai
     working_dir: /app/python
+    environment:
+      SPRING_BASE_URL: http://backend:8080
     volumes:
       - ./python:/app/python
-    command: sleep infinity
+    command: sh -c "pip install google-generativeai python-dotenv && cd /app/python/prod && python -m flask --app api run --host=0.0.0.0 --port=5000"
+    ports:
+      - "5001:5000"
     networks:
       - recrute-network
 

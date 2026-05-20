@@ -14,5 +14,5 @@ COPY . .
 # Expose port
 EXPOSE 4200
 
-# Run Angular dev server accessible from host
-CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "4200"]
+# Run Angular dev server accessible from host with file polling for hot reload
+CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "4200", "--poll=2000"]
