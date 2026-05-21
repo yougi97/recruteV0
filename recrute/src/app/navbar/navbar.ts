@@ -11,7 +11,7 @@ import { AuthService } from '../services/auth';
   styleUrl: './navbar.scss',
 })
 export class Navbar {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(public authService: AuthService, private router: Router) {}
 
   isLoggedIn(): boolean {
     return this.authService.isLoggedIn();

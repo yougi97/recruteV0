@@ -1,0 +1,188 @@
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">
+    <div class="eyebrow-line"></div>
+    Intelligence Artificielle
+  </div>
+  <h1>Vos offres &amp; candidats correspondants</h1>
+  <p>Consultez vos offres actives et découvrez les candidats classés par compatibilité IA. Cliquez sur une offre pour voir les profils qui correspondent.</p>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-icon">📋</span>
+      <span class="hero-stat-val">{{ totalOffers }}</span>
+      <span class="hero-stat-label">offres publiées</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-icon">✅</span>
+      <span class="hero-stat-val">{{ activeOffers }}</span>
+      <span class="hero-stat-label">offres actives</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-icon">👥</span>
+      <span class="hero-stat-val">{{ mockCandidates.length }}</span>
+      <span class="hero-stat-label">candidatures reçues</span>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-bar">
+  <span class="filter-label">Filtrer :</span>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'all'" [class.filter-inactive]="activeFilter !== 'all'" (click)="setFilter('all')">Toutes</button>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'active'" [class.filter-inactive]="activeFilter !== 'active'" (click)="setFilter('active')">Actives</button>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'inactive'" [class.filter-inactive]="activeFilter !== 'inactive'" (click)="setFilter('inactive')">Inactives</button>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'cdi'" [class.filter-inactive]="activeFilter !== 'cdi'" (click)="setFilter('cdi')">CDI</button>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'stage'" [class.filter-inactive]="activeFilter !== 'stage'" (click)="setFilter('stage')">Stage / Alternance</button>
+</div>
+
+<!-- LOADING -->
+<div class="grid" *ngIf="loading">
+  <div class="empty-state" style="grid-column: 1 / -1;">
+    <div class="empty-icon">⏳</div>
+    <div class="empty-title">Chargement des offres...</div>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div class="grid" *ngIf="!loading && error">
+  <div class="empty-state" style="grid-column: 1 / -1;">
+    <div class="empty-icon">❌</div>
+    <div class="empty-title">{{ error }}</div>
+  </div>
+</div>
+
+<!-- OFFERS GRID -->
+<div class="grid" *ngIf="!loading && !error">
+
+  <!-- Empty -->
+  <div class="empty-state" style="grid-column: 1 / -1;" *ngIf="filteredOffers.length === 0">
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">Aucune offre dans cette catégorie</div>
+  </div>
+
+  <!-- Cards -->
+  <div class="offer-card"
+       *ngFor="let offer of filteredOffers"
+       [class.selected]="selectedOffer?.id === offer.id"
+       (click)="openPanel(offer)">
+
+    <div class="card-top">
+      <div class="card-icon" [style.background]="offer.is_active ? 'rgba(26,95,248,0.15)' : 'rgba(255,255,255,0.05)'" [style.color]="offer.is_active ? '#5b8ef8' : 'var(--text-muted)'">
+        {{ getCardInitials(offer.title) }}
+      </div>
+      <div class="card-badge" [class.badge-active]="offer.is_active" [class.badge-inactive]="!offer.is_active">
+        <div class="badge-dot"></div>
+        {{ offer.is_active ? 'Active' : 'Inactive' }}
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="card-title" [style.color]="offer.is_active ? 'var(--text-primary)' : 'var(--text-secondary)'">
+        {{ offer.title }}
+      </div>
+      <div class="card-company">{{ companyName }}</div>
+      <div class="card-meta">
+        <span>📍 {{ offer.location || 'Remote' }}</span>
+        <div class="meta-dot"></div>
+        <span>{{ offer.contract_type || 'CDI' }}</span>
+      </div>
+      <div class="card-stats">
+        <div class="stat-box">
+          <span class="stat-num cyan">{{ mockCandidates.length }}</span>
+          <span class="stat-label">Candidatures</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" style="color:var(--green);">
+            {{ highMatchCount }}
+          </span>
+          <span class="stat-label">Match ≥ 85%</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" style="color:var(--gold);">{{ getDaysOnline(offer.created_at) }}j</span>
+          <span class="stat-label">En ligne</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <button class="btn-primary-card"
+              [style.opacity]="offer.is_active ? '1' : '0.5'"
+              [style.cursor]="offer.is_active ? 'pointer' : 'default'"
+              (click)="$event.stopPropagation(); openPanel(offer)">
+        {{ offer.is_active ? 'Voir les candidats →' : 'Offre désactivée' }}
+      </button>
+      <button class="btn-ghost-card" (click)="$event.stopPropagation()">✎</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL OVERLAY -->
+<div class="panel-overlay" [class.open]="panelOpen" (click)="closePanel()">
+  <div class="panel" (click)="$event.stopPropagation()">
+
+    <div class="panel-header">
+      <div class="panel-title-row">
+        <div class="panel-title">{{ selectedOffer?.title }}</div>
+        <button class="panel-close" (click)="closePanel()">✕</button>
+      </div>
+      <div class="panel-subtitle">{{ mockCandidates.length }} candidatures · classées par compatibilité IA</div>
+    </div>
+
+    <div class="panel-body">
+
+      <!-- Banner premium -->
+      <div class="premium-banner">
+        <div class="premium-icon">🔒</div>
+        <div class="premium-text">
+          <h4>Accès limité — 5 profils gratuits</h4>
+          <p>Débloquez tous les candidats correspondants et recevez des alertes en temps réel.</p>
+        </div>
+        <button class="btn-premium">Passer Premium</button>
+      </div>
+
+      <!-- Candidate cards -->
+      <div class="cand-card" *ngFor="let c of mockCandidates; let i = index">
+        <div class="cand-top">
+          <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
+          <div class="cand-info">
+            <div class="cand-name">#{{ i + 1 }} {{ c.name }}</div>
+            <div class="cand-role">{{ c.role }}</div>
+            <div class="cand-meta">
+              <span>📍 {{ c.location }}</span>
+              <span>·</span>
+              <span>Dispo : {{ c.dispo }}</span>
+            </div>
+          </div>
+          <div class="match-badge" [ngClass]="getMatchClass(c.match)">
+            {{ getMatchArrow(c.match) }} {{ c.match }}% match
+          </div>
+        </div>
+
+        <div class="compat-row">
+          <span class="compat-label">Compatibilité profil</span>
+          <div class="compat-bar">
+            <div class="compat-fill" [ngClass]="getFillClass(c.match)" [style.width.%]="c.match"></div>
+          </div>
+          <span class="compat-val" [style.color]="getFillColor(c.match)">{{ c.match }}%</span>
+        </div>
+
+        <div class="cand-ai-block">
+          <div class="ai-label">
+            <span class="ai-spark">✦</span>
+            Pourquoi l'IA suggère ce candidat
+          </div>
+          <div class="cand-ai-text">{{ c.ai }}</div>
+        </div>
+
+        <div class="cand-actions">
+          <button class="btn-interested">« Contacter ce candidat »</button>
+          <button class="btn-skip">✕ Passer</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

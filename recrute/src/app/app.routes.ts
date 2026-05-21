@@ -6,7 +6,7 @@ import { UpdateCompany } from './update-company/update-company';
 import { CompanyHome } from './company-home/company-home';
 import { Register } from './register/register';
 import { Profile } from './profil/profil';
-
+import { CompanyOffers } from './company-offers/company-offers';
 
 export const routes: Routes = [
     { path: '', component: Home },
@@ -16,5 +16,6 @@ export const routes: Routes = [
     { path: 'users/company/:id', component: CompanyHome },
     { path: 'register', component: Register },
     { path: 'profil', component: Profile },
+    { path: 'company-offers', component: CompanyOffers },
     { path: 'profile', redirectTo: 'profil', pathMatch: 'full' }
 ];
