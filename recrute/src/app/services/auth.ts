@@ -57,6 +57,10 @@ export class AuthService {
     return this.httpClient.get<any[]>(`${this.url}/users/company/${companyId}/jobs`);
   }
 
+  getCompanyOfferCandidates(companyId: number, jobId: number): Observable<any[]> {
+    return this.httpClient.get<any[]>(`${this.url}/users/company/${companyId}/jobs/${jobId}/candidates`);
+  }
+
   createCompanyJob(companyId: number, job: any): Observable<any> {
     return this.httpClient.post<any>(`${this.url}/users/company/${companyId}/jobs`, job);
   }

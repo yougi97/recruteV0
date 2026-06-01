@@ -4,6 +4,23 @@ import { AuthService } from '../services/auth';
 import { JobOffer, mapJobOffers, mapCompanyProfile } from '../profil/profil.types';
 import { CompanyProfiles } from '../model/companyProfiles';
 
+interface CompanyCandidateView {
+  candidateId: number;
+  name: string;
+  initials: string;
+  color: string;
+  bg: string;
+  role: string;
+  location: string;
+  dispo: string;
+  match: number;
+  ai: string;
+  appliedAt?: string | null;
+  scoreSemantique?: number;
+  scoreStructure?: number;
+  scoreLlm?: number;
+}
+
 @Component({
   selector: 'app-company-offers',
   standalone: true,
@@ -16,17 +33,21 @@ export class CompanyOffers implements OnInit {
   loading = true;
   error = '';
   companyName = '';
+  companyId = 0;
 
   // stats calculées
   get totalOffers() { return this.offers.length; }
   get activeOffers() { return this.offers.filter(o => o.is_active).length; }
   get highMatchCount(): number {
-  return this.mockCandidates.filter(c => c.match >= 85).length;
+  return this.selectedCandidates.filter(c => c.match >= 85).length;
 }
 
   // panel candidats
   selectedOffer: JobOffer | null = null;
   panelOpen = false;
+  selectedCandidates: CompanyCandidateView[] = [];
+  loadingCandidates = false;
+  candidatesError = '';
 
   // filtre offres
   activeFilter: 'all' | 'active' | 'inactive' | 'cdi' | 'stage' = 'all';
@@ -41,19 +62,17 @@ export class CompanyOffers implements OnInit {
     });
   }
 
-  // mock candidats (IA pas encore implémentée)
-  mockCandidates = [
-    { name: 'Julien Marchand', initials: 'JM', color: '#1a5ff8', bg: 'rgba(26,95,248,0.15)', role: 'Développeur React · 4 ans exp.', location: 'Paris', dispo: 'Immédiat', match: 94, ai: 'Maîtrise technique très proche du profil recherché. Disponibilité immédiate et préférence de travail hybride alignée avec le poste.' },
-    { name: 'Camille Duval', initials: 'CD', color: '#22d3a0', bg: 'rgba(34,211,160,0.12)', role: 'Développeuse Senior · 6 ans exp.', location: 'Paris', dispo: '1 mois', match: 88, ai: 'Profil senior avec un stack technique très complémentaire. Légère surqualification compensée par sa volonté de progression.' },
-    { name: 'Sofiane Belaid', initials: 'SB', color: '#9b77f5', bg: 'rgba(108,63,232,0.15)', role: 'Développeur Web · 2 ans exp.', location: 'Banlieue Paris', dispo: 'Immédiat', match: 81, ai: 'Solide base technique, quelques compétences en cours d\'acquisition. Nécessite un accompagnement les premières semaines.' },
-    { name: 'Emma Roux', initials: 'ER', color: '#f5b942', bg: 'rgba(245,185,66,0.15)', role: 'Dev Full-Stack · 3 ans exp.', location: 'Remote', dispo: '2 semaines', match: 74, ai: 'Profil orienté full-stack, la localisation et le mode de travail restent à clarifier.' },
-    { name: 'Antoine Klein', initials: 'AK', color: '#ff6b6b', bg: 'rgba(255,107,107,0.12)', role: 'Développeur Freelance · 5 ans exp.', location: 'Lyon', dispo: '3 mois', match: 61, ai: 'Expérience solide mais en freelance exclusivement. Transition CDI et localisation nécessitent clarification.' },
-  ];
-
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
     const userId = Number(localStorage.getItem('user_id'));
+    const userType = this.authService.getCurrentUserType();
+    if (userType !== 'company') {
+      this.error = 'Réservé aux entreprises.';
+      this.loading = false;
+      return;
+    }
+
     if (!userId) {
       this.error = 'Utilisateur non connecté.';
       this.loading = false;
@@ -64,6 +83,7 @@ export class CompanyOffers implements OnInit {
     this.authService.getCompanybyId(userId).subscribe({
       next: (profile: CompanyProfiles) => {
         this.companyName = profile.companyName ?? '';
+        this.companyId = Number(profile.id);
         const profileId = Number(profile.id);
 
         // 2. Charger les offres avec le profile.id
@@ -93,11 +113,14 @@ export class CompanyOffers implements OnInit {
     if (!offer.is_active) return;
     this.selectedOffer = offer;
     this.panelOpen = true;
+    this.loadCandidatesForOffer(offer.id);
   }
 
   closePanel() {
     this.panelOpen = false;
     this.selectedOffer = null;
+    this.selectedCandidates = [];
+    this.candidatesError = '';
   }
 
   getCardInitials(title: string): string {
@@ -131,5 +154,42 @@ export class CompanyOffers implements OnInit {
   getDaysOnline(createdAt: string): number {
     const diff = Date.now() - new Date(createdAt).getTime();
     return Math.max(1, Math.floor(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  private loadCandidatesForOffer(jobId: number): void {
+    if (!this.companyId) {
+      this.candidatesError = 'Entreprise introuvable.';
+      return;
+    }
+
+    this.loadingCandidates = true;
+    this.candidatesError = '';
+    this.selectedCandidates = [];
+
+    this.authService.getCompanyOfferCandidates(this.companyId, jobId).subscribe({
+      next: (candidates) => {
+        this.selectedCandidates = candidates.map((candidate: any) => ({
+          candidateId: Number(candidate.candidateId ?? 0),
+          name: candidate.name ?? 'Candidat inconnu',
+          initials: candidate.initials ?? '?',
+          color: candidate.color ?? '#1a5ff8',
+          bg: candidate.bg ?? 'rgba(26,95,248,0.15)',
+          role: candidate.role ?? 'Profil candidat',
+          location: candidate.location ?? 'Location inconnue',
+          dispo: candidate.dispo ?? '—',
+          match: Number(candidate.match ?? 0),
+          ai: candidate.ai ?? 'Score IA disponible',
+          appliedAt: candidate.appliedAt ?? null,
+          scoreSemantique: candidate.scoreSemantique,
+          scoreStructure: candidate.scoreStructure,
+          scoreLlm: candidate.scoreLlm,
+        }));
+        this.loadingCandidates = false;
+      },
+      error: () => {
+        this.candidatesError = 'Impossible de charger les candidats pour cette offre.';
+        this.loadingCandidates = false;
+      }
+    });
   }
 }

@@ -22,7 +22,7 @@
     </div>
     <div class="hero-stat">
       <span class="hero-stat-icon">👥</span>
-      <span class="hero-stat-val">{{ mockCandidates.length }}</span>
+      <span class="hero-stat-val">{{ selectedCandidates.length }}</span>
       <span class="hero-stat-label">candidatures reçues</span>
     </div>
   </div>
@@ -91,12 +91,12 @@
       </div>
       <div class="card-stats">
         <div class="stat-box">
-          <span class="stat-num cyan">{{ mockCandidates.length }}</span>
+          <span class="stat-num cyan">{{ selectedOffer?.id === offer.id ? selectedCandidates.length : 0 }}</span>
           <span class="stat-label">Candidatures</span>
         </div>
         <div class="stat-box">
           <span class="stat-num" style="color:var(--green);">
-            {{ highMatchCount }}
+            {{ selectedOffer?.id === offer.id ? highMatchCount : 0 }}
           </span>
           <span class="stat-label">Match ≥ 85%</span>
         </div>
@@ -128,13 +128,28 @@
         <div class="panel-title">{{ selectedOffer?.title }}</div>
         <button class="panel-close" (click)="closePanel()">✕</button>
       </div>
-      <div class="panel-subtitle">{{ mockCandidates.length }} candidatures · classées par compatibilité IA</div>
+        <div class="panel-subtitle">{{ selectedCandidates.length }} candidatures · classées par compatibilité IA</div>
     </div>
 
     <div class="panel-body">
 
+        <div class="empty-state" *ngIf="loadingCandidates">
+          <div class="empty-icon">⏳</div>
+          <div class="empty-title">Chargement des candidats...</div>
+        </div>
+
+        <div class="empty-state" *ngIf="!loadingCandidates && candidatesError">
+          <div class="empty-icon">❌</div>
+          <div class="empty-title">{{ candidatesError }}</div>
+        </div>
+
+        <div class="empty-state" *ngIf="!loadingCandidates && !candidatesError && selectedCandidates.length === 0">
+          <div class="empty-icon">🔎</div>
+          <div class="empty-title">Aucune candidature trouvée pour cette offre</div>
+        </div>
+
       <!-- Banner premium -->
-      <div class="premium-banner">
+        <div class="premium-banner" *ngIf="!loadingCandidates && !candidatesError && selectedCandidates.length > 0">
         <div class="premium-icon">🔒</div>
         <div class="premium-text">
           <h4>Accès limité — 5 profils gratuits</h4>
@@ -144,7 +159,7 @@
       </div>
 
       <!-- Candidate cards -->
-      <div class="cand-card" *ngFor="let c of mockCandidates; let i = index">
+        <div class="cand-card" *ngFor="let c of selectedCandidates; let i = index">
         <div class="cand-top">
           <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
           <div class="cand-info">
@@ -153,7 +168,7 @@
             <div class="cand-meta">
               <span>📍 {{ c.location }}</span>
               <span>·</span>
-              <span>Dispo : {{ c.dispo }}</span>
+                <span>Exp. : {{ c.dispo }}</span>
             </div>
           </div>
           <div class="match-badge" [ngClass]="getMatchClass(c.match)">

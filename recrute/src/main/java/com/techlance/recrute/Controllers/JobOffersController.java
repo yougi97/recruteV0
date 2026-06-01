@@ -36,6 +36,14 @@ public class JobOffersController {
         return jobOfferService.getJobOffers(companyId);
     }
 
+    @GetMapping("/{jobId}/candidates")
+    public List<Map<String, Object>> getOfferCandidates(
+            @PathVariable Long companyId,
+            @PathVariable Long jobId
+    ) {
+        return jobOfferService.getCompanyOfferCandidates(companyId, jobId);
+    }
+
     @PutMapping("/{jobId}")
     public JobOffers updateOffer(
             @PathVariable Long companyId,

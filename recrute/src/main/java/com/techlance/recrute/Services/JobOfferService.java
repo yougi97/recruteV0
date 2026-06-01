@@ -20,6 +20,7 @@ import com.techlance.recrute.Entities.CandidateJobRatings;
 import com.techlance.recrute.Entities.CandidateProfiles;
 import com.techlance.recrute.Entities.CompanyProfiles;
 import com.techlance.recrute.Entities.Cvs;
+import com.techlance.recrute.Entities.Users;
 import com.techlance.recrute.Entities.JobOffers;
 import com.techlance.recrute.Enum.Rating;
 import com.techlance.recrute.Repositories.CandidateJobRatingsRepository;
@@ -192,6 +193,138 @@ public class JobOfferService {
         JobOffers oldJob = getCompanyJobOffer(companyId, jobId);
         oldJob.setIsActive(active);
         return jobOfferRepository.save(oldJob);
+    }
+
+    public List<Map<String, Object>> getCompanyOfferCandidates(Long companyId, Long jobId) {
+        JobOffers jobOffer = getCompanyJobOffer(companyId, jobId);
+        Map<Long, CandidateJobRatings> ratingsByCandidate = candidateJobRatingsRepository.findAllByJobOfferIdOrderByScoreDesc(jobOffer.getId())
+                .stream()
+                .collect(Collectors.toMap(
+                        rating -> rating.getCandidate() != null ? rating.getCandidate().getId() : rating.getId(),
+                        rating -> rating,
+                        (left, right) -> left));
+
+        return candidateProfilesRepository.findAll().stream()
+                .filter(candidate -> candidate.getUser() != null && "candidate".equalsIgnoreCase(candidate.getUser().getUserType()))
+                .map(candidate -> {
+                    Cvs latestCv = findLatestCv(candidate.getId());
+                    Set<String> candidateTerms = buildCandidateTerms(candidate, latestCv);
+                    CandidateJobRatings persistedRating = ratingsByCandidate.get(candidate.getId());
+
+                    int score = computeMatchScore(jobOffer, candidate, latestCv, candidateTerms);
+                    if (persistedRating != null && persistedRating.getAi_score() > 0) {
+                        score = Math.max(0, Math.min(100, Math.round(persistedRating.getAi_score())));
+                    }
+
+                    return buildCompanyCandidateView(candidate, latestCv, score, persistedRating);
+                })
+                .sorted((left, right) -> Integer.compare(
+                        ((Number) right.get("match")).intValue(),
+                        ((Number) left.get("match")).intValue()))
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, Object> buildCompanyCandidateView(CandidateProfiles candidate, Cvs cv, int score, CandidateJobRatings rating) {
+        Users user = candidate != null ? candidate.getUser() : null;
+
+        String firstName = user != null && user.getFirstName() != null ? user.getFirstName() : "";
+        String lastName = user != null && user.getLastName() != null ? user.getLastName() : "";
+        String fullName = (firstName + " " + lastName).trim();
+        if (fullName.isBlank()) {
+            fullName = candidate != null && candidate.getTitle() != null ? candidate.getTitle() : "Candidat inconnu";
+        }
+
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("candidateId", candidate != null ? candidate.getId() : null);
+        item.put("name", fullName);
+        item.put("initials", buildInitials(fullName));
+        Long seed = candidate != null ? candidate.getId() : null;
+        item.put("color", pickCompanyColorBySeed(seed));
+        item.put("bg", pickCandidateBackground(seed));
+        item.put("role", candidate != null && candidate.getTitle() != null && !candidate.getTitle().isBlank()
+                ? candidate.getTitle()
+                : (candidate != null && candidate.getNiveauEtudes() != null ? candidate.getNiveauEtudes() : "Profil candidat"));
+        item.put("location", candidate != null && candidate.getLocation() != null ? candidate.getLocation() : "Location inconnue");
+        item.put("dispo", candidate != null ? String.format(Locale.ROOT, "%.1f ans exp.", candidate.getAnneesExperience()) : "—");
+        item.put("match", score);
+        item.put("ai", rating != null ? buildCandidateReason(rating, candidate, cv, score) : buildComputedCandidateReason(candidate, cv, score));
+        item.put("appliedAt", rating != null && rating.getRated_at() != null ? rating.getRated_at().toString() : null);
+        item.put("scoreSemantique", rating != null ? rating.getScoreSemantique() : null);
+        item.put("scoreStructure", rating != null ? rating.getScoreStructure() : null);
+        item.put("scoreLlm", rating != null ? rating.getScoreLlm() : null);
+        return item;
+    }
+
+    private String buildComputedCandidateReason(CandidateProfiles candidate, Cvs cv, int score) {
+        List<String> reasons = new ArrayList<>();
+        if (candidate != null && candidate.getAnneesExperience() > 0) {
+            reasons.add(String.format(Locale.ROOT, "%.1f ans d'expérience", candidate.getAnneesExperience()));
+        }
+        if (candidate != null && candidate.getLocation() != null && !candidate.getLocation().isBlank()) {
+            reasons.add(candidate.getLocation());
+        }
+        if (cv != null && cv.getFileName() != null && !cv.getFileName().isBlank()) {
+            reasons.add(cv.getFileName());
+        }
+        if (reasons.isEmpty()) {
+            reasons.add("score calculé côté candidat");
+        }
+        return String.format(Locale.ROOT, "%d%%: %s", score, String.join(", ", reasons));
+    }
+
+    private String buildCandidateReason(CandidateJobRatings rating, CandidateProfiles candidate, Cvs cv, int score) {
+        List<String> reasons = new ArrayList<>();
+        if (rating.getScoreSemantique() > 0) {
+            reasons.add(String.format(Locale.ROOT, "sémantique %.0f", rating.getScoreSemantique()));
+        }
+        if (rating.getScoreStructure() > 0) {
+            reasons.add(String.format(Locale.ROOT, "structure %.0f", rating.getScoreStructure()));
+        }
+        if (rating.getScoreLlm() > 0) {
+            reasons.add(String.format(Locale.ROOT, "LLM %.0f", rating.getScoreLlm()));
+        }
+        if (reasons.isEmpty()) {
+            reasons.add("score IA disponible");
+        }
+        if (candidate != null && candidate.getTitle() != null && !candidate.getTitle().isBlank()) {
+            reasons.add(candidate.getTitle());
+        }
+        if (cv != null && cv.getFileName() != null && !cv.getFileName().isBlank()) {
+            reasons.add(cv.getFileName());
+        }
+        return String.format(Locale.ROOT, "%d%%: %s", score, String.join(", ", reasons));
+    }
+
+    private String buildInitials(String fullName) {
+        String[] parts = fullName.trim().split("\\s+");
+        StringBuilder initials = new StringBuilder();
+        for (String part : parts) {
+            if (!part.isBlank()) {
+                initials.append(Character.toUpperCase(part.charAt(0)));
+            }
+            if (initials.length() == 2) {
+                break;
+            }
+        }
+        return initials.length() > 0 ? initials.toString() : "?";
+    }
+
+    private String pickCompanyColorBySeed(Long seed) {
+        String[] colors = {"#1a5ff8", "#22d3a0", "#9b77f5", "#f5b942", "#ff6b6b"};
+        long basis = seed != null ? seed : 0L;
+        return colors[(int) Math.floorMod(basis, colors.length)];
+    }
+
+    private String pickCandidateBackground(Long seed) {
+        String[] backgrounds = {
+                "rgba(26,95,248,0.15)",
+                "rgba(34,211,160,0.12)",
+                "rgba(108,63,232,0.15)",
+                "rgba(245,185,66,0.15)",
+                "rgba(255,107,107,0.12)"
+        };
+        long basis = seed != null ? seed : 0L;
+        return backgrounds[(int) Math.floorMod(basis, backgrounds.length)];
     }
 
     private Cvs findLatestCv(Long candidateId) {
