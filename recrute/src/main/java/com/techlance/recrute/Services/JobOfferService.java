@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techlance.recrute.Entities.Applications;
 import com.techlance.recrute.Entities.CandidateJobRatings;
 import com.techlance.recrute.Entities.CandidateProfiles;
 import com.techlance.recrute.Entities.CompanyProfiles;
@@ -23,6 +24,7 @@ import com.techlance.recrute.Entities.Cvs;
 import com.techlance.recrute.Entities.Users;
 import com.techlance.recrute.Entities.JobOffers;
 import com.techlance.recrute.Enum.Rating;
+import com.techlance.recrute.Repositories.ApplicationsRepository;
 import com.techlance.recrute.Repositories.CandidateJobRatingsRepository;
 import com.techlance.recrute.Repositories.CandidateProfilesRepository;
 import com.techlance.recrute.Repositories.CompanyProfilesRepository;
@@ -36,6 +38,7 @@ public class JobOfferService {
     private final CandidateProfilesRepository candidateProfilesRepository;
     private final CvsRepository cvsRepository;
     private final CandidateJobRatingsRepository candidateJobRatingsRepository;
+    private final ApplicationsRepository applicationsRepository;
     private final ObjectMapper objectMapper;
 
     public JobOfferService(
@@ -43,12 +46,14 @@ public class JobOfferService {
             CompanyProfilesRepository companyProfilesRepository,
             CandidateProfilesRepository candidateProfilesRepository,
             CvsRepository cvsRepository,
-            CandidateJobRatingsRepository candidateJobRatingsRepository) {
+            CandidateJobRatingsRepository candidateJobRatingsRepository,
+            ApplicationsRepository applicationsRepository) {
         this.jobOfferRepository = jobOfferRepository;
         this.companyProfilesRepository = companyProfilesRepository;
         this.candidateProfilesRepository = candidateProfilesRepository;
         this.cvsRepository = cvsRepository;
         this.candidateJobRatingsRepository = candidateJobRatingsRepository;
+        this.applicationsRepository = applicationsRepository;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -69,6 +74,69 @@ public class JobOfferService {
     // }
     public List<JobOffers> getJobOffers(Long id) {
         return jobOfferRepository.findByCompanyProfilesId(id);
+    }
+
+    public List<Map<String, Object>> getJobOffersWithApplicationCounts(Long companyId) {
+        List<JobOffers> jobs = jobOfferRepository.findByCompanyProfilesId(companyId);
+        return jobs.stream().map(job -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", job.getId());
+            map.put("title", job.getTitle());
+            map.put("description", job.getDescription());
+            map.put("location", job.getLocation());
+            map.put("contractType", job.getContractType());
+            map.put("isActive", job.isIsActive());
+            map.put("createdAt", job.getCreatedAt());
+            if (job.getCompanyProfiles() != null) {
+                Map<String, Object> company = new LinkedHashMap<>();
+                company.put("id", job.getCompanyProfiles().getId());
+                map.put("companyProfiles", company);
+            }
+            map.put("applicationCount", applicationsRepository.countByJobOfferId(job.getId()));
+            return map;
+        }).collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> getCandidateApplications(Long userId) {
+        CandidateProfiles candidate = candidateProfilesRepository.findByUserId(userId);
+        if (candidate == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Profil candidat introuvable");
+        }
+
+        List<Applications> applications = applicationsRepository.findAllByCandidateId(candidate.getId());
+        return applications.stream().map(app -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("applicationId", app.getId());
+            map.put("status", app.getStatus());
+            map.put("appliedAt", app.getAppliedAt() != null ? app.getAppliedAt().toString() : null);
+            JobOffers job = app.getJobOffer();
+            if (job != null) {
+                map.put("jobOfferId", job.getId());
+                map.put("jobTitle", job.getTitle());
+                map.put("location", fallback(job.getLocation(), "", "Remote"));
+                map.put("contractType", job.getContractType() != null ? job.getContractType().name() : "CDI");
+                if (job.getCompanyProfiles() != null) {
+                    map.put("companyName", fallback(job.getCompanyProfiles().getCompanyName(), "", "Entreprise inconnue"));
+                    map.put("companyInitial", buildCompanyInitial(job));
+                    map.put("companyColor", pickCompanyColor(job));
+                } else {
+                    map.put("companyName", "Entreprise inconnue");
+                    map.put("companyInitial", "?");
+                    map.put("companyColor", "blue");
+                }
+            }
+            return map;
+        }).collect(Collectors.toList());
+    }
+
+    public void retractApplication(Long userId, Long offerId) {
+        CandidateProfiles candidate = candidateProfilesRepository.findByUserId(userId);
+        if (candidate == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Profil candidat introuvable");
+        }
+        JobOffers job = getJobOffer(offerId);
+        applicationsRepository.findByCandidateAndJob(candidate.getId(), job.getId())
+                .ifPresent(applicationsRepository::delete);
     }
 
     public List<Map<String, Object>> getCandidateSuggestions(Long userId) {
@@ -97,13 +165,39 @@ public class JobOfferService {
         JobOffers job = getJobOffer(offerId);
         Cvs latestCv = findLatestCv(candidate.getId());
 
-        CandidateJobRatings savedRating = new CandidateJobRatings();
-        savedRating.setCandidate(candidate);
-        savedRating.setJobOffer(job);
-        savedRating.setCv(latestCv);
-        savedRating.setRating(rating);
-        savedRating.setRated_at(new Date(System.currentTimeMillis()));
-        candidateJobRatingsRepository.save(savedRating);
+        if (latestCv != null) {
+            CandidateJobRatings savedRating = candidateJobRatingsRepository
+                    .findLatestByCandidateAndJob(candidate.getId(), job.getId())
+                    .orElseGet(CandidateJobRatings::new);
+            savedRating.setCandidate(candidate);
+            savedRating.setJobOffer(job);
+            savedRating.setCv(latestCv);
+            savedRating.setRating(rating);
+            savedRating.setRated_at(new Date(System.currentTimeMillis()));
+            candidateJobRatingsRepository.save(savedRating);
+        }
+
+        java.util.Optional<Applications> existingApplication = applicationsRepository.findByCandidateAndJob(candidate.getId(), job.getId());
+        if (rating == Rating.up) {
+            if (latestCv == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible de postuler sans CV");
+            }
+            Applications application = existingApplication.orElseGet(Applications::new);
+            application.setCandidate(candidate);
+            application.setJobOffer(job);
+            application.setCv(latestCv);
+            if (application.getStatus() == null || application.getStatus().isBlank()) {
+                application.setStatus("attente");
+            }
+            if (application.getAppliedAt() == null) {
+                application.setAppliedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+            }
+            application.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+            applicationsRepository.save(application);
+            return;
+        }
+
+        existingApplication.ifPresent(applicationsRepository::delete);
     }
 
     public JobOffers getJobOffer(Long id) {
@@ -197,34 +291,131 @@ public class JobOfferService {
 
     public List<Map<String, Object>> getCompanyOfferCandidates(Long companyId, Long jobId) {
         JobOffers jobOffer = getCompanyJobOffer(companyId, jobId);
-        Map<Long, CandidateJobRatings> ratingsByCandidate = candidateJobRatingsRepository.findAllByJobOfferIdOrderByScoreDesc(jobOffer.getId())
-                .stream()
-                .collect(Collectors.toMap(
-                        rating -> rating.getCandidate() != null ? rating.getCandidate().getId() : rating.getId(),
-                        rating -> rating,
-                        (left, right) -> left));
 
-        return candidateProfilesRepository.findAll().stream()
-                .filter(candidate -> candidate.getUser() != null && "candidate".equalsIgnoreCase(candidate.getUser().getUserType()))
-                .map(candidate -> {
+        List<Applications> applications = applicationsRepository.findAllByJobOfferId(jobOffer.getId());
+
+        return applications.stream()
+                .map(application -> {
+                    CandidateProfiles candidate = application.getCandidate();
+                    if (candidate == null) {
+                        return null;
+                    }
                     Cvs latestCv = findLatestCv(candidate.getId());
                     Set<String> candidateTerms = buildCandidateTerms(candidate, latestCv);
-                    CandidateJobRatings persistedRating = ratingsByCandidate.get(candidate.getId());
+                    CandidateJobRatings ensuredRating = ensureCompanyCandidateScore(jobOffer, candidate, latestCv, candidateTerms);
+                    int score = Math.max(0, Math.min(100, Math.round(ensuredRating.getAi_score())));
 
-                    int score = computeMatchScore(jobOffer, candidate, latestCv, candidateTerms);
-                    if (persistedRating != null && persistedRating.getAi_score() > 0) {
-                        score = Math.max(0, Math.min(100, Math.round(persistedRating.getAi_score())));
-                    }
-
-                    return buildCompanyCandidateView(candidate, latestCv, score, persistedRating);
+                    return buildCompanyCandidateView(candidate, latestCv, score, ensuredRating, application);
                 })
+                .filter(item -> item != null)
                 .sorted((left, right) -> Integer.compare(
                         ((Number) right.get("match")).intValue(),
                         ((Number) left.get("match")).intValue()))
                 .collect(Collectors.toList());
     }
 
-    private Map<String, Object> buildCompanyCandidateView(CandidateProfiles candidate, Cvs cv, int score, CandidateJobRatings rating) {
+    public List<Map<String, Object>> getTopScoredCandidates(Long companyId, Long jobId) {
+        JobOffers jobOffer = getCompanyJobOffer(companyId, jobId);
+
+        List<Applications> applications = applicationsRepository.findAllByJobOfferId(jobOffer.getId());
+        Map<Long, Applications> applicationMap = applications.stream()
+                .filter(a -> a.getCandidate() != null)
+                .collect(Collectors.toMap(
+                        a -> a.getCandidate().getId(),
+                        a -> a,
+                        (a, b) -> a));
+
+        return candidateJobRatingsRepository.findAllByJobOfferIdOrderByScoreDesc(jobOffer.getId())
+                .stream()
+                .limit(5)
+                .map(rating -> {
+                    CandidateProfiles candidate = rating.getCandidate();
+                    if (candidate == null) return null;
+                    Cvs cv = rating.getCv();
+                    int score = Math.max(0, Math.min(100, Math.round(rating.getAi_score())));
+                    Applications application = applicationMap.get(candidate.getId());
+                    Map<String, Object> view = buildCompanyCandidateView(candidate, cv, score, rating, application);
+                    view.put("applied", application != null);
+                    return view;
+                })
+                .filter(item -> item != null)
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> computeMissingCompanyOfferScores(Long companyId, Long jobId) {
+        JobOffers jobOffer = getCompanyJobOffer(companyId, jobId);
+
+        int totalCandidates = 0;
+        int alreadyScored = 0;
+        int computedNow = 0;
+        int skippedNoCv = 0;
+
+        List<Applications> applications = applicationsRepository.findAllByJobOfferId(jobOffer.getId());
+
+        for (Applications application : applications) {
+            if (application.getCandidate() == null) {
+                continue;
+            }
+
+            CandidateProfiles candidate = application.getCandidate();
+            totalCandidates++;
+            java.util.Optional<CandidateJobRatings> existing = candidateJobRatingsRepository.findLatestByCandidateAndJob(candidate.getId(), jobOffer.getId());
+            if (existing.isPresent() && existing.get().getAi_score() > 0) {
+                alreadyScored++;
+                continue;
+            }
+
+            Cvs latestCv = findLatestCv(candidate.getId());
+            if (latestCv == null) {
+                skippedNoCv++;
+                continue;
+            }
+
+            Set<String> candidateTerms = buildCandidateTerms(candidate, latestCv);
+            ensureCompanyCandidateScore(jobOffer, candidate, latestCv, candidateTerms);
+            computedNow++;
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("jobId", jobOffer.getId());
+        result.put("totalCandidates", totalCandidates);
+        result.put("alreadyScored", alreadyScored);
+        result.put("computedNow", computedNow);
+        result.put("skippedNoCv", skippedNoCv);
+        return result;
+    }
+
+    private CandidateJobRatings ensureCompanyCandidateScore(JobOffers jobOffer, CandidateProfiles candidate, Cvs cv, Set<String> candidateTerms) {
+        java.util.Optional<CandidateJobRatings> existing = candidateJobRatingsRepository.findLatestByCandidateAndJob(candidate.getId(), jobOffer.getId());
+        if (existing.isPresent() && existing.get().getAi_score() > 0) {
+            return existing.get();
+        }
+
+        int computedScore = computeMatchScore(jobOffer, candidate, cv, candidateTerms);
+
+        CandidateJobRatings rating = existing.orElseGet(CandidateJobRatings::new);
+        rating.setCandidate(candidate);
+        rating.setJobOffer(jobOffer);
+        rating.setCv(cv);
+        rating.setRating(existing.isPresent() && existing.get().getRating() != null
+                ? existing.get().getRating()
+                : Rating.up);
+        rating.setAi_score(computedScore);
+        rating.setScoreSemantique(existing.isPresent() ? existing.get().getScoreSemantique() : 0f);
+        rating.setScoreStructure(existing.isPresent() ? existing.get().getScoreStructure() : 0f);
+        rating.setScoreLlm(existing.isPresent() ? existing.get().getScoreLlm() : 0f);
+        rating.setRated_at(existing.isPresent() && existing.get().getRated_at() != null
+                ? existing.get().getRated_at()
+                : new Date(System.currentTimeMillis()));
+
+        if (cv != null) {
+            return candidateJobRatingsRepository.save(rating);
+        }
+
+        return rating;
+    }
+
+    private Map<String, Object> buildCompanyCandidateView(CandidateProfiles candidate, Cvs cv, int score, CandidateJobRatings rating, Applications application) {
         Users user = candidate != null ? candidate.getUser() : null;
 
         String firstName = user != null && user.getFirstName() != null ? user.getFirstName() : "";
@@ -248,7 +439,10 @@ public class JobOfferService {
         item.put("dispo", candidate != null ? String.format(Locale.ROOT, "%.1f ans exp.", candidate.getAnneesExperience()) : "—");
         item.put("match", score);
         item.put("ai", rating != null ? buildCandidateReason(rating, candidate, cv, score) : buildComputedCandidateReason(candidate, cv, score));
-        item.put("appliedAt", rating != null && rating.getRated_at() != null ? rating.getRated_at().toString() : null);
+        item.put("appliedAt", application != null && application.getAppliedAt() != null
+            ? application.getAppliedAt().toString()
+            : (rating != null && rating.getRated_at() != null ? rating.getRated_at().toString() : null));
+        item.put("applicationStatus", application != null ? application.getStatus() : null);
         item.put("scoreSemantique", rating != null ? rating.getScoreSemantique() : null);
         item.put("scoreStructure", rating != null ? rating.getScoreStructure() : null);
         item.put("scoreLlm", rating != null ? rating.getScoreLlm() : null);
@@ -337,12 +531,25 @@ public class JobOfferService {
 
     private Map<String, Object> buildSuggestion(JobOffers job, CandidateProfiles candidate, Cvs cv, Set<String> candidateTerms) {
         int matchScore = computeMatchScore(job, candidate, cv, candidateTerms);
+        String status = "pending";
+
+        try {
+            java.util.Optional<Applications> application = applicationsRepository.findByCandidateAndJob(candidate.getId(), job.getId());
+            if (application.isPresent()) {
+                status = "interested";
+            }
+        } catch (Exception ignored) {}
 
         // Prefer persisted AI score when available
         try {
             java.util.Optional<CandidateJobRatings> opt = candidateJobRatingsRepository.findLatestByCandidateAndJob(candidate.getId(), job.getId());
-            if (opt.isPresent() && opt.get().getAi_score() > 0) {
-                matchScore = Math.max(0, Math.min(100, Math.round(opt.get().getAi_score())));
+            if (opt.isPresent()) {
+                if (opt.get().getAi_score() > 0) {
+                    matchScore = Math.max(0, Math.min(100, Math.round(opt.get().getAi_score())));
+                }
+                if (status.equals("pending") && opt.get().getRating() == Rating.down) {
+                    status = "dismissed";
+                }
             }
         } catch (Exception ignored) {}
 
@@ -361,7 +568,7 @@ public class JobOfferService {
         suggestion.put("matchLevel", toMatchLevel(matchScore));
         suggestion.put("tags", buildTags(job, candidate));
         suggestion.put("aiReason", buildReason(job, candidate, cv, matchScore));
-        suggestion.put("status", "pending");
+        suggestion.put("status", status);
 
         return suggestion;
     }
@@ -615,21 +822,34 @@ public class JobOfferService {
 
     private Map<String, Object> buildPublicOffer(JobOffers job, CandidateProfiles candidate, Cvs cv, Set<String> candidateTerms) {
         Map<String, Object> offer = buildPublicOffer(job);
+        String status = "pending";
+
+        try {
+            java.util.Optional<Applications> application = applicationsRepository.findByCandidateAndJob(candidate.getId(), job.getId());
+            if (application.isPresent()) {
+                status = "interested";
+            }
+        } catch (Exception ignored) {}
 
         // Prefer AI score persisted by Python service when available
         try {
             java.util.Optional<CandidateJobRatings> opt = candidateJobRatingsRepository.findLatestByCandidateAndJob(candidate.getId(), job.getId());
-            if (opt.isPresent() && opt.get().getAi_score() > 0) {
-                float ai = opt.get().getAi_score();
-                int matchScore = Math.max(0, Math.min(100, Math.round(ai)));
-                offer.put("matchScore", matchScore);
-                offer.put("matchLevel", toMatchLevel(matchScore));
-                // include breakdown if stored
-                offer.put("score_semantique", opt.get().getScoreSemantique());
-                offer.put("score_structure", opt.get().getScoreStructure());
-                offer.put("score_llm", opt.get().getScoreLlm());
-                offer.put("aiReason", buildReason(job, candidate, cv, matchScore));
-                return offer;
+            if (opt.isPresent()) {
+                if (status.equals("pending") && opt.get().getRating() == Rating.down) {
+                    status = "dismissed";
+                }
+                if (opt.get().getAi_score() > 0) {
+                    float ai = opt.get().getAi_score();
+                    int matchScore = Math.max(0, Math.min(100, Math.round(ai)));
+                    offer.put("matchScore", matchScore);
+                    offer.put("matchLevel", toMatchLevel(matchScore));
+                    offer.put("score_semantique", opt.get().getScoreSemantique());
+                    offer.put("score_structure", opt.get().getScoreStructure());
+                    offer.put("score_llm", opt.get().getScoreLlm());
+                    offer.put("aiReason", buildReason(job, candidate, cv, matchScore));
+                    offer.put("status", status);
+                    return offer;
+                }
             }
         } catch (Exception ignored) {}
 
@@ -637,6 +857,7 @@ public class JobOfferService {
         offer.put("matchScore", matchScore);
         offer.put("matchLevel", toMatchLevel(matchScore));
         offer.put("aiReason", buildReason(job, candidate, cv, matchScore));
+        offer.put("status", status);
 
         return offer;
     }

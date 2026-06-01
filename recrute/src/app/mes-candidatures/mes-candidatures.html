@@ -1,0 +1,93 @@
+<div class="page">
+  <div class="shell">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="eyebrow">
+        <div class="eyebrow-line"></div>
+        Suivi de candidatures
+      </div>
+      <h1>Mes <span class="highlight">candidatures</span></h1>
+      <p>Retrouvez toutes les offres pour lesquelles vous avez postulé et gérez vos candidatures en cours.</p>
+
+      <div class="hero-stats">
+        <div class="stat-chip">
+          <span class="stat-icon">📋</span>
+          <span class="stat-val">{{ totalCount }}</span>
+          <span class="stat-lbl">total</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-icon">⏳</span>
+          <span class="stat-val">{{ pendingCount }}</span>
+          <span class="stat-lbl">en attente</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-icon">✅</span>
+          <span class="stat-val">{{ acceptedCount }}</span>
+          <span class="stat-lbl">acceptées</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="state-block" *ngIf="loading">
+      <div class="state-icon">⏳</div>
+      <div class="state-title">Chargement de vos candidatures...</div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="state-block" *ngIf="!loading && error">
+      <div class="state-icon">❌</div>
+      <div class="state-title">{{ error }}</div>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="state-block" *ngIf="!loading && !error && candidatures.length === 0">
+      <div class="state-icon">🔍</div>
+      <div class="state-title">Aucune candidature pour le moment</div>
+      <div class="state-sub">Explorez les offres et postulez pour les voir apparaître ici.</div>
+      <a class="btn-explore" routerLink="/offres">Voir les offres →</a>
+    </div>
+
+    <!-- LIST -->
+    <div class="cand-list" *ngIf="!loading && !error && candidatures.length > 0">
+      <div class="cand-card" *ngFor="let item of candidatures">
+
+        <div class="card-left">
+          <div class="company-avatar"
+               [style.background]="colorVar(item.companyColor)"
+               [style.color]="colorText(item.companyColor)">
+            {{ item.companyInitial }}
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="card-title">{{ item.jobTitle }}</div>
+          <div class="card-company">{{ item.companyName }}</div>
+          <div class="card-meta">
+            <span>📍 {{ item.location }}</span>
+            <span class="dot">·</span>
+            <span>{{ item.contractType }}</span>
+            <span class="dot">·</span>
+            <span>Postulé le {{ formatDate(item.appliedAt) }}</span>
+          </div>
+        </div>
+
+        <div class="card-right">
+          <span class="status-badge" [ngClass]="statusClass(item.status)">
+            {{ statusLabel(item.status) }}
+          </span>
+          <button
+            class="btn-retract"
+            *ngIf="item.status === 'attente'"
+            [disabled]="retractingId === item.applicationId"
+            (click)="retract(item)">
+            {{ retractingId === item.applicationId ? '...' : 'Retirer' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

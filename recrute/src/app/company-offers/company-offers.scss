@@ -366,3 +366,71 @@ $bar-track:      rgba(255, 255, 255, 0.10);
   font-family: 'DM Sans', sans-serif; transition: all .2s;
   &:hover { border-color: rgba(255, 107, 107, 0.3); color: $red; background: $red-dim; }
 }
+
+.btn-sm {
+  padding: 6px 12px; font-size: 11px;
+}
+
+// ── PANEL TABS ───────────────────────────────────────────────────────────
+.panel-tabs {
+  display: flex; gap: 4px; margin-top: 12px;
+}
+
+.panel-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 8px;
+  background: transparent; border: 1px solid $navy-border;
+  color: $text-secondary; font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s;
+
+  &:hover { border-color: $navy-border-hv; color: $text-primary; }
+
+  &.tab-active {
+    background: $cyan-dim; border-color: rgba(56, 189, 248, 0.35);
+    color: $cyan; font-weight: 600;
+  }
+}
+
+.tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(56, 189, 248, 0.2); color: $cyan;
+  border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 700;
+}
+
+// ── APPLIED BADGE ────────────────────────────────────────────────────────
+.cand-name-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 2px;
+}
+
+.applied-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;
+  background: $green-dim; color: $green; border: 1px solid rgba(34, 211, 160, 0.25);
+  white-space: nowrap;
+}
+
+.empty-sub {
+  font-size: 13px; color: $text-muted; margin-top: 4px;
+}
+
+// ── APPLICATION CARD ─────────────────────────────────────────────────────
+.app-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: $navy-card; border: 1px solid $navy-border;
+  border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; transition: all .2s;
+  &:hover { border-color: $navy-border-hv; }
+}
+
+.app-card-left  { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.app-card-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+// ── STATUS BADGES ────────────────────────────────────────────────────────
+.app-status {
+  padding: 4px 10px; border-radius: 8px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+
+.status-attente  { background: $gold-dim;  color: $gold;  border: 1px solid rgba(245, 185, 66, 0.25); }
+.status-encours  { background: $cyan-dim;  color: $cyan;  border: 1px solid rgba(56, 189, 248, 0.25); }
+.status-accepte  { background: $green-dim; color: $green; border: 1px solid rgba(34, 211, 160, 0.25); }
+.status-refuse   { background: $red-dim;   color: $red;   border: 1px solid rgba(255, 107, 107, 0.25); }

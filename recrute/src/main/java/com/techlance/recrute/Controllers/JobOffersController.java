@@ -32,8 +32,8 @@ public class JobOffersController {
     }
 
     @GetMapping
-    public List<JobOffers> getOffers(@PathVariable Long companyId) {
-        return jobOfferService.getJobOffers(companyId);
+    public List<Map<String, Object>> getOffers(@PathVariable Long companyId) {
+        return jobOfferService.getJobOffersWithApplicationCounts(companyId);
     }
 
     @GetMapping("/{jobId}/candidates")
@@ -42,6 +42,22 @@ public class JobOffersController {
             @PathVariable Long jobId
     ) {
         return jobOfferService.getCompanyOfferCandidates(companyId, jobId);
+    }
+
+    @GetMapping("/{jobId}/top-candidates")
+    public List<Map<String, Object>> getTopCandidates(
+            @PathVariable Long companyId,
+            @PathVariable Long jobId
+    ) {
+        return jobOfferService.getTopScoredCandidates(companyId, jobId);
+    }
+
+    @PostMapping("/{jobId}/compute-missing-scores")
+    public Map<String, Object> computeMissingScores(
+            @PathVariable Long companyId,
+            @PathVariable Long jobId
+    ) {
+        return jobOfferService.computeMissingCompanyOfferScores(companyId, jobId);
     }
 
     @PutMapping("/{jobId}")

@@ -91,12 +91,12 @@
       </div>
       <div class="card-stats">
         <div class="stat-box">
-          <span class="stat-num cyan">{{ selectedOffer?.id === offer.id ? selectedCandidates.length : 0 }}</span>
+          <span class="stat-num cyan">{{ offer.applicationCount ?? 0 }}</span>
           <span class="stat-label">Candidatures</span>
         </div>
         <div class="stat-box">
           <span class="stat-num" style="color:var(--green);">
-            {{ selectedOffer?.id === offer.id ? highMatchCount : 0 }}
+            {{ selectedOffer?.id === offer.id ? highMatchCount : '—' }}
           </span>
           <span class="stat-label">Match ≥ 85%</span>
         </div>
@@ -128,28 +128,37 @@
         <div class="panel-title">{{ selectedOffer?.title }}</div>
         <button class="panel-close" (click)="closePanel()">✕</button>
       </div>
-        <div class="panel-subtitle">{{ selectedCandidates.length }} candidatures · classées par compatibilité IA</div>
+      <div class="panel-tabs">
+        <button class="panel-tab" [class.tab-active]="panelTab === 'top'" (click)="panelTab = 'top'">
+          ✦ Top IA
+        </button>
+        <button class="panel-tab" [class.tab-active]="panelTab === 'applications'" (click)="panelTab = 'applications'">
+          📋 Candidatures
+          <span class="tab-count" *ngIf="selectedCandidates.length > 0">{{ selectedCandidates.length }}</span>
+        </button>
+      </div>
     </div>
 
-    <div class="panel-body">
+    <!-- TAB: TOP IA -->
+    <div class="panel-body" *ngIf="panelTab === 'top'">
 
-        <div class="empty-state" *ngIf="loadingCandidates">
-          <div class="empty-icon">⏳</div>
-          <div class="empty-title">Chargement des candidats...</div>
-        </div>
+      <div class="empty-state" *ngIf="loadingTop">
+        <div class="empty-icon">⏳</div>
+        <div class="empty-title">Calcul des scores IA...</div>
+      </div>
 
-        <div class="empty-state" *ngIf="!loadingCandidates && candidatesError">
-          <div class="empty-icon">❌</div>
-          <div class="empty-title">{{ candidatesError }}</div>
-        </div>
+      <div class="empty-state" *ngIf="!loadingTop && topError">
+        <div class="empty-icon">❌</div>
+        <div class="empty-title">{{ topError }}</div>
+      </div>
 
-        <div class="empty-state" *ngIf="!loadingCandidates && !candidatesError && selectedCandidates.length === 0">
-          <div class="empty-icon">🔎</div>
-          <div class="empty-title">Aucune candidature trouvée pour cette offre</div>
-        </div>
+      <div class="empty-state" *ngIf="!loadingTop && !topError && topCandidates.length === 0">
+        <div class="empty-icon">🔎</div>
+        <div class="empty-title">Aucun candidat scoré pour cette offre</div>
+        <div class="empty-sub">Les scores IA apparaissent dès qu'un candidat postule.</div>
+      </div>
 
-      <!-- Banner premium -->
-        <div class="premium-banner" *ngIf="!loadingCandidates && !candidatesError && selectedCandidates.length > 0">
+      <div class="premium-banner" *ngIf="!loadingTop && !topError && topCandidates.length > 0">
         <div class="premium-icon">🔒</div>
         <div class="premium-text">
           <h4>Accès limité — 5 profils gratuits</h4>
@@ -158,17 +167,19 @@
         <button class="btn-premium">Passer Premium</button>
       </div>
 
-      <!-- Candidate cards -->
-        <div class="cand-card" *ngFor="let c of selectedCandidates; let i = index">
+      <div class="cand-card" *ngFor="let c of topCandidates; let i = index">
         <div class="cand-top">
           <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
           <div class="cand-info">
-            <div class="cand-name">#{{ i + 1 }} {{ c.name }}</div>
+            <div class="cand-name-row">
+              <span class="cand-name">#{{ i + 1 }} {{ c.name }}</span>
+              <span class="applied-badge" *ngIf="c.applied">✓ A postulé</span>
+            </div>
             <div class="cand-role">{{ c.role }}</div>
             <div class="cand-meta">
               <span>📍 {{ c.location }}</span>
               <span>·</span>
-                <span>Exp. : {{ c.dispo }}</span>
+              <span>Exp. : {{ c.dispo }}</span>
             </div>
           </div>
           <div class="match-badge" [ngClass]="getMatchClass(c.match)">
@@ -195,6 +206,54 @@
         <div class="cand-actions">
           <button class="btn-interested">« Contacter ce candidat »</button>
           <button class="btn-skip">✕ Passer</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB: CANDIDATURES -->
+    <div class="panel-body" *ngIf="panelTab === 'applications'">
+
+      <div class="empty-state" *ngIf="loadingCandidates">
+        <div class="empty-icon">⏳</div>
+        <div class="empty-title">Chargement des candidatures...</div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loadingCandidates && candidatesError">
+        <div class="empty-icon">❌</div>
+        <div class="empty-title">{{ candidatesError }}</div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loadingCandidates && !candidatesError && selectedCandidates.length === 0">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">Aucune candidature pour cette offre</div>
+      </div>
+
+      <div class="app-card" *ngFor="let c of selectedCandidates; let i = index">
+        <div class="app-card-left">
+          <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
+          <div class="cand-info">
+            <div class="cand-name">{{ c.name }}</div>
+            <div class="cand-role">{{ c.role }}</div>
+            <div class="cand-meta">
+              <span>📍 {{ c.location }}</span>
+              <span>·</span>
+              <span>Exp. : {{ c.dispo }}</span>
+              <ng-container *ngIf="c.appliedAt">
+                <span>·</span>
+                <span>{{ c.appliedAt | date:'dd/MM/yyyy' }}</span>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+        <div class="app-card-right">
+          <div class="match-badge" [ngClass]="getMatchClass(c.match)">
+            {{ getMatchArrow(c.match) }} {{ c.match }}%
+          </div>
+          <div class="app-status" [ngClass]="getStatusClass(c.applicationStatus)">
+            {{ getStatusLabel(c.applicationStatus) }}
+          </div>
+          <button class="btn-interested btn-sm">Contacter</button>
         </div>
       </div>
 

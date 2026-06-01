@@ -69,6 +69,7 @@ export interface JobOffer {
   contract_type?: 'CDI' | 'CDD' | 'freelance' | 'stage' | 'alternance';
   is_active: boolean;
   created_at: string;
+  applicationCount?: number;
 }
 
 export interface ConnectedUserContext {
@@ -165,6 +166,7 @@ export function mapJobOffers(jobs: any[]): JobOffer[] {
     contract_type: (job.contractType ?? 'CDI') as JobOffer['contract_type'],
     is_active: Boolean(job.isActive),
     created_at: job.createdAt ? new Date(job.createdAt).toISOString() : new Date().toISOString(),
+    applicationCount: typeof job.applicationCount === 'number' ? job.applicationCount : undefined,
   }));
 }
 

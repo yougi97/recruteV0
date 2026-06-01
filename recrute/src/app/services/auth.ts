@@ -61,6 +61,14 @@ export class AuthService {
     return this.httpClient.get<any[]>(`${this.url}/users/company/${companyId}/jobs/${jobId}/candidates`);
   }
 
+  getTopCandidates(companyId: number, jobId: number): Observable<any[]> {
+    return this.httpClient.get<any[]>(`${this.url}/users/company/${companyId}/jobs/${jobId}/top-candidates`);
+  }
+
+  computeCompanyOfferMissingScores(companyId: number, jobId: number): Observable<any> {
+    return this.httpClient.post<any>(`${this.url}/users/company/${companyId}/jobs/${jobId}/compute-missing-scores`, {});
+  }
+
   createCompanyJob(companyId: number, job: any): Observable<any> {
     return this.httpClient.post<any>(`${this.url}/users/company/${companyId}/jobs`, job);
   }
@@ -71,6 +79,14 @@ export class AuthService {
 
   updateCompanyJobStatus(companyId: number, jobId: number, isActive: boolean): Observable<any> {
     return this.httpClient.patch<any>(`${this.url}/users/company/${companyId}/jobs/${jobId}/status`, { isActive });
+  }
+
+  getCandidateApplications(userId: number): Observable<any[]> {
+    return this.httpClient.get<any[]>(`${this.url}/users/candidate/${userId}/applications`);
+  }
+
+  retractApplication(userId: number, offerId: number): Observable<void> {
+    return this.httpClient.delete<void>(`${this.url}/users/candidate/${userId}/offers/${offerId}/application`);
   }
 
   createCandidate(candidate: CandidateProfiles): Observable<CandidateProfiles> {

@@ -14,13 +14,16 @@ import { FiltersBarComponent } from '../candidat/components/filters-bar/filters-
   styleUrls: ['./offres.scss'],
 })
 export class OffresComponent implements OnInit {
+  candidateId = 0;
   offers: JobOffer[] = [];
   filteredOffers: JobOffer[] = [];
   isLoading = true;
   errorMessage = '';
   isRefreshing = false;
   toastVisible = false;
+  actionError = '';
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private actionErrorTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private jobOfferService: JobOfferService,
@@ -28,6 +31,7 @@ export class OffresComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.candidateId = Number(localStorage.getItem('user_id'));
     this.loadOffers();
   }
 
@@ -47,12 +51,32 @@ export class OffresComponent implements OnInit {
   }
 
   onInterested(offer: JobOffer): void {
-    offer.status = 'interested';
-    this.showToast();
+    if (this.candidateId > 0) {
+      this.jobOfferService.notifyInterest(this.candidateId, offer.id).subscribe({
+        next: () => {
+          offer.status = 'interested';
+          this.showToast();
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? err?.message ?? '';
+          if (msg.toLowerCase().includes('cv')) {
+            this.showActionError('Vous devez uploader un CV avant de postuler.');
+          } else {
+            this.showActionError('Impossible d\'enregistrer votre candidature.');
+          }
+        },
+      });
+    } else {
+      offer.status = 'interested';
+      this.showToast();
+    }
   }
 
   onDismissed(offer: JobOffer): void {
     offer.status = 'dismissed';
+    if (this.candidateId > 0) {
+      this.jobOfferService.dismissOffer(this.candidateId, offer.id).subscribe();
+    }
   }
 
   private loadOffers(isRefresh = false): void {
@@ -122,5 +146,11 @@ export class OffresComponent implements OnInit {
     if (this.toastTimer) clearTimeout(this.toastTimer);
     this.toastVisible = true;
     this.toastTimer = setTimeout(() => (this.toastVisible = false), 3200);
+  }
+
+  private showActionError(msg: string): void {
+    if (this.actionErrorTimer) clearTimeout(this.actionErrorTimer);
+    this.actionError = msg;
+    this.actionErrorTimer = setTimeout(() => (this.actionError = ''), 4000);
   }
 }

@@ -44,5 +44,9 @@
     <div class="toast" [class.show]="toastVisible">
       ✓ Offre sauvegardée !
     </div>
+
+    <div class="toast toast-error" [class.show]="actionError">
+      {{ actionError }}
+    </div>
   </div>
 </div>

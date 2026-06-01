@@ -16,6 +16,8 @@ interface CompanyCandidateView {
   match: number;
   ai: string;
   appliedAt?: string | null;
+  applicationStatus?: string | null;
+  applied?: boolean;
   scoreSemantique?: number;
   scoreStructure?: number;
   scoreLlm?: number;
@@ -45,9 +47,13 @@ export class CompanyOffers implements OnInit {
   // panel candidats
   selectedOffer: JobOffer | null = null;
   panelOpen = false;
+  panelTab: 'top' | 'applications' = 'top';
   selectedCandidates: CompanyCandidateView[] = [];
   loadingCandidates = false;
   candidatesError = '';
+  topCandidates: CompanyCandidateView[] = [];
+  loadingTop = false;
+  topError = '';
 
   // filtre offres
   activeFilter: 'all' | 'active' | 'inactive' | 'cdi' | 'stage' = 'all';
@@ -113,7 +119,8 @@ export class CompanyOffers implements OnInit {
     if (!offer.is_active) return;
     this.selectedOffer = offer;
     this.panelOpen = true;
-    this.loadCandidatesForOffer(offer.id);
+    this.panelTab = 'top';
+    this.computeAndLoadCandidates(offer.id);
   }
 
   closePanel() {
@@ -121,6 +128,28 @@ export class CompanyOffers implements OnInit {
     this.selectedOffer = null;
     this.selectedCandidates = [];
     this.candidatesError = '';
+    this.topCandidates = [];
+    this.topError = '';
+  }
+
+  getStatusLabel(status: string | null | undefined): string {
+    switch (status) {
+      case 'attente':  return 'En attente';
+      case 'encours':  return 'En cours';
+      case 'accepte':  return 'Accepté';
+      case 'refuse':   return 'Refusé';
+      default:         return '—';
+    }
+  }
+
+  getStatusClass(status: string | null | undefined): string {
+    switch (status) {
+      case 'attente':  return 'status-attente';
+      case 'encours':  return 'status-encours';
+      case 'accepte':  return 'status-accepte';
+      case 'refuse':   return 'status-refuse';
+      default:         return '';
+    }
   }
 
   getCardInitials(title: string): string {
@@ -156,40 +185,71 @@ export class CompanyOffers implements OnInit {
     return Math.max(1, Math.floor(diff / (1000 * 60 * 60 * 24)));
   }
 
-  private loadCandidatesForOffer(jobId: number): void {
-    if (!this.companyId) {
-      this.candidatesError = 'Entreprise introuvable.';
-      return;
-    }
+  private mapCandidate(c: any): CompanyCandidateView {
+    return {
+      candidateId: Number(c.candidateId ?? 0),
+      name: c.name ?? 'Candidat inconnu',
+      initials: c.initials ?? '?',
+      color: c.color ?? '#1a5ff8',
+      bg: c.bg ?? 'rgba(26,95,248,0.15)',
+      role: c.role ?? 'Profil candidat',
+      location: c.location ?? 'Location inconnue',
+      dispo: c.dispo ?? '—',
+      match: Number(c.match ?? 0),
+      ai: c.ai ?? 'Score IA disponible',
+      appliedAt: c.appliedAt ?? null,
+      applicationStatus: c.applicationStatus ?? null,
+      applied: c.applied ?? false,
+      scoreSemantique: c.scoreSemantique,
+      scoreStructure: c.scoreStructure,
+      scoreLlm: c.scoreLlm,
+    };
+  }
 
+  private loadCandidatesForOffer(jobId: number): void {
     this.loadingCandidates = true;
     this.candidatesError = '';
     this.selectedCandidates = [];
 
     this.authService.getCompanyOfferCandidates(this.companyId, jobId).subscribe({
       next: (candidates) => {
-        this.selectedCandidates = candidates.map((candidate: any) => ({
-          candidateId: Number(candidate.candidateId ?? 0),
-          name: candidate.name ?? 'Candidat inconnu',
-          initials: candidate.initials ?? '?',
-          color: candidate.color ?? '#1a5ff8',
-          bg: candidate.bg ?? 'rgba(26,95,248,0.15)',
-          role: candidate.role ?? 'Profil candidat',
-          location: candidate.location ?? 'Location inconnue',
-          dispo: candidate.dispo ?? '—',
-          match: Number(candidate.match ?? 0),
-          ai: candidate.ai ?? 'Score IA disponible',
-          appliedAt: candidate.appliedAt ?? null,
-          scoreSemantique: candidate.scoreSemantique,
-          scoreStructure: candidate.scoreStructure,
-          scoreLlm: candidate.scoreLlm,
-        }));
+        this.selectedCandidates = candidates.map((c: any) => this.mapCandidate(c));
         this.loadingCandidates = false;
       },
       error: () => {
-        this.candidatesError = 'Impossible de charger les candidats pour cette offre.';
+        this.candidatesError = 'Impossible de charger les candidatures.';
         this.loadingCandidates = false;
       }
+    });
+  }
+
+  private loadTopCandidates(jobId: number): void {
+    this.loadingTop = true;
+    this.topError = '';
+    this.topCandidates = [];
+
+    this.authService.getTopCandidates(this.companyId, jobId).subscribe({
+      next: (candidates) => {
+        this.topCandidates = candidates.map((c: any) => this.mapCandidate(c));
+        this.loadingTop = false;
+      },
+      error: () => {
+        this.topError = 'Impossible de charger le classement IA.';
+        this.loadingTop = false;
+      }
+    });
+  }
+
+  private computeAndLoadCandidates(jobId: number): void {
+    if (!this.companyId) {
+      this.candidatesError = 'Entreprise introuvable.';
+      this.topError = 'Entreprise introuvable.';
+      return;
+    }
+
+    this.authService.computeCompanyOfferMissingScores(this.companyId, jobId).subscribe({
+      next: () => { this.loadTopCandidates(jobId); this.loadCandidatesForOffer(jobId); },
+      error: () => { this.loadTopCandidates(jobId); this.loadCandidatesForOffer(jobId); },
     });
   }
 }
