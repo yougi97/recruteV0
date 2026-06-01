@@ -9,6 +9,7 @@
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/CvsIAController.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Enum/Source.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/JobOfferIAController.java
+/Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/PublicOffersController.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Exception/ErrorResponse.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Exception/GlobalExceptionHandler.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Services/JobOfferService.java
@@ -30,6 +31,7 @@
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Config/CorsConfig.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Services/UserService.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Entities/CvCategories.java
+/Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/CandidateOffersController.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/MatchController.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Services/CategoriesService.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Enum/NiveauEtude.java

@@ -1,3 +1,16 @@
+.offres-page {
+  min-height: calc(100vh - 72px);
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.12), transparent 24%),
+    linear-gradient(160deg, #0f2027 0%, #203a43 52%, #2c5364 100%);
+  color: #f8fafc;
+}
+
+.offres-shell {
+  padding: 0 0 72px;
+}
+
 .page-header {
   padding: 48px 48px 0;
   max-width: 1200px;
@@ -88,5 +101,55 @@
     background: rgba(56, 189, 248, 0.2);
     border-color: rgba(56, 189, 248, 0.55);
     transform: translateY(-1px);
+  }
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+  padding: 0 48px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.status-card {
+  max-width: 1200px;
+  margin: 16px auto 0;
+  padding: 18px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.76);
+  color: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+  width: calc(100% - 96px);
+
+  &.error {
+    border-color: rgba(248, 113, 113, 0.35);
+    background: rgba(69, 10, 10, 0.76);
+  }
+
+  &.empty {
+    color: rgba(255, 255, 255, 0.62);
+  }
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(52, 211, 153, 0.2);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: #86efac;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: all 0.3s ease;
+
+  &.show {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

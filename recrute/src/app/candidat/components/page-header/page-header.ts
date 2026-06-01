@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -12,4 +12,10 @@ export class PageHeaderComponent {
   @Input() totalCount: number = 0;
   @Input() interestedCount: number = 0;
   @Input() lastUpdated: string = '';
+  @Input() isRefreshing: boolean = false;
+  @Output() refresh = new EventEmitter<void>();
+
+  onRefresh(): void {
+    this.refresh.emit();
+  }
 }

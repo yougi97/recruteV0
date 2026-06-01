@@ -15,5 +15,8 @@
     <div class="meta-chip" *ngIf="interestedCount > 0">
       ✉ {{ interestedCount }} intérêt(s) envoyé(s)
     </div>
+    <button class="refresh-btn" type="button" (click)="onRefresh()">
+      {{ isRefreshing ? 'Actualisation...' : '↻ Rafraîchir' }}
+    </button>
   </div>
 </div>

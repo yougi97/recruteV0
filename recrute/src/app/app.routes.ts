@@ -8,6 +8,7 @@ import { Register } from './register/register';
 import { Profile } from './profil/profil';
 import { AboutComponent } from './about/about';
 import { CandidatComponent } from './candidat/candidat';
+import { OffresComponent } from './offres/offres';
 
 
 export const routes: Routes = [
@@ -20,5 +21,6 @@ export const routes: Routes = [
     { path: 'profil', component: Profile },
     { path: 'profile', redirectTo: 'profil', pathMatch: 'full' },
     { path: 'candidat', component: CandidatComponent },
+    { path: 'offres', component: OffresComponent },
     { path: 'about', component: AboutComponent }
 ];

@@ -26,6 +26,7 @@ com/techlance/recrute/RecruteApplication.class
 com/techlance/recrute/Repositories/JobCategoriesRepository.class
 com/techlance/recrute/DTO/payload.class
 com/techlance/recrute/Enum/NiveauEtude.class
+com/techlance/recrute/Controllers/PublicOffersController.class
 com/techlance/recrute/Filtre/JobOfferFilter.class
 com/techlance/recrute/Entities/Users.class
 com/techlance/recrute/Enum/Rating.class
@@ -48,4 +49,5 @@ com/techlance/recrute/Controllers/MatchController.class
 com/techlance/recrute/Services/CvsService.class
 com/techlance/recrute/Entities/JobSearches.class
 com/techlance/recrute/Enum/ContratType.class
+com/techlance/recrute/Controllers/CandidateOffersController.class
 com/techlance/recrute/DTO/categories.class

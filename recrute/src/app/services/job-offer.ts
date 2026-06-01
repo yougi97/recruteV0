@@ -20,4 +20,10 @@ export class JobOfferService {
   dismissOffer(candidateId: number, offerId: number): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/users/candidate/${candidateId}/offers/${offerId}/dismiss`, {});
   }
+
+  getAllOffers(): Observable<any[]> {
+    const userId = Number(localStorage.getItem('user_id'));
+    const url = userId ? `${this.apiUrl}/public/offers?candidateId=${userId}` : `${this.apiUrl}/public/offers`;
+    return this.http.get<any[]>(url);
+  }
 }

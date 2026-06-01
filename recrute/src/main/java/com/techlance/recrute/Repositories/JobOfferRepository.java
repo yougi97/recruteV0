@@ -11,4 +11,6 @@ import com.techlance.recrute.Entities.JobOffers;
 @Repository
 public interface JobOfferRepository extends JpaRepository<JobOffers, Long>, JpaSpecificationExecutor<JobOffers> {
     List<JobOffers> findByCompanyProfilesId(Long id);
+
+    List<JobOffers> findByIsActiveTrue();
 }

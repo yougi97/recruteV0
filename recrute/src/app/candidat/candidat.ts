@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { JobOfferService } from '../services/job-offer';
 import { JobOffer, OfferFilters } from '../model/job-offer';
+import { CandidateProfiles } from '../model/candidateProfiles';
 import { JobCardComponent } from './components/job-card/job-card';
 import { FiltersBarComponent } from './components/filters-bar/filters-bar';
 import { PageHeaderComponent } from './components/page-header/page-header';
@@ -18,10 +19,13 @@ import { PageHeaderComponent } from './components/page-header/page-header';
 export class CandidatComponent implements OnInit {
   candidateName = '';
   candidateId: number = 0;
+  candidateProfile: CandidateProfiles | null = null;
   offers: JobOffer[] = [];
   filteredOffers: JobOffer[] = [];
   isLoading = true;
+  errorMessage = '';
   toastVisible = false;
+  isRefreshing = false;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -31,19 +35,27 @@ export class CandidatComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.candidateName = this.authService.getCurrentUser() ?? '';
     this.candidateId = Number(localStorage.getItem('user_id'));
 
-  this.jobOfferService.getSuggestions(this.candidateId).subscribe({
-      next: (data) => {
-        this.offers = data;
-        this.filteredOffers = data;
-        this.isLoading = false;
+    if (!this.candidateId) {
+      this.errorMessage = 'Profil candidat introuvable.';
+      this.isLoading = false;
+      return;
+    }
+
+    this.authService.getCandidatebyId(this.candidateId).subscribe({
+      next: (profile) => {
+        this.candidateProfile = profile;
+        const fallbackName = this.authService.getCurrentUser() ?? '';
+        const displayName = `${profile.user?.firstName ?? ''} ${profile.user?.lastName ?? ''}`.trim();
+        this.candidateName = displayName || fallbackName;
       },
       error: () => {
-        this.isLoading = false;
+        this.candidateName = this.authService.getCurrentUser() ?? '';
       },
     });
+
+    this.loadSuggestions();
   }
 
   get totalCount(): number { return this.offers.length; }
@@ -58,15 +70,19 @@ export class CandidatComponent implements OnInit {
     });
   }
 
+  refreshSuggestions(): void {
+    this.loadSuggestions(true);
+  }
+
   onInterested(offer: JobOffer): void {
     offer.status = 'interested';
-  this.jobOfferService.notifyInterest(this.candidateId, offer.id).subscribe();
+    this.jobOfferService.notifyInterest(this.candidateId, offer.id).subscribe();
     this.showToast();
   }
 
   onDismissed(offer: JobOffer): void {
     offer.status = 'dismissed';
-  this.jobOfferService.dismissOffer(this.candidateId, offer.id).subscribe();
+    this.jobOfferService.dismissOffer(this.candidateId, offer.id).subscribe();
   }
 
   logout(): void {
@@ -78,5 +94,68 @@ export class CandidatComponent implements OnInit {
     if (this.toastTimer) clearTimeout(this.toastTimer);
     this.toastVisible = true;
     this.toastTimer = setTimeout(() => (this.toastVisible = false), 3200);
+  }
+
+  private computeMatchLevel(score: number): 'high' | 'mid' | 'low' {
+    if (score >= 70) return 'high';
+    if (score >= 50) return 'mid';
+    return 'low';
+  }
+
+  private loadSuggestions(isRefresh = false): void {
+    if (isRefresh) {
+      this.isRefreshing = true;
+    } else {
+      this.isLoading = true;
+    }
+
+    this.errorMessage = '';
+
+    this.jobOfferService.getSuggestions(this.candidateId).subscribe({
+      next: (data) => {
+        const normalized = this.normalizeJobOffers(data);
+        this.offers = normalized;
+        this.filteredOffers = normalized;
+        this.isLoading = false;
+        this.isRefreshing = false;
+      },
+      error: (err) => {
+        const httpStatus = typeof err?.status === 'number' ? err.status : 0;
+        if (httpStatus === 404 && !isRefresh) {
+          setTimeout(() => this.loadSuggestions(true), 500);
+          return;
+        }
+
+        this.errorMessage = 'Impossible de charger les suggestions IA.';
+        this.isLoading = false;
+        this.isRefreshing = false;
+      },
+    });
+  }
+
+  private normalizeJobOffers(data: any[]): JobOffer[] {
+    return data.map(item => {
+      let raw = item.matchScore ?? 50;
+      let ms = raw;
+      if (typeof ms === 'number' && ms <= 1) ms = Math.round(ms * 100);
+      else if (typeof ms === 'number') ms = Math.round(ms);
+
+      return {
+        id: item.id,
+        title: item.title,
+        company: item.company,
+        companyInitial: item.companyInitial,
+        companyColor: item.companyColor,
+        location: item.location,
+        contractType: item.contractType as any,
+        workMode: item.workMode as any,
+        salary: item.salary,
+        matchScore: ms,
+        matchLevel: this.computeMatchLevel(ms),
+        tags: item.tags ?? [],
+        aiReason: item.description ?? 'Offre d\'emploi disponible',
+        status: item.status ?? 'pending',
+      } as JobOffer;
+    });
   }
 }

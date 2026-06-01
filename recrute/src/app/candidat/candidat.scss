@@ -1,3 +1,16 @@
+.candidate-page {
+  min-height: calc(100vh - 72px);
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.12), transparent 24%),
+    linear-gradient(160deg, #0f2027 0%, #203a43 52%, #2c5364 100%);
+  color: #f8fafc;
+}
+
+.candidate-shell {
+  padding: 0 0 72px;
+}
+
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -5,6 +18,27 @@
   padding: 0 48px 60px;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.status-card {
+  max-width: 1200px;
+  margin: 16px auto 0;
+  padding: 18px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.76);
+  color: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+  width: calc(100% - 96px);
+
+  &.error {
+    border-color: rgba(248, 113, 113, 0.35);
+    background: rgba(69, 10, 10, 0.76);
+  }
+
+  &.empty {
+    color: rgba(255, 255, 255, 0.62);
+  }
 }
 
 .loading {

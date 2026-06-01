@@ -1,24 +1,38 @@
-<app-page-header
-  [totalCount]="totalCount"
-  [interestedCount]="interestedCount"
-  lastUpdated="Mis à jour il y a 2h"
-/>
+<div class="candidate-page">
+  <div class="candidate-shell">
+    <app-page-header
+      [totalCount]="totalCount"
+      [interestedCount]="interestedCount"
+      [lastUpdated]="candidateName ? 'Pour ' + candidateName : 'Mis à jour il y a 2h'"
+      [isRefreshing]="isRefreshing"
+      (refresh)="refreshSuggestions()"
+    />
 
-<app-filters-bar (filtersChange)="onFiltersChange($event)" />
+    <app-filters-bar (filtersChange)="onFiltersChange($event)" />
 
-<div class="cards-grid" *ngIf="!isLoading">
-  <app-job-card
-    *ngFor="let offer of filteredOffers"
-    [offer]="offer"
-    (interested)="onInterested($event)"
-    (dismissed)="onDismissed($event)"
-  />
-</div>
+    <div class="status-card" *ngIf="isLoading || isRefreshing">
+      <span>{{ isRefreshing ? 'Actualisation des suggestions...' : 'Chargement des suggestions...' }}</span>
+    </div>
 
-<div class="loading" *ngIf="isLoading">
-  <span>Chargement des suggestions...</span>
-</div>
+    <div class="status-card error" *ngIf="!isLoading && errorMessage">
+      <span>{{ errorMessage }}</span>
+    </div>
 
-<div class="toast" [class.show]="toastVisible">
-  ✓ L'entreprise a été notifiée de votre intérêt !
+    <div class="cards-grid" *ngIf="!isLoading && !errorMessage">
+      <app-job-card
+        *ngFor="let offer of filteredOffers"
+        [offer]="offer"
+        (interested)="onInterested($event)"
+        (dismissed)="onDismissed($event)"
+      />
+    </div>
+
+    <div class="status-card empty" *ngIf="!isLoading && !errorMessage && !filteredOffers.length">
+      <span>Aucune offre ne correspond pour le moment.</span>
+    </div>
+
+    <div class="toast" [class.show]="toastVisible">
+      ✓ L'entreprise a été notifiée de votre intérêt !
+    </div>
+  </div>
 </div>

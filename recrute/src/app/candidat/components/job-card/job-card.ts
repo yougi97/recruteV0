@@ -10,7 +10,12 @@ import { JobOffer } from '../../../model/job-offer';
   styleUrls: ['./job-card.scss'],
 })
 export class JobCardComponent {
-  @Input() offer?: JobOffer;
+  private _offer?: JobOffer;
+  @Input()
+  set offer(value: JobOffer | undefined) {
+    this._offer = value;
+  }
+  get offer(): JobOffer | undefined { return this._offer; }
   @Output() interested = new EventEmitter<JobOffer>();
   @Output() dismissed = new EventEmitter<JobOffer>();
 
@@ -24,6 +29,8 @@ export class JobCardComponent {
     };
     return map[offer.matchLevel];
   }
+
+  
 
   onInterest(): void {
     const offer = this.offer;

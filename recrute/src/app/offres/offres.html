@@ -1,0 +1,48 @@
+<div class="offres-page">
+  <div class="offres-shell">
+    <div class="page-header">
+      <div class="eyebrow">
+        <span>🔍</span> Marché du travail
+      </div>
+      <h1>Toutes les <span class="highlight">offres d'emploi</span></h1>
+      <p>
+        Découvrez l'ensemble des offres d'emploi disponibles sur notre plateforme.
+        Filtrez par contrat, lieu ou niveau d'exigence pour trouver l'opportunité idéale.
+      </p>
+
+      <div class="header-meta">
+        <div class="meta-chip">📋 {{ totalCount }} offres disponibles</div>
+        <button class="refresh-btn" type="button" (click)="refreshOffers()">
+          {{ isRefreshing ? 'Actualisation...' : '↻ Rafraîchir' }}
+        </button>
+      </div>
+    </div>
+
+    <app-filters-bar (filtersChange)="onFiltersChange($event)" />
+
+    <div class="status-card" *ngIf="isLoading || isRefreshing">
+      <span>{{ isRefreshing ? 'Actualisation des offres...' : 'Chargement des offres...' }}</span>
+    </div>
+
+    <div class="status-card error" *ngIf="!isLoading && errorMessage">
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <div class="cards-grid" *ngIf="!isLoading && !errorMessage">
+      <app-job-card
+        *ngFor="let offer of filteredOffers"
+        [offer]="offer"
+        (interested)="onInterested($event)"
+        (dismissed)="onDismissed($event)"
+      />
+    </div>
+
+    <div class="status-card empty" *ngIf="!isLoading && !errorMessage && !filteredOffers.length">
+      <span>Aucune offre ne correspond aux critères sélectionnés.</span>
+    </div>
+
+    <div class="toast" [class.show]="toastVisible">
+      ✓ Offre sauvegardée !
+    </div>
+  </div>
+</div>
