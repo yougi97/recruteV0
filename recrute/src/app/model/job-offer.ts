@@ -23,6 +23,15 @@ export interface JobOffer {
   tags: JobTag[];
   aiReason: string;
   status: OfferStatus;
+  description?: string;
+  companyId?: number;
+  companyName?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  applicationsCount?: number;
+  matchesHigh?: number;
+  daysOnline?: number;
 }
 
 export interface OfferFilters {

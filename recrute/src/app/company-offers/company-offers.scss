@@ -1,0 +1,368 @@
+:host {
+  display: block;
+  min-height: calc(100vh - 70px);
+  background: linear-gradient(135deg, #151f35 0%, #1e3058 40%, #284574 70%, #375674 100%);
+  color: #ffffff;
+  font-family: 'Segoe UI', system-serif, sans-serif;
+}
+:host, :host * { box-sizing: border-box; }
+
+$navy:           #0f2027;
+$navy-mid:       rgba(15, 32, 39, 0.95);
+$navy-card:      rgba(255, 255, 255, 0.07);
+$navy-card2:     rgba(255, 255, 255, 0.12);
+$navy-border:    rgba(255, 255, 255, 0.12);
+$navy-border-hv: rgba(255, 255, 255, 0.25);
+$cyan:           #38bdf8;
+$cyan-dim:       rgba(56, 189, 248, 0.15);
+$gold:           #f5b942;
+$gold-dim:       rgba(245, 185, 66, 0.15);
+$green:          #22d3a0;
+$green-dim:      rgba(34, 211, 160, 0.12);
+$red:            #ff6b6b;
+$red-dim:        rgba(255, 107, 107, 0.12);
+$text-primary:   #ffffff;
+$text-secondary: rgba(255, 255, 255, 0.65);
+$text-muted:     rgba(255, 255, 255, 0.40);
+$bar-track:      rgba(255, 255, 255, 0.10);
+
+// ── HERO ───────────────────────────────────────────────────────────────
+.hero {
+  padding: 2.5rem 2rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  &-eyebrow {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    color: $cyan; text-transform: uppercase; margin-bottom: 10px;
+  }
+
+  .eyebrow-line { width: 20px; height: 1px; background: $cyan; }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem; font-weight: 700; line-height: 1.15;
+    color: $text-primary; margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 15px; color: $text-secondary;
+    max-width: 560px; line-height: 1.6; margin-bottom: 1.5rem;
+  }
+
+  &-stats {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+
+  &-stat {
+    display: flex; align-items: center; gap: 8px;
+    background: $navy-card; border: 1px solid $navy-border;
+    border-radius: 10px; padding: 8px 14px; font-size: 13px;
+
+    &-icon  { font-size: 14px; }
+    &-val   { font-weight: 600; color: $text-primary; }
+    &-label { color: $text-muted; }
+  }
+}
+
+// ── FILTERS ────────────────────────────────────────────────────────────
+.filters-bar {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 2rem 1.5rem;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+
+.filter-label { font-size: 13px; color: $text-muted; margin-right: 4px; }
+
+.filter-chip {
+  padding: 6px 14px; border-radius: 20px; border: none;
+  cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+
+  &.filter-active {
+    background: $cyan-dim; color: $cyan;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+  }
+
+  &.filter-inactive {
+    background: transparent; color: $text-secondary;
+    border: 1px solid $navy-border;
+    &:hover { border-color: $navy-border-hv; color: $text-primary; }
+  }
+}
+
+// ── GRID ───────────────────────────────────────────────────────────────
+.grid {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 2rem 3rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+}
+
+// ── OFFER CARD ─────────────────────────────────────────────────────────
+.offer-card {
+  background: $navy-card;
+  border: 1px solid $navy-border;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all .25s;
+  display: flex; flex-direction: column;
+
+  &:hover {
+    border-color: rgba(56, 189, 248, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  &.selected {
+    border-color: rgba(56, 189, 248, 0.5);
+    background: $navy-card2;
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2);
+  }
+}
+
+.card-top {
+  padding: 18px 18px 14px;
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 12px;
+}
+
+.card-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; flex-shrink: 0;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.card-badge {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+
+  &.badge-active   { background: $green-dim; color: $green; border: 1px solid rgba(34, 211, 160, 0.2); }
+  &.badge-inactive { background: rgba(255, 255, 255, 0.06); color: $text-muted; border: 1px solid $navy-border; }
+}
+
+.badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+.card-body { padding: 0 18px 14px; }
+
+.card-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px; font-weight: 600; margin-bottom: 4px;
+  color: $text-primary;
+}
+
+.card-company { font-size: 13px; color: $cyan; font-weight: 500; margin-bottom: 10px; }
+
+.card-meta {
+  display: flex; align-items: center; gap: 6px;
+  flex-wrap: wrap; font-size: 12px; color: $text-muted; margin-bottom: 12px;
+}
+
+.meta-dot { width: 3px; height: 3px; border-radius: 50%; background: $text-muted; }
+
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+
+.tag {
+  padding: 3px 9px; border-radius: 6px;
+  font-size: 11px; font-weight: 500;
+  background: rgba(255, 255, 255, 0.07); color: $text-secondary;
+  border: 1px solid $navy-border;
+}
+
+.card-stats {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px;
+}
+
+.stat-box {
+  background: rgba(255, 255, 255, 0.04); border: 1px solid $navy-border;
+  border-radius: 10px; padding: 10px 8px; text-align: center;
+}
+
+.stat-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px; font-weight: 700; color: $text-primary; display: block;
+  &.cyan { color: $cyan; }
+}
+
+.stat-label { font-size: 10px; color: $text-muted; margin-top: 2px; display: block; }
+
+.card-footer {
+  padding: 12px 18px 16px; border-top: 1px solid $navy-border;
+  display: flex; gap: 8px; margin-top: auto;
+}
+
+.btn-primary-card {
+  flex: 1; padding: 9px 0; border-radius: 10px;
+  background: $cyan-dim; border: 1px solid rgba(56, 189, 248, 0.3);
+  color: $cyan; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all .2s; text-align: center;
+  &:hover { background: rgba(56, 189, 248, 0.25); }
+}
+
+.btn-ghost-card {
+  padding: 9px 14px; border-radius: 10px;
+  background: transparent; border: 1px solid $navy-border;
+  color: $text-secondary; font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s;
+  &:hover { border-color: $navy-border-hv; color: $text-primary; }
+}
+
+// ── EMPTY STATE ─────────────────────────────────────────────────────────
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center; padding: 4rem 2rem; color: $text-muted;
+}
+.empty-icon  { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.empty-title { font-size: 18px; font-weight: 600; color: $text-secondary; margin-bottom: 8px; }
+
+// ── PANEL ───────────────────────────────────────────────────────────────
+.panel-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(5, 12, 25, 0.7); backdrop-filter: blur(4px);
+  display: none; align-items: flex-start; justify-content: flex-end;
+
+  &.open { display: flex; }
+}
+
+.panel {
+  width: min(720px, 100vw); height: 100vh; overflow-y: auto;
+  background: $navy-mid; border-left: 1px solid $navy-border;
+  display: flex; flex-direction: column;
+  animation: slideIn .25s ease;
+
+  &::-webkit-scrollbar       { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(40px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.panel-header {
+  padding: 20px 24px 16px; border-bottom: 1px solid $navy-border;
+  background: rgba(15, 32, 39, 0.9); position: sticky; top: 0; z-index: 10;
+}
+
+.panel-title-row {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
+}
+
+.panel-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px; font-weight: 700; color: $text-primary;
+}
+
+.panel-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07); border: 1px solid $navy-border;
+  color: $text-secondary; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all .2s;
+  &:hover { background: $red-dim; color: $red; border-color: rgba(255, 107, 107, 0.3); }
+}
+
+.panel-subtitle { font-size: 13px; color: $text-muted; }
+.panel-body     { padding: 16px 24px; flex: 1; }
+
+// ── PREMIUM BANNER ─────────────────────────────────────────────────────
+.premium-banner {
+  background: linear-gradient(135deg, rgba(245, 185, 66, 0.1), rgba(245, 185, 66, 0.04));
+  border: 1px solid rgba(245, 185, 66, 0.25); border-radius: 12px;
+  padding: 14px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+}
+
+.premium-icon { font-size: 22px; }
+
+.premium-text {
+  h4 { font-size: 14px; font-weight: 600; color: $gold; margin-bottom: 2px; }
+  p  { font-size: 12px; color: $text-secondary; line-height: 1.4; }
+}
+
+.btn-premium {
+  margin-left: auto; padding: 8px 16px; border-radius: 8px; flex-shrink: 0;
+  background: $gold-dim; border: 1px solid rgba(245, 185, 66, 0.35);
+  color: $gold; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: all .2s;
+  &:hover { background: rgba(245, 185, 66, 0.2); }
+}
+
+// ── CANDIDATE CARD ──────────────────────────────────────────────────────
+.cand-card {
+  background: $navy-card; border: 1px solid $navy-border;
+  border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; transition: all .2s;
+  &:hover { border-color: $navy-border-hv; }
+}
+
+.cand-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
+
+.cand-avatar {
+  width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; font-family: 'Space Grotesk', sans-serif;
+}
+
+.cand-info  { flex: 1; }
+.cand-name  { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: $text-primary; margin-bottom: 2px; }
+.cand-role  { font-size: 12px; color: $text-secondary; margin-bottom: 4px; }
+.cand-meta  { display: flex; gap: 10px; font-size: 11px; color: $text-muted; }
+
+.match-badge {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 8px;
+  font-size: 12px; font-weight: 700; font-family: 'Space Grotesk', sans-serif;
+  flex-shrink: 0; white-space: nowrap;
+
+  &.match-high { background: $green-dim; color: $green; border: 1px solid rgba(34, 211, 160, 0.25); }
+  &.match-mid  { background: $gold-dim;  color: $gold;  border: 1px solid rgba(245, 185, 66, 0.25); }
+  &.match-low  { background: $red-dim;   color: $red;   border: 1px solid rgba(255, 107, 107, 0.25); }
+}
+
+.compat-row   { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.compat-label { font-size: 11px; color: $text-muted; min-width: 110px; }
+.compat-bar   { flex: 1; height: 4px; border-radius: 2px; background: $bar-track; overflow: hidden; }
+.compat-fill  {
+  height: 100%; border-radius: 2px;
+  &.fill-green { background: $green; }
+  &.fill-gold  { background: $gold; }
+  &.fill-red   { background: $red; }
+}
+.compat-val { font-size: 11px; font-weight: 600; min-width: 28px; text-align: right; }
+
+.cand-ai-block {
+  background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.12);
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;
+}
+
+.ai-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+  color: $cyan; text-transform: uppercase; margin-bottom: 5px;
+}
+
+.ai-spark     { font-size: 12px; }
+.cand-ai-text { font-size: 12px; color: $text-secondary; line-height: 1.55; }
+
+.cand-actions { display: flex; gap: 8px; }
+
+.btn-interested {
+  flex: 1; padding: 8px 0; border-radius: 9px;
+  background: $cyan-dim; border: 1px solid rgba(56, 189, 248, 0.3);
+  color: $cyan; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all .2s;
+  &:hover { background: rgba(56, 189, 248, 0.25); }
+}
+
+.btn-skip {
+  padding: 8px 14px; border-radius: 9px;
+  background: transparent; border: 1px solid $navy-border;
+  color: $text-muted; font-size: 12px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all .2s;
+  &:hover { border-color: rgba(255, 107, 107, 0.3); color: $red; background: $red-dim; }
+}

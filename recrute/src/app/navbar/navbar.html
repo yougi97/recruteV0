@@ -9,21 +9,25 @@
   <div class="nav-links">
     <a href="#">Contactez-nous</a>
     <a routerLink="/about">À Propos</a>
-
-    @if (!isLoggedIn()) {
+    <ng-container *ngIf="!isLoggedIn(); else loggedInBlock">
+      <button class="home-btn" routerLink="/">Home</button>
       <button class="login-btn" routerLink="/login">Connexion</button>
-    } @else {
+    </ng-container>
+    <ng-template #loggedInBlock>
       <div class="user-section">
-        <button class="nav-pill" routerLink="/candidat">
-          <span class="dot"></span> Mes suggestions IA
-        </button>
-        <button class="nav-pill secondary" routerLink="/offres">
-          🔍 Toutes les offres
-        </button>
+        <ng-container *ngIf="authService.getCurrentUserType() === 'candidate'">
+          <button class="nav-pill" routerLink="/candidat">
+            <span class="dot"></span> Mes suggestions IA
+          </button>
+          <button class="nav-pill secondary" routerLink="/offres">
+            🔍 Toutes les offres
+          </button>
+        </ng-container>
         <button class="profile-btn" routerLink="/profil">Profil</button>
+        <button *ngIf="authService.getCurrentUserType() === 'company'" class="profile-btn" routerLink="/company-offers">Candidatures</button>
         <span class="user-email">{{ getCurrentUser() }}</span>
         <button class="logout-btn" (click)="logout()">Déconnexion</button>
       </div>
-    }
+    </ng-template>
   </div>
 </nav>

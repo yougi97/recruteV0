@@ -9,7 +9,7 @@ import { Profile } from './profil/profil';
 import { AboutComponent } from './about/about';
 import { CandidatComponent } from './candidat/candidat';
 import { OffresComponent } from './offres/offres';
-
+import { CompanyOffers } from './company-offers/company-offers';
 
 export const routes: Routes = [
     { path: '', component: Home },
@@ -22,5 +22,6 @@ export const routes: Routes = [
     { path: 'profile', redirectTo: 'profil', pathMatch: 'full' },
     { path: 'candidat', component: CandidatComponent },
     { path: 'offres', component: OffresComponent },
-    { path: 'about', component: AboutComponent }
+    { path: 'about', component: AboutComponent },
+    { path: 'company-offers', component: CompanyOffers },
 ];
