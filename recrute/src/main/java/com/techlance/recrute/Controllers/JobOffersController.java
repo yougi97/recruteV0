@@ -60,6 +60,14 @@ public class JobOffersController {
         return jobOfferService.computeMissingCompanyOfferScores(companyId, jobId);
     }
 
+    @PostMapping("/{jobId}/compute-all-scores")
+    public Map<String, Object> computeAllScores(
+            @PathVariable Long companyId,
+            @PathVariable Long jobId
+    ) {
+        return jobOfferService.computeAllCandidateScoresForOffer(companyId, jobId);
+    }
+
     @PutMapping("/{jobId}")
     public JobOffers updateOffer(
             @PathVariable Long companyId,

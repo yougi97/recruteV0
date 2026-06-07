@@ -69,6 +69,10 @@ export class AuthService {
     return this.httpClient.post<any>(`${this.url}/users/company/${companyId}/jobs/${jobId}/compute-missing-scores`, {});
   }
 
+  computeAllCandidateScores(companyId: number, jobId: number): Observable<any> {
+    return this.httpClient.post<any>(`${this.url}/users/company/${companyId}/jobs/${jobId}/compute-all-scores`, {});
+  }
+
   createCompanyJob(companyId: number, job: any): Observable<any> {
     return this.httpClient.post<any>(`${this.url}/users/company/${companyId}/jobs`, job);
   }

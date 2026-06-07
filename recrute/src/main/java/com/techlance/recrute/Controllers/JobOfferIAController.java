@@ -34,22 +34,22 @@ public class JobOfferIAController {
     }
 
     @PatchMapping("/parsed")
-    public JobOffers updateJobOffers(@PathVariable Long offre_id, JobOffers jobOffers) {
-        return jobOfferService.updateJobOffers(offre_id, jobOffers);
+    public JobOffers updateJobOffers(@PathVariable Long offre_id, @RequestBody java.util.Map<String, Object> body) {
+        return jobOfferService.updateJobOfferFromPython(offre_id, body);
     }
 
     @PostMapping("/categories")
-    public List<JobCategories> createCvCategories(@PathVariable Long offre_id, @RequestBody List<JobCategories> jobCategories) {
+    public List<JobCategories> createCvCategories(@PathVariable Long offre_id, @RequestBody List<Map<String, Object>> jobCategories) {
         List<JobCategories> jobCategorieses = new ArrayList<>();
-        for (JobCategories category:jobCategories) {
-            jobCategorieses.add(categoriesService.createJobCategories(offre_id, category));
+        for (Map<String, Object> category : jobCategories) {
+            jobCategorieses.add(categoriesService.createJobCategoriesFromMap(offre_id, category));
         }
         return jobCategorieses;
     }
 
     @GetMapping("/categories")
-    public List<Map<String,Object>> getcategoriesjob(@PathVariable Long offer_id) {
-        return categoriesService.getcategoriesjob(offer_id);
+    public List<Map<String,Object>> getcategoriesjob(@PathVariable Long offre_id) {
+        return categoriesService.getcategoriesjob(offre_id);
     }
 
 

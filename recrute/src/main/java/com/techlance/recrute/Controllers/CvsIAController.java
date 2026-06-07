@@ -58,8 +58,8 @@ public class CvsIAController {
     }
 
     @PatchMapping("/parsed")
-    public Cvs updateCv(@RequestBody Cvs cv, @PathVariable Long cv_id) {
-        return cvsService.updateCV(cv_id, cv);
+    public Cvs updateCv(@RequestBody java.util.Map<String, Object> body, @PathVariable Long cv_id) {
+        return cvsService.updateCVFromPython(cv_id, body);
     }
 
     @PostMapping("/categories")

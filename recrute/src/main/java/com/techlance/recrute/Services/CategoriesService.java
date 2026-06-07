@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.techlance.recrute.Enum.Level;
+import com.techlance.recrute.Enum.Type;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -115,6 +118,44 @@ public class CategoriesService {
         
         return jobCategoriesRepository.save(newJobCategories);
 
+    }
+
+    public JobCategories createJobCategoriesFromMap(Long id, Map<String, Object> map) {
+        JobOffers job = jobOfferRepository.findById(id).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ce job n'existe pas"));
+
+        String name = (String) map.get("name");
+        Type type = Type.skill;
+        try {
+            String typeStr = ((String) map.get("type")).toLowerCase()
+                .replace(" ", "_").replace("-", "_");
+            type = Type.valueOf(typeStr);
+        } catch (Exception ignored) {}
+
+        Optional<Categories> optCat = name != null
+            ? categoriesRepository.findByNameAndType(name, type)
+            : Optional.empty();
+        Categories cat;
+        if (optCat.isPresent()) {
+            cat = optCat.get();
+        } else {
+            cat = new Categories();
+            cat.setName(name);
+            cat.setType(type);
+            categoriesRepository.save(cat);
+        }
+
+        JobCategories jc = new JobCategories();
+        jc.setJobOffer(job);
+        jc.setCategory(cat);
+        try {
+            Object lvl = map.get("required_level");
+            if (lvl != null) jc.setRequiredLevel(Level.valueOf(lvl.toString().toLowerCase()));
+        } catch (Exception ignored) {}
+        Object mandatory = map.get("is_mandatory");
+        if (mandatory != null) jc.setMandatory(Boolean.parseBoolean(mandatory.toString()));
+
+        return jobCategoriesRepository.save(jc);
     }
 
     public List<Map<String,Object>> getcategoriesjob(Long jobId) {

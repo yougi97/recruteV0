@@ -7,7 +7,7 @@ from llm_scorer import score_llm, ScoreLLM
 import spring_client as api
 import json
 
-POIDS = {"semantique": 0.40, "structure": 0.35, "llm": 0.25}
+POIDS = {"semantique": 0.25, "structure": 0.15, "llm": 0.60}
 
 @dataclass
 class ResultatMatching:
@@ -21,24 +21,43 @@ class ResultatMatching:
 
 def _charger_cv(cv_id: int) -> CVParse:
     data = api.get_cv(cv_id)
-    return CVParse(**data["parsed_json"])
+    parsed = data.get("parsed_json") or {}
+    if isinstance(parsed, str):
+        parsed = json.loads(parsed) if parsed.strip() not in ("", "{}") else {}
+    return CVParse(**parsed)
 
 def _charger_offre(offre_id: int) -> OffreParsee:
     data = api.get_job_offer(offre_id)
-    return OffreParsee(**data["parsed_json"])
+    parsed = data.get("parsed_json") or {}
+    if isinstance(parsed, str):
+        parsed = json.loads(parsed) if parsed.strip() not in ("", "{}") else {}
+    return OffreParsee(**parsed)
 
 def matcher(cv_id: int, offre_id: int) -> ResultatMatching:
-    s_sem = score_semantique(cv_id, offre_id)
-    s_str = score_structuré(cv_id, offre_id)
+    try:
+        s_sem = score_semantique(cv_id, offre_id)
+    except Exception:
+        s_sem = 0.0
 
-    if s_sem + s_str < 0.6:
-        s_llm_val  = (s_sem + s_str) / 2
-        detail_llm = None
-    else:
+    try:
+        s_str = score_structuré(cv_id, offre_id)
+    except Exception:
+        s_str = 0.5
+
+    # Always attempt Gemini scoring; fall back to interpolation if unavailable
+    detail_llm = None
+    try:
         cv         = _charger_cv(cv_id)
         offre      = _charger_offre(offre_id)
         detail_llm = score_llm(cv, offre)
         s_llm_val  = detail_llm.score_global
+        # Normalize to 0-1 if Gemini returned 0-100 scale
+        if s_llm_val > 1.0:
+            s_llm_val /= 100.0
+        if detail_llm.score_global > 1.0:
+            detail_llm.score_global /= 100.0
+    except Exception:
+        s_llm_val = (s_sem + s_str) / 2
 
     score_final = (
         POIDS["semantique"] * s_sem +

@@ -54,6 +54,7 @@ export class CompanyOffers implements OnInit {
   topCandidates: CompanyCandidateView[] = [];
   loadingTop = false;
   topError = '';
+  refreshingScores = false;
 
   // filtre offres
   activeFilter: 'all' | 'active' | 'inactive' | 'cdi' | 'stage' = 'all';
@@ -183,6 +184,23 @@ export class CompanyOffers implements OnInit {
   getDaysOnline(createdAt: string): number {
     const diff = Date.now() - new Date(createdAt).getTime();
     return Math.max(1, Math.floor(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  refreshTopScores(): void {
+    if (!this.selectedOffer || this.refreshingScores) return;
+    const jobId = this.selectedOffer.id;
+    this.refreshingScores = true;
+    this.authService.computeAllCandidateScores(this.companyId, jobId).subscribe({
+      next: () => {
+        this.loadTopCandidates(jobId);
+        this.loadCandidatesForOffer(jobId);
+        this.refreshingScores = false;
+      },
+      error: () => {
+        this.topError = 'Erreur lors du calcul des scores.';
+        this.refreshingScores = false;
+      }
+    });
   }
 
   private mapCandidate(c: any): CompanyCandidateView {

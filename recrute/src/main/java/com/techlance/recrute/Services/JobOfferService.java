@@ -218,6 +218,30 @@ public class JobOfferService {
         return jobOffer;
     }
 
+    // Handles Python's snake_case payload: parsed_json (dict), embedding (base64), etc.
+    public JobOffers updateJobOfferFromPython(Long id, Map<String, Object> body) {
+        JobOffers job = getJobOffer(id);
+        try {
+            Object parsedJson = body.get("parsed_json");
+            if (parsedJson != null) {
+                job.setParsedJson(parsedJson instanceof String
+                    ? (String) parsedJson
+                    : objectMapper.writeValueAsString(parsedJson));
+            }
+            Object embeddingB64 = body.get("embedding");
+            if (embeddingB64 != null) {
+                job.setEmbedding(java.util.Base64.getDecoder().decode((String) embeddingB64));
+            }
+            Object enriched = body.get("enriched_description");
+            if (enriched != null) job.setEnrichedDescription((String) enriched);
+            Object expMin = body.get("annees_experience_min");
+            if (expMin != null) job.setAnneesExperienceMin(((Number) expMin).floatValue());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid payload: " + e.getMessage());
+        }
+        return jobOfferRepository.save(job);
+    }
+
     public JobOffers updateJobOffers(Long id, JobOffers job) {
         JobOffers oldjob=getJobOffer(id);
 
@@ -340,6 +364,134 @@ public class JobOfferService {
                 })
                 .filter(item -> item != null)
                 .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> computeAllCandidateScoresForOffer(Long companyId, Long jobId) {
+        JobOffers jobOffer = getCompanyJobOffer(companyId, jobId);
+
+        // Enrich the job offer via Python if it has no embedding yet (embedding = real enrichment was done)
+        boolean needsEnrichment = (jobOffer.getEnrichedDescription() == null || jobOffer.getEnrichedDescription().isBlank())
+                || (jobOffer.getEmbedding() == null || jobOffer.getEmbedding().length == 0);
+        if (needsEnrichment) {
+            callPythonEnrichJob(jobOffer);
+        }
+
+        List<CandidateProfiles> allCandidates = candidateProfilesRepository.findAll();
+
+        int total = 0, computed = 0, skipped = 0;
+        for (CandidateProfiles candidate : allCandidates) {
+            total++;
+            Cvs latestCv = findLatestCv(candidate.getId());
+            if (latestCv == null) { skipped++; continue; }
+
+            // Parse CV first if it has no structured data (needed for Gemini)
+            if (cvNeedsParsing(latestCv)) {
+                callPythonParseCv(latestCv.getId());
+            }
+
+            // Call Python /match — Python saves sub-scores back via /api/internal/match (upsert)
+            // Brief pause to stay within Gemini free-tier rate limit (15 RPM = 1 per 4s)
+            try { Thread.sleep(8000); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+            boolean pythonOk = callPythonMatch(latestCv.getId(), jobOffer.getId());
+
+            // Re-read after Python callback has committed its scores
+            CandidateJobRatings rating = candidateJobRatingsRepository
+                    .findLatestByCandidateAndJob(candidate.getId(), jobOffer.getId())
+                    .orElseGet(CandidateJobRatings::new);
+
+            int finalScore;
+            if (pythonOk && (rating.getScoreLlm() > 0 || rating.getScoreSemantique() > 0 || rating.getScoreStructure() > 0)) {
+                // Python sub-scores are 0-1 scale; blend with 60% Gemini weight → convert to 0-100
+                double blended = 0.60 * rating.getScoreLlm()
+                               + 0.25 * rating.getScoreSemantique()
+                               + 0.15 * rating.getScoreStructure();
+                finalScore = (int) Math.max(0, Math.min(100, Math.round(blended * 100)));
+            } else {
+                // Fallback to keyword algorithm
+                Set<String> terms = buildCandidateTerms(candidate, latestCv);
+                finalScore = computeMatchScore(jobOffer, candidate, latestCv, terms);
+            }
+
+            if (rating.getCandidate() == null) {
+                rating.setCandidate(candidate);
+                rating.setJobOffer(jobOffer);
+                rating.setCv(latestCv);
+            }
+            if (rating.getRating() == null) rating.setRating(Rating.up);
+            if (rating.getRated_at() == null) rating.setRated_at(new Date(System.currentTimeMillis()));
+            rating.setAi_score(finalScore);
+            candidateJobRatingsRepository.save(rating);
+            computed++;
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("jobId", jobOffer.getId());
+        result.put("totalCandidates", total);
+        result.put("computed", computed);
+        result.put("skippedNoCv", skipped);
+        return result;
+    }
+
+    private void callPythonEnrichJob(JobOffers job) {
+        try {
+            String body = String.format(
+                "{\"offre_id\":%d,\"titre\":%s,\"description\":%s}",
+                job.getId(),
+                objectMapper.writeValueAsString(job.getTitle() != null ? job.getTitle() : ""),
+                objectMapper.writeValueAsString(job.getDescription() != null ? job.getDescription() : "")
+            );
+            java.net.http.HttpClient.newHttpClient().send(
+                java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("http://python-ai:5000/enrich-job"))
+                    .header("Content-Type", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body))
+                    .timeout(java.time.Duration.ofSeconds(60))
+                    .build(),
+                java.net.http.HttpResponse.BodyHandlers.discarding()
+            );
+        } catch (Exception ignored) {}
+    }
+
+    private boolean callPythonMatch(Long cvId, Long jobOfferId) {
+        try {
+            String body = String.format("{\"cv_id\":%d,\"offre_id\":%d}", cvId, jobOfferId);
+            java.net.http.HttpResponse<String> resp = java.net.http.HttpClient.newHttpClient().send(
+                java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("http://python-ai:5000/match"))
+                    .header("Content-Type", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body))
+                    .timeout(java.time.Duration.ofSeconds(90))
+                    .build(),
+                java.net.http.HttpResponse.BodyHandlers.ofString()
+            );
+            return resp.statusCode() == 200;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void callPythonParseCv(Long cvId) {
+        try {
+            String formBody = "cv_id=" + cvId;
+            java.net.http.HttpClient.newHttpClient().send(
+                java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("http://python-ai:5000/parse-cv"))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(formBody))
+                    .timeout(java.time.Duration.ofSeconds(120))
+                    .build(),
+                java.net.http.HttpResponse.BodyHandlers.discarding()
+            );
+        } catch (InterruptedException | java.io.IOException ignored) { /* non-fatal */ }
+    }
+
+    private boolean cvNeedsParsing(Cvs cv) {
+        String p = cv.getParsedJson();
+        if (p == null || p.isBlank() || p.trim().equals("{}")) return true;
+        // Require the parsed_json to look like a real CVParse (has competences field)
+        if (!p.contains("\"competences\"")) return true;
+        // Re-parse if embedding is missing even when parsed_json exists
+        return cv.getEmbedding() == null || cv.getEmbedding().length == 0;
     }
 
     public Map<String, Object> computeMissingCompanyOfferScores(Long companyId, Long jobId) {
@@ -573,40 +725,84 @@ public class JobOfferService {
         return suggestion;
     }
 
-    private int computeMatchScore(JobOffers job, CandidateProfiles candidate, Cvs cv, Set<String> candidateTerms) {
-        int score = 22;
+    private static final Set<String> STOPWORDS = Set.of(
+        "le", "la", "les", "un", "une", "des", "de", "du", "et", "en", "au", "aux",
+        "pour", "par", "sur", "dans", "avec", "qui", "que", "ou", "si", "ne", "pas",
+        "est", "son", "sa", "ses", "notre", "votre", "vous", "nous", "il", "elle",
+        "the", "a", "an", "of", "in", "to", "and", "for", "on", "with", "is", "are",
+        "you", "we", "it", "at", "be", "as", "by", "or", "from"
+    );
 
-        String jobText = normalize(job.getTitle() + " " + job.getDescription() + " " + job.getEnrichedDescription());
+    private Set<String> tokenizeText(String text) {
+        if (text == null || text.isBlank()) return Set.of();
+        return Arrays.stream(normalize(text).split("[^a-z0-9+#]+"))
+                .filter(t -> t.length() >= 3 && !STOPWORDS.contains(t))
+                .collect(Collectors.toSet());
+    }
+
+    private int computeMatchScore(JobOffers job, CandidateProfiles candidate, Cvs cv, Set<String> candidateTerms) {
+        int score = 0;
+
+        String jobText = normalize(
+            job.getTitle() + " " + job.getDescription() + " " + job.getEnrichedDescription());
+        Set<String> jobTokens = tokenizeText(
+            job.getTitle() + " " + job.getDescription() + " " + job.getEnrichedDescription());
+
+        // Forward: candidate terms appearing in job description
         if (!candidateTerms.isEmpty()) {
-            long overlap = candidateTerms.stream().filter(jobText::contains).count();
-            score += Math.min(30, (int) overlap * 6);
+            long fwd = candidateTerms.stream().filter(jobText::contains).count();
+            score += Math.min(35, (int) fwd * 6);
         }
 
+        // Reverse: job-specific tokens appearing in the full candidate text
+        // (covers title, bio, niveau_etudes, raw_text, parsed skills)
+        String candidateText = normalize(
+            nullSafe(candidate.getTitle()) + " " +
+            nullSafe(candidate.getBio()) + " " +
+            nullSafe(candidate.getNiveauEtudes()) + " " +
+            (cv != null ? nullSafe(cv.getRawText()) + " " + nullSafe(cv.getParsedJson()) : ""));
+        if (!jobTokens.isEmpty() && !candidateText.isBlank()) {
+            long rev = jobTokens.stream().filter(candidateText::contains).count();
+            score += Math.min(35, (int) rev * 5);
+        }
+
+        // Location bonus
         if (candidate.getLocation() != null && job.getLocation() != null) {
-            String candidateLocation = normalize(candidate.getLocation());
-            String jobLocation = normalize(job.getLocation());
-            if (candidateLocation.contains(jobLocation) || jobLocation.contains(candidateLocation)) {
-                score += 14;
+            String cLoc = normalize(candidate.getLocation());
+            String jLoc = normalize(job.getLocation());
+            if (cLoc.contains(jLoc) || jLoc.contains(cLoc)) {
+                score += 10;
             }
         }
 
-        if (candidate.getAnneesExperience() >= job.getAnneesExperienceMin()) {
-            score += 15;
-        } else if (job.getAnneesExperienceMin() > 0) {
-            score += Math.max(0, (int) (10 - (job.getAnneesExperienceMin() - candidate.getAnneesExperience())));
+        // Experience bonus: only when offer specifies a minimum
+        if (job.getAnneesExperienceMin() > 0) {
+            if (candidate.getAnneesExperience() >= job.getAnneesExperienceMin()) {
+                score += 15;
+            } else {
+                double ratio = candidate.getAnneesExperience() / job.getAnneesExperienceMin();
+                score += (int) Math.max(0, ratio * 8);
+            }
         }
 
+        // Education match
         if (job.getNiveauEtudesMin() != null && candidate.getNiveauEtudes() != null) {
             if (normalize(candidate.getNiveauEtudes()).contains(normalize(job.getNiveauEtudesMin()))) {
-                score += 12;
+                score += 10;
             }
         }
 
-        if (cv != null && cv.getParsedJson() != null && !cv.getParsedJson().isBlank()) {
+        // Has a parsed CV
+        if (cv != null && cv.getParsedJson() != null && !cv.getParsedJson().isBlank()
+                && !cv.getParsedJson().equals("{}")) {
             score += 5;
         }
 
         return Math.max(0, Math.min(score, 100));
+    }
+
+    private String nullSafe(String s) {
+        return s != null ? s : "";
     }
 
     private Set<String> buildCandidateTerms(CandidateProfiles candidate, Cvs cv) {
@@ -626,12 +822,17 @@ public class JobOfferService {
                     .forEach(terms::add);
         }
 
-        if (cv != null && cv.getParsedJson() != null && !cv.getParsedJson().isBlank()) {
-            try {
-                Map<String, Object> parsed = objectMapper.readValue(cv.getParsedJson(), Map.class);
-                collectStringValues(parsed, terms);
-            } catch (Exception ignored) {
-                // Keep the fallback terms if JSON parsing fails.
+        if (cv != null) {
+            // Raw text: tokenize and add meaningful words
+            if (cv.getRawText() != null && !cv.getRawText().isBlank()) {
+                terms.addAll(tokenizeText(cv.getRawText()));
+            }
+            // Parsed JSON: collect all string leaf values
+            if (cv.getParsedJson() != null && !cv.getParsedJson().isBlank()) {
+                try {
+                    Map<String, Object> parsed = objectMapper.readValue(cv.getParsedJson(), Map.class);
+                    collectStringValues(parsed, terms);
+                } catch (Exception ignored) {}
             }
         }
 

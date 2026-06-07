@@ -16,6 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Base64;
+import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techlance.recrute.Entities.CandidateProfiles;
 import com.techlance.recrute.Entities.Cvs;
 import com.techlance.recrute.Repositories.CandidateProfilesRepository;
@@ -100,8 +104,33 @@ public class CvsService {
         }
 
         return cvsRepository.save(oldcv);
+    }
 
+    // Handles Python's snake_case payload: parsed_json (object), embedding (base64), etc.
+    public Cvs updateCVFromPython(Long id, Map<String, Object> body) {
+        Cvs cv = getCvById(id);
+        try {
+            ObjectMapper om = new ObjectMapper();
 
+            Object parsedJson = body.get("parsed_json");
+            if (parsedJson != null) {
+                cv.setParsedJson(parsedJson instanceof String
+                    ? (String) parsedJson
+                    : om.writeValueAsString(parsedJson));
+            }
+
+            Object embeddingB64 = body.get("embedding");
+            if (embeddingB64 != null) {
+                cv.setEmbedding(Base64.getDecoder().decode((String) embeddingB64));
+            }
+
+            Object rawText = body.get("raw_text");
+            if (rawText != null) cv.setRawText((String) rawText);
+
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid payload: " + e.getMessage());
+        }
+        return cvsRepository.save(cv);
     }
 
     public Resource getCvFileResource(Long candidateId) {

@@ -413,6 +413,28 @@ $bar-track:      rgba(255, 255, 255, 0.10);
   font-size: 13px; color: $text-muted; margin-top: 4px;
 }
 
+// ── REFRESH BUTTON ───────────────────────────────────────────────────────
+.btn-refresh {
+  margin-left: auto; width: 32px; height: 32px; border-radius: 8px;
+  background: transparent; border: 1px solid $navy-border;
+  color: $text-secondary; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s; flex-shrink: 0;
+
+  &:hover:not(:disabled) { border-color: $cyan; color: $cyan; background: $cyan-dim; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 // ── APPLICATION CARD ─────────────────────────────────────────────────────
 .app-card {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;

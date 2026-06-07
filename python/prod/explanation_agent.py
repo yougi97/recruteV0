@@ -16,7 +16,7 @@ class ExplicationMatching(BaseModel):
     questions_entretien:   list[str]
 
 model_explication = genai.GenerativeModel(
-    model_name="gemini-2.0-flash",
+    model_name="gemini-1.5-flash",
     generation_config=genai.GenerationConfig(
         response_mime_type="application/json",
         max_output_tokens=1000,

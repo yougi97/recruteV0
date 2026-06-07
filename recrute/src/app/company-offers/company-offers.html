@@ -136,6 +136,10 @@
           📋 Candidatures
           <span class="tab-count" *ngIf="selectedCandidates.length > 0">{{ selectedCandidates.length }}</span>
         </button>
+        <button class="btn-refresh" (click)="refreshTopScores()" [disabled]="refreshingScores" title="Recalculer les scores IA pour tous les candidats">
+          <span *ngIf="!refreshingScores">↻</span>
+          <span *ngIf="refreshingScores" class="spin">↻</span>
+        </button>
       </div>
     </div>
 
