@@ -152,19 +152,20 @@ CREATE TABLE company_candidate_ratings (
 -- ─── CANDIDATURES (candidat postule à une offre) ──────────────────────────────
 
 CREATE TABLE applications (
-    id              INT PRIMARY KEY AUTO_INCREMENT,
-    candidate_id    INT NOT NULL,
-    job_offer_id    INT NOT NULL,
-    cv_id           INT NOT NULL,
-    status          ENUM('attente', 'encours', 'accepte', 'refuse') DEFAULT 'attente',
-    message         TEXT,
-    ai_score_id     INT UNIQUE,
-    applied_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id                  INT PRIMARY KEY AUTO_INCREMENT,
+    candidate_id        INT NOT NULL,
+    job_offer_id        INT NOT NULL,
+    cv_id               INT,
+    status              ENUM('attente', 'encours', 'accepte', 'refuse', 'prospection') DEFAULT 'attente',
+    message             TEXT,
+    company_interested  TINYINT(1) NOT NULL DEFAULT 0,
+    ai_score_id         INT UNIQUE,
+    applied_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_application (candidate_id, job_offer_id),
     FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE,
     FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
-    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE,
+    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE SET NULL,
     FOREIGN KEY (ai_score_id) REFERENCES ai_scores(id) ON DELETE SET NULL
 );
 

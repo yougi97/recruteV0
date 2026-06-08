@@ -48,4 +48,9 @@ public class CandidateOffersController {
     public void retractApplication(@PathVariable Long candidateId, @PathVariable Long offerId) {
         jobOfferService.retractApplication(candidateId, offerId);
     }
+
+    @GetMapping("/interested-offers")
+    public List<Map<String, Object>> getInterestedOffers(@PathVariable Long candidateId) {
+        return jobOfferService.getCandidateInterestedApplications(candidateId);
+    }
 }

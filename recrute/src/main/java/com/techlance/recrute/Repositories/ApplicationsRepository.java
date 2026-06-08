@@ -24,4 +24,7 @@ public interface ApplicationsRepository extends JpaRepository<Applications, Long
 
     @Query("SELECT a FROM Applications a JOIN FETCH a.jobOffer job JOIN FETCH job.companyProfiles company WHERE a.candidate.id = :candidateId ORDER BY a.appliedAt DESC")
     List<Applications> findAllByCandidateId(@Param("candidateId") Long candidateId);
+
+    @Query("SELECT a FROM Applications a JOIN FETCH a.jobOffer job JOIN FETCH job.companyProfiles company WHERE a.candidate.id = :candidateId AND a.companyInterested = true ORDER BY a.updatedAt DESC")
+    List<Applications> findAllByCandidateIdAndCompanyInterested(@Param("candidateId") Long candidateId);
 }

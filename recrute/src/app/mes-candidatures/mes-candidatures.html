@@ -49,6 +49,37 @@
       <a class="btn-explore" routerLink="/offres">Voir les offres →</a>
     </div>
 
+    <!-- INTERESTED OFFERS -->
+    <div *ngIf="interestedCount > 0" class="section-block">
+      <div class="section-header">
+        <span class="section-dot interested-dot"></span>
+        <h2 class="section-title">Entreprises qui vous contactent <span class="section-count">{{ interestedCount }}</span></h2>
+      </div>
+      <div class="cand-list">
+        <div class="cand-card interested-card" *ngFor="let item of interestedOffers">
+          <div class="card-left">
+            <div class="company-avatar"
+                 [style.background]="colorVar(item.companyColor)"
+                 [style.color]="colorText(item.companyColor)">
+              {{ item.companyInitial }}
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">{{ item.jobTitle }}</div>
+            <div class="card-company">{{ item.companyName }}</div>
+            <div class="card-meta">
+              <span>📍 {{ item.location }}</span>
+              <span class="dot">·</span>
+              <span>{{ item.contractType }}</span>
+            </div>
+          </div>
+          <div class="card-right">
+            <span class="status-badge interested-badge">★ Intéressée</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- LIST -->
     <div class="cand-list" *ngIf="!loading && !error && candidatures.length > 0">
       <div class="cand-card" *ngFor="let item of candidatures">

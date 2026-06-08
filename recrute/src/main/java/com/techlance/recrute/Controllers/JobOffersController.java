@@ -86,6 +86,25 @@ public class JobOffersController {
         boolean active = payload.getOrDefault("isActive", true);
         return jobOfferService.updateCompanyJobOfferStatus(companyId, jobId, active);
     }
+    @PatchMapping("/{jobId}/applications/{applicationId}/review")
+    public void reviewApplication(
+            @PathVariable Long companyId,
+            @PathVariable Long jobId,
+            @PathVariable Long applicationId,
+            @RequestBody Map<String, String> payload
+    ) {
+        jobOfferService.reviewApplication(companyId, jobId, applicationId, payload.get("status"));
+    }
+
+    @PostMapping("/{jobId}/candidates/{candidateId}/interest")
+    public void markInterestInCandidate(
+            @PathVariable Long companyId,
+            @PathVariable Long jobId,
+            @PathVariable Long candidateId
+    ) {
+        jobOfferService.markCompanyInterestInCandidate(companyId, jobId, candidateId);
+    }
+
     // public List<JobOffers> getOffers(@RequestParam(required = false) List<String> location,
     //                                 @RequestParam(required = false) List<ContratType> contratType,
     //                             @RequestParam(required = false) List<NiveauEtude> niveau) {

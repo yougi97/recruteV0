@@ -119,6 +119,17 @@
   </div>
 </div>
 
+<!-- CV VIEWER MODAL -->
+<div class="cv-modal-backdrop" *ngIf="cvViewUrl" (click)="closeCvModal()">
+  <div class="cv-modal" (click)="$event.stopPropagation()">
+    <div class="cv-modal-header">
+      <span class="cv-modal-title">Visualisation du CV</span>
+      <button class="cv-modal-close" (click)="closeCvModal()">✕</button>
+    </div>
+    <iframe class="cv-modal-frame" [src]="cvViewUrl" type="application/pdf"></iframe>
+  </div>
+</div>
+
 <!-- PANEL OVERLAY -->
 <div class="panel-overlay" [class.open]="panelOpen" (click)="closePanel()">
   <div class="panel" (click)="$event.stopPropagation()">
@@ -208,8 +219,16 @@
         </div>
 
         <div class="cand-actions">
-          <button class="btn-interested">« Contacter ce candidat »</button>
-          <button class="btn-skip">✕ Passer</button>
+          <button class="btn-interested"
+                  *ngIf="!c.applied"
+                  [disabled]="c.companyInterested"
+                  (click)="markInterest(c)">
+            {{ c.companyInterested ? '✓ Intérêt marqué' : '★ Marquer comme intéressé' }}
+          </button>
+          <button class="btn-view-cv" *ngIf="c.userId" (click)="viewCv(c)">
+            Voir le CV
+          </button>
+          <button class="btn-skip" *ngIf="!c.applied">✕ Passer</button>
         </div>
       </div>
 
@@ -257,7 +276,13 @@
           <div class="app-status" [ngClass]="getStatusClass(c.applicationStatus)">
             {{ getStatusLabel(c.applicationStatus) }}
           </div>
-          <button class="btn-interested btn-sm">Contacter</button>
+          <button class="btn-view-cv btn-sm" *ngIf="c.userId" (click)="viewCv(c)">CV</button>
+          <button class="btn-interested btn-sm"
+                  *ngIf="c.applicationStatus !== 'accepte'"
+                  (click)="reviewApp(c, 'accepte')">✓ Accepter</button>
+          <button class="btn-skip btn-sm"
+                  *ngIf="c.applicationStatus !== 'refuse'"
+                  (click)="reviewApp(c, 'refuse')">✗ Refuser</button>
         </div>
       </div>
 

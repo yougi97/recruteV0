@@ -37,6 +37,19 @@ public class CvsController {
         return cvsService.getCvByUserId(candidateId);
     }
 
+    @GetMapping("/cv/view")
+    public ResponseEntity<Resource> viewCv(@PathVariable Long candidateId) {
+        Resource resource = cvsService.getCvFileResource(candidateId);
+        String fileName = cvsService.getCvDownloadFileName(candidateId);
+        String contentType = cvsService.getCvContentType(candidateId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.inline().filename(fileName).build().toString())
+                .body(resource);
+    }
+
     @GetMapping("/cv/download")
     public ResponseEntity<Resource> downloadCv(@PathVariable Long candidateId) {
         Resource resource = cvsService.getCvFileResource(candidateId);

@@ -129,6 +129,69 @@ public class JobOfferService {
         }).collect(Collectors.toList());
     }
 
+    public void reviewApplication(Long companyId, Long jobId, Long applicationId, String status) {
+        JobOffers jobOffer = getCompanyJobOffer(companyId, jobId);
+        Applications app = applicationsRepository.findById(applicationId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidature introuvable"));
+        if (!app.getJobOffer().getId().equals(jobOffer.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Candidature hors périmètre");
+        }
+        app.setStatus(status);
+        app.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+        applicationsRepository.save(app);
+    }
+
+    public void markCompanyInterestInCandidate(Long companyId, Long jobId, Long candidateProfileId) {
+        JobOffers jobOffer = getCompanyJobOffer(companyId, jobId);
+        CandidateProfiles candidate = candidateProfilesRepository.findById(candidateProfileId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidat introuvable"));
+        Applications app = applicationsRepository.findByCandidateAndJob(candidate.getId(), jobOffer.getId())
+            .orElseGet(Applications::new);
+        app.setCandidate(candidate);
+        app.setJobOffer(jobOffer);
+        if (app.getCv() == null) {
+            Cvs latestCv = findLatestCv(candidate.getId());
+            if (latestCv != null) app.setCv(latestCv);
+        }
+        if (app.getStatus() == null || app.getStatus().isBlank()) {
+            app.setStatus("prospection");
+            app.setAppliedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+        }
+        app.setCompanyInterested(true);
+        app.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+        applicationsRepository.save(app);
+    }
+
+    public List<Map<String, Object>> getCandidateInterestedApplications(Long userId) {
+        CandidateProfiles candidate = candidateProfilesRepository.findByUserId(userId);
+        if (candidate == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Profil candidat introuvable");
+        }
+        List<Applications> apps = applicationsRepository.findAllByCandidateIdAndCompanyInterested(candidate.getId());
+        return apps.stream().map(app -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("applicationId", app.getId());
+            map.put("status", app.getStatus());
+            JobOffers job = app.getJobOffer();
+            if (job != null) {
+                map.put("jobOfferId", job.getId());
+                map.put("jobTitle", job.getTitle());
+                map.put("location", fallback(job.getLocation(), "", "Remote"));
+                map.put("contractType", job.getContractType() != null ? job.getContractType().name() : "CDI");
+                if (job.getCompanyProfiles() != null) {
+                    map.put("companyName", fallback(job.getCompanyProfiles().getCompanyName(), "", "Entreprise inconnue"));
+                    map.put("companyInitial", buildCompanyInitial(job));
+                    map.put("companyColor", pickCompanyColor(job));
+                } else {
+                    map.put("companyName", "Entreprise inconnue");
+                    map.put("companyInitial", "?");
+                    map.put("companyColor", "blue");
+                }
+            }
+            return map;
+        }).collect(Collectors.toList());
+    }
+
     public void retractApplication(Long userId, Long offerId) {
         CandidateProfiles candidate = candidateProfilesRepository.findByUserId(userId);
         if (candidate == null) {
@@ -595,6 +658,9 @@ public class JobOfferService {
             ? application.getAppliedAt().toString()
             : (rating != null && rating.getRated_at() != null ? rating.getRated_at().toString() : null));
         item.put("applicationStatus", application != null ? application.getStatus() : null);
+        item.put("applicationId", application != null ? application.getId() : null);
+        item.put("companyInterested", application != null && application.isCompanyInterested());
+        item.put("userId", candidate != null ? candidate.getId() : null);
         item.put("scoreSemantique", rating != null ? rating.getScoreSemantique() : null);
         item.put("scoreStructure", rating != null ? rating.getScoreStructure() : null);
         item.put("scoreLlm", rating != null ? rating.getScoreLlm() : null);

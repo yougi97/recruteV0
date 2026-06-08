@@ -5,7 +5,7 @@ import { AuthService } from '../services/auth';
 
 interface CandidatureItem {
   applicationId: number;
-  status: 'attente' | 'encours' | 'accepte' | 'refuse';
+  status: 'attente' | 'encours' | 'accepte' | 'refuse' | 'prospection';
   appliedAt: string | null;
   jobOfferId: number;
   jobTitle: string;
@@ -14,6 +14,18 @@ interface CandidatureItem {
   companyColor: string;
   location: string;
   contractType: string;
+}
+
+interface InterestedOfferItem {
+  applicationId: number;
+  jobOfferId: number;
+  jobTitle: string;
+  companyName: string;
+  companyInitial: string;
+  companyColor: string;
+  location: string;
+  contractType: string;
+  status: string;
 }
 
 @Component({
@@ -25,7 +37,9 @@ interface CandidatureItem {
 })
 export class MesCandidaturesComponent implements OnInit {
   candidatures: CandidatureItem[] = [];
+  interestedOffers: InterestedOfferItem[] = [];
   loading = true;
+  loadingInterested = false;
   error = '';
   retractingId: number | null = null;
   userId = 0;
@@ -33,6 +47,7 @@ export class MesCandidaturesComponent implements OnInit {
   get totalCount() { return this.candidatures.length; }
   get pendingCount() { return this.candidatures.filter(c => c.status === 'attente').length; }
   get acceptedCount() { return this.candidatures.filter(c => c.status === 'accepte').length; }
+  get interestedCount() { return this.interestedOffers.length; }
 
   constructor(private authService: AuthService) {}
 
@@ -44,6 +59,7 @@ export class MesCandidaturesComponent implements OnInit {
       return;
     }
     this.loadCandidatures();
+    this.loadInterestedOffers();
   }
 
   loadCandidatures(): void {
@@ -69,6 +85,27 @@ export class MesCandidaturesComponent implements OnInit {
         this.error = 'Impossible de charger vos candidatures.';
         this.loading = false;
       },
+    });
+  }
+
+  loadInterestedOffers(): void {
+    this.loadingInterested = true;
+    this.authService.getCandidateInterestedOffers(this.userId).subscribe({
+      next: (data) => {
+        this.interestedOffers = data.map((item: any) => ({
+          applicationId: Number(item.applicationId ?? 0),
+          jobOfferId: Number(item.jobOfferId ?? 0),
+          jobTitle: item.jobTitle ?? 'Offre inconnue',
+          companyName: item.companyName ?? 'Entreprise inconnue',
+          companyInitial: item.companyInitial ?? '?',
+          companyColor: item.companyColor ?? 'blue',
+          location: item.location ?? '—',
+          contractType: item.contractType ?? 'CDI',
+          status: item.status ?? '',
+        }));
+        this.loadingInterested = false;
+      },
+      error: () => { this.loadingInterested = false; }
     });
   }
 

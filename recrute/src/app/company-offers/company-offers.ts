@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../services/auth';
 import { JobOffer, mapJobOffers, mapCompanyProfile } from '../profil/profil.types';
 import { CompanyProfiles } from '../model/companyProfiles';
@@ -17,6 +18,9 @@ interface CompanyCandidateView {
   ai: string;
   appliedAt?: string | null;
   applicationStatus?: string | null;
+  applicationId?: number | null;
+  userId?: number | null;
+  companyInterested?: boolean;
   applied?: boolean;
   scoreSemantique?: number;
   scoreStructure?: number;
@@ -30,7 +34,7 @@ interface CompanyCandidateView {
   templateUrl: './company-offers.html',
   styleUrls: ['./company-offers.scss'],
 })
-export class CompanyOffers implements OnInit {
+export class CompanyOffers implements OnInit, OnDestroy {
   offers: JobOffer[] = [];
   loading = true;
   error = '';
@@ -56,6 +60,9 @@ export class CompanyOffers implements OnInit {
   topError = '';
   refreshingScores = false;
 
+  // CV viewer modal
+  cvViewUrl: SafeResourceUrl | null = null;
+
   // filtre offres
   activeFilter: 'all' | 'active' | 'inactive' | 'cdi' | 'stage' = 'all';
 
@@ -69,7 +76,7 @@ export class CompanyOffers implements OnInit {
     });
   }
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private sanitizer: DomSanitizer) {}
 
   ngOnInit(): void {
     const userId = Number(localStorage.getItem('user_id'));
@@ -203,6 +210,40 @@ export class CompanyOffers implements OnInit {
     });
   }
 
+  viewCv(c: CompanyCandidateView): void {
+    if (!c.userId) return;
+    this.cvViewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      this.authService.getCandidateCvViewUrl(c.userId)
+    );
+  }
+
+  closeCvModal(): void {
+    this.cvViewUrl = null;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc(): void {
+    this.closeCvModal();
+  }
+
+  ngOnDestroy(): void {
+    this.cvViewUrl = null;
+  }
+
+  reviewApp(c: CompanyCandidateView, status: string): void {
+    if (!c.applicationId || !this.selectedOffer) return;
+    this.authService.reviewApplication(this.companyId, this.selectedOffer.id, c.applicationId, status).subscribe({
+      next: () => { c.applicationStatus = status; }
+    });
+  }
+
+  markInterest(c: CompanyCandidateView): void {
+    if (!c.candidateId || !this.selectedOffer) return;
+    this.authService.markCompanyInterest(this.companyId, this.selectedOffer.id, c.candidateId).subscribe({
+      next: () => { c.companyInterested = true; }
+    });
+  }
+
   private mapCandidate(c: any): CompanyCandidateView {
     return {
       candidateId: Number(c.candidateId ?? 0),
@@ -217,6 +258,9 @@ export class CompanyOffers implements OnInit {
       ai: c.ai ?? 'Score IA disponible',
       appliedAt: c.appliedAt ?? null,
       applicationStatus: c.applicationStatus ?? null,
+      applicationId: c.applicationId ?? null,
+      userId: c.userId ?? null,
+      companyInterested: c.companyInterested ?? false,
       applied: c.applied ?? false,
       scoreSemantique: c.scoreSemantique,
       scoreStructure: c.scoreStructure,

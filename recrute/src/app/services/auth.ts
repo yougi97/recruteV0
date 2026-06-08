@@ -43,6 +43,10 @@ export class AuthService {
     return `${this.url}/users/candidate/${candidateId}/cv/download`;
   }
 
+  getCandidateCvViewUrl(candidateId: number): string {
+    return `${this.url}/users/candidate/${candidateId}/cv/view`;
+  }
+
   computeCandidateCv(cvId: number): Observable<any> {
     const formData = new FormData();
     formData.append('cv_id', cvId.toString());
@@ -89,8 +93,26 @@ export class AuthService {
     return this.httpClient.get<any[]>(`${this.url}/users/candidate/${userId}/applications`);
   }
 
+  getCandidateInterestedOffers(userId: number): Observable<any[]> {
+    return this.httpClient.get<any[]>(`${this.url}/users/candidate/${userId}/interested-offers`);
+  }
+
   retractApplication(userId: number, offerId: number): Observable<void> {
     return this.httpClient.delete<void>(`${this.url}/users/candidate/${userId}/offers/${offerId}/application`);
+  }
+
+  reviewApplication(companyId: number, jobId: number, applicationId: number, status: string): Observable<void> {
+    return this.httpClient.patch<void>(
+      `${this.url}/users/company/${companyId}/jobs/${jobId}/applications/${applicationId}/review`,
+      { status }
+    );
+  }
+
+  markCompanyInterest(companyId: number, jobId: number, candidateId: number): Observable<void> {
+    return this.httpClient.post<void>(
+      `${this.url}/users/company/${companyId}/jobs/${jobId}/candidates/${candidateId}/interest`,
+      {}
+    );
   }
 
   createCandidate(candidate: CandidateProfiles): Observable<CandidateProfiles> {

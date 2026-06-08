@@ -38,6 +38,9 @@ public class Applications {
     @Column(name = "updated_at")
     private Timestamp updatedAt;
 
+    @Column(name = "company_interested")
+    private boolean companyInterested = false;
+
     public Long getId() {
         return id;
     }
@@ -100,5 +103,13 @@ public class Applications {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isCompanyInterested() {
+        return companyInterested;
+    }
+
+    public void setCompanyInterested(boolean companyInterested) {
+        this.companyInterested = companyInterested;
     }
 }

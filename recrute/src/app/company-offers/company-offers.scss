@@ -371,6 +371,14 @@ $bar-track:      rgba(255, 255, 255, 0.10);
   padding: 6px 12px; font-size: 11px;
 }
 
+.btn-view-cv {
+  padding: 6px 12px; border-radius: 9px;
+  background: $gold-dim; border: 1px solid rgba(245, 185, 66, 0.3);
+  color: $gold; font-size: 11px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all .2s;
+  &:hover { background: rgba(245, 185, 66, 0.25); }
+}
+
 // ── PANEL TABS ───────────────────────────────────────────────────────────
 .panel-tabs {
   display: flex; gap: 4px; margin-top: 12px;
@@ -456,3 +464,77 @@ $bar-track:      rgba(255, 255, 255, 0.10);
 .status-encours  { background: $cyan-dim;  color: $cyan;  border: 1px solid rgba(56, 189, 248, 0.25); }
 .status-accepte  { background: $green-dim; color: $green; border: 1px solid rgba(34, 211, 160, 0.25); }
 .status-refuse   { background: $red-dim;   color: $red;   border: 1px solid rgba(255, 107, 107, 0.25); }
+
+// ── CV VIEWER MODAL ───────────────────────────────────────────────────────────
+.cv-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.cv-modal {
+  background: #1a2744;
+  border: 1px solid $navy-border;
+  border-radius: 16px;
+  width: min(860px, 100%);
+  height: min(92vh, 1100px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+  animation: slideUp 0.18s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.cv-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid $navy-border;
+  flex-shrink: 0;
+}
+
+.cv-modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-primary;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.2px;
+}
+
+.cv-modal-close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid $navy-border;
+  color: $text-muted;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  &:hover { background: $red-dim; border-color: rgba(255,107,107,0.3); color: $red; }
+}
+
+.cv-modal-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #fff;
+}
