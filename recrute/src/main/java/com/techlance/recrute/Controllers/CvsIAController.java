@@ -17,9 +17,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.transaction.Transactional;
+
 import com.techlance.recrute.DTO.categories;
 import com.techlance.recrute.Entities.CvCategories;
 import com.techlance.recrute.Entities.Cvs;
+import com.techlance.recrute.Repositories.CvCategoriesRepository;
 import com.techlance.recrute.Services.CategoriesService;
 import com.techlance.recrute.Services.CvsService;
 
@@ -28,10 +31,12 @@ import com.techlance.recrute.Services.CvsService;
 public class CvsIAController {
     private final CvsService cvsService;
     private final CategoriesService categoriesService;
+    private final CvCategoriesRepository cvCategoriesRepository;
 
-    public CvsIAController(CvsService cvsService, CategoriesService categoriesService) {
+    public CvsIAController(CvsService cvsService, CategoriesService categoriesService, CvCategoriesRepository cvCategoriesRepository) {
         this.cvsService = cvsService;
         this.categoriesService = categoriesService;
+        this.cvCategoriesRepository = cvCategoriesRepository;
     }
 
     @GetMapping
@@ -63,11 +68,11 @@ public class CvsIAController {
     }
 
     @PostMapping("/categories")
-    public List<CvCategories> createCvCategories(@PathVariable Long cv_id, @RequestBody List<categories> categorys) {
-        List<CvCategories> cvCategorieses = new ArrayList<>();
-        for (categories category:categorys) {
-            cvCategorieses.add(categoriesService.createCvCategories(cv_id, category));
+    @Transactional
+    public void createCvCategories(@PathVariable Long cv_id, @RequestBody List<categories> categorys) {
+        cvCategoriesRepository.deleteByCvId(cv_id);
+        for (categories category : categorys) {
+            categoriesService.createCvCategories(cv_id, category);
         }
-        return cvCategorieses;
     }
 }

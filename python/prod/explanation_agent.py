@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from pydantic import BaseModel
 from matching_agent import ResultatMatching
 from schemas import CVParse
@@ -6,7 +7,11 @@ from job_enrichment_agent import OffreParsee
 from config import GEMINI_API_KEY
 import json
 
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
+
+SYSTEM_INSTRUCTION = """Tu es un recruteur senior. Explique en langage naturel
+pourquoi ce candidat matche ou non ce poste. Ton direct et professionnel.
+Ne répète pas les scores bruts, traduis-les. JSON uniquement."""
 
 class ExplicationMatching(BaseModel):
     synthese:              str
@@ -14,17 +19,6 @@ class ExplicationMatching(BaseModel):
     points_attention:      str
     recommandation:        str
     questions_entretien:   list[str]
-
-model_explication = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
-    generation_config=genai.GenerationConfig(
-        response_mime_type="application/json",
-        max_output_tokens=1000,
-    ),
-    system_instruction="""Tu es un recruteur senior. Explique en langage naturel
-pourquoi ce candidat matche ou non ce poste. Ton direct et professionnel.
-Ne répète pas les scores bruts, traduis-les. JSON uniquement."""
-)
 
 def expliquer(resultat: ResultatMatching, cv: CVParse, offre: OffreParsee) -> ExplicationMatching:
     detail = resultat.detail_llm
@@ -44,5 +38,15 @@ Exigences : {[f"{c.name} {c.required_level}{'*' if c.is_mandatory else ''}" for 
 
 Schéma : {json.dumps(ExplicationMatching.model_json_schema(), indent=2)}
 """
-    response = model_explication.generate_content(prompt)
-    return ExplicationMatching(**json.loads(response.text))
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_INSTRUCTION,
+            response_mime_type="application/json",
+            response_schema=ExplicationMatching,
+            max_output_tokens=1000,
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
+        ),
+    )
+    return ExplicationMatching.model_validate_json(response.text)

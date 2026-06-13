@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import tempfile, os
+import tempfile, os, threading
 
 from parsing_agent import parser_cv
 from job_enrichment_agent import enrichir_offre
@@ -11,6 +11,17 @@ import spring_client as api
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["http://localhost:4200", "http://localhost:8080"]}})
+
+def _score_cv_against_all_jobs(cv_id: int):
+    try:
+        job_ids = api.get_active_job_offer_ids()
+    except Exception:
+        return
+    for job_id in job_ids:
+        try:
+            matcher(cv_id, job_id)
+        except Exception:
+            pass
 
 @app.post("/parse-cv")
 def parse_cv_endpoint():
@@ -35,6 +46,7 @@ def parse_cv_endpoint():
     try:
         cv = parser_cv(chemin)
         sauvegarder_cv(cv, cv_id)
+        threading.Thread(target=_score_cv_against_all_jobs, args=(cv_id,), daemon=True).start()
         return jsonify(cv.model_dump()), 200
     except ValueError as e:
         return jsonify({"erreur": str(e)}), 422

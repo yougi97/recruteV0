@@ -68,7 +68,7 @@ def matcher(cv_id: int, offre_id: int) -> ResultatMatching:
 
     # Sauvegarde via Spring
     api.save_matching_result(cv_id, offre_id, {
-        "ai_score":         score_final,
+        "ai_score":         round(score_final * 100),
         "score_semantique": round(s_sem, 3),
         "score_structure":  round(s_str, 3),
         "score_llm":        round(s_llm_val, 3),

@@ -270,6 +270,17 @@ public class JobOfferService {
                         String.format("Offre non trouver"))
     );}
 
+    public List<Map<String, Object>> getAllActiveJobIds() {
+        return jobOfferRepository.findByIsActiveTrue().stream()
+            .map(job -> {
+                Map<String, Object> m = new java.util.HashMap<>();
+                m.put("id", job.getId());
+                m.put("title", job.getTitle());
+                return m;
+            })
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     public JobOffers getCompanyJobOffer(Long companyId, Long jobId) {
         JobOffers jobOffer = getJobOffer(jobId);
         if (jobOffer.getCompanyProfiles() == null || !jobOffer.getCompanyProfiles().getId().equals(companyId)) {

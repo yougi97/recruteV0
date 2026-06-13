@@ -51,7 +51,7 @@ public class CvsService {
         }
 
         CandidateProfiles candidate = candidateProfilesRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Candidate not found"));
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidat introuvable"));
 
         Cvs cv = findLatestCvByCandidateId(id);
         if (cv == null) {

@@ -9,6 +9,7 @@
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/CvsIAController.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Enum/Source.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/JobOfferIAController.java
+/Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Repositories/ApplicationsRepository.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/PublicOffersController.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Exception/ErrorResponse.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Exception/GlobalExceptionHandler.java
@@ -16,6 +17,7 @@
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Entities/CandidateJobRatings.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Repositories/JobOfferRepository.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/CvsController.java
+/Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Entities/Applications.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Filtre/JobOffersSpecification.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/DTO/payload.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Repositories/JobCategoriesRepository.java
@@ -36,6 +38,7 @@
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Services/CategoriesService.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Enum/NiveauEtude.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Repositories/JobSearchesRepository.java
+/Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/InternalMatchController.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Repositories/CompanyCandidateRatingsRepository.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Controllers/UserController.java
 /Users/antoninrossin/Documents/GitHub/recruteV0/recrute/src/main/java/com/techlance/recrute/Entities/Users.java

@@ -465,6 +465,83 @@ $bar-track:      rgba(255, 255, 255, 0.10);
 .status-accepte  { background: $green-dim; color: $green; border: 1px solid rgba(34, 211, 160, 0.25); }
 .status-refuse   { background: $red-dim;   color: $red;   border: 1px solid rgba(255, 107, 107, 0.25); }
 
+// ── COMPUTING BANNER ─────────────────────────────────────────────────────────
+.computing-banner {
+  display: flex; align-items: center; gap: 16px;
+  background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(26,95,248,0.06));
+  border: 1px solid rgba(56,189,248,0.25); border-radius: 14px;
+  padding: 16px 18px; margin-bottom: 20px;
+  animation: fadeIn .3s ease;
+}
+
+.computing-pulse {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(56,189,248,0.15);
+  border: 2px solid rgba(56,189,248,0.4);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%       { transform: scale(1.18); opacity: 0.6; }
+}
+
+.computing-text { flex: 1; }
+.computing-title { font-size: 14px; font-weight: 600; color: $cyan; margin-bottom: 3px; }
+.computing-sub   { font-size: 12px; color: $text-muted; line-height: 1.4; }
+
+.computing-bars {
+  display: flex; align-items: flex-end; gap: 3px; height: 28px; flex-shrink: 0;
+}
+
+.cbar {
+  width: 5px; border-radius: 3px; background: $cyan; opacity: 0.7;
+  animation: barBounce 1.2s ease-in-out infinite;
+}
+.cbar-1 { height: 40%; animation-delay: 0s; }
+.cbar-2 { height: 70%; animation-delay: .1s; }
+.cbar-3 { height: 100%; animation-delay: .2s; }
+.cbar-4 { height: 55%; animation-delay: .3s; }
+.cbar-5 { height: 30%; animation-delay: .4s; }
+
+@keyframes barBounce {
+  0%, 100% { transform: scaleY(0.5); opacity: 0.4; }
+  50%       { transform: scaleY(1);   opacity: 1; }
+}
+
+// ── SCORE BREAKDOWN ───────────────────────────────────────────────────────────
+.score-breakdown {
+  background: rgba(255,255,255,0.03); border: 1px solid $navy-border;
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 10px;
+  display: flex; flex-direction: column; gap: 7px;
+}
+
+.score-row {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.score-lbl {
+  font-size: 11px; color: $text-muted; min-width: 80px;
+}
+
+.score-bar-wrap { flex: 1; }
+
+.score-bar {
+  height: 4px; border-radius: 2px; background: $bar-track; overflow: hidden;
+}
+
+.score-fill {
+  height: 100%; border-radius: 2px; transition: width .5s ease;
+  &.fill-cyan  { background: $cyan; }
+  &.fill-gold  { background: $gold; }
+  &.fill-green { background: $green; }
+}
+
+.score-num {
+  font-size: 11px; font-weight: 600; color: $text-secondary;
+  min-width: 32px; text-align: right;
+}
+
 // ── CV VIEWER MODAL ───────────────────────────────────────────────────────────
 .cv-modal-backdrop {
   position: fixed;

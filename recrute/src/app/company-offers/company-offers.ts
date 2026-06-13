@@ -59,6 +59,7 @@ export class CompanyOffers implements OnInit, OnDestroy {
   loadingTop = false;
   topError = '';
   refreshingScores = false;
+  computingScores = false;
 
   // CV viewer modal
   cvViewUrl: SafeResourceUrl | null = null;
@@ -309,9 +310,18 @@ export class CompanyOffers implements OnInit, OnDestroy {
       return;
     }
 
+    this.computingScores = true;
     this.authService.computeCompanyOfferMissingScores(this.companyId, jobId).subscribe({
-      next: () => { this.loadTopCandidates(jobId); this.loadCandidatesForOffer(jobId); },
-      error: () => { this.loadTopCandidates(jobId); this.loadCandidatesForOffer(jobId); },
+      next: () => {
+        this.computingScores = false;
+        this.loadTopCandidates(jobId);
+        this.loadCandidatesForOffer(jobId);
+      },
+      error: () => {
+        this.computingScores = false;
+        this.loadTopCandidates(jobId);
+        this.loadCandidatesForOffer(jobId);
+      },
     });
   }
 }

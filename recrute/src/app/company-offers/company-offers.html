@@ -157,9 +157,25 @@
     <!-- TAB: TOP IA -->
     <div class="panel-body" *ngIf="panelTab === 'top'">
 
-      <div class="empty-state" *ngIf="loadingTop">
+      <!-- Computing banner: shown while Python AI is scoring -->
+      <div class="computing-banner" *ngIf="computingScores">
+        <div class="computing-pulse"></div>
+        <div class="computing-text">
+          <div class="computing-title">Analyse IA en cours…</div>
+          <div class="computing-sub">Les scores sont calculés en arrière-plan. Cela prend quelques secondes.</div>
+        </div>
+        <div class="computing-bars">
+          <div class="cbar cbar-1"></div>
+          <div class="cbar cbar-2"></div>
+          <div class="cbar cbar-3"></div>
+          <div class="cbar cbar-4"></div>
+          <div class="cbar cbar-5"></div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!computingScores && loadingTop">
         <div class="empty-icon">⏳</div>
-        <div class="empty-title">Calcul des scores IA...</div>
+        <div class="empty-title">Chargement des résultats…</div>
       </div>
 
       <div class="empty-state" *ngIf="!loadingTop && topError">
@@ -167,13 +183,13 @@
         <div class="empty-title">{{ topError }}</div>
       </div>
 
-      <div class="empty-state" *ngIf="!loadingTop && !topError && topCandidates.length === 0">
+      <div class="empty-state" *ngIf="!computingScores && !loadingTop && !topError && topCandidates.length === 0">
         <div class="empty-icon">🔎</div>
         <div class="empty-title">Aucun candidat scoré pour cette offre</div>
         <div class="empty-sub">Les scores IA apparaissent dès qu'un candidat postule.</div>
       </div>
 
-      <div class="premium-banner" *ngIf="!loadingTop && !topError && topCandidates.length > 0">
+      <div class="premium-banner" *ngIf="!computingScores && !loadingTop && !topError && topCandidates.length > 0">
         <div class="premium-icon">🔒</div>
         <div class="premium-text">
           <h4>Accès limité — 5 profils gratuits</h4>
@@ -182,55 +198,87 @@
         <button class="btn-premium">Passer Premium</button>
       </div>
 
-      <div class="cand-card" *ngFor="let c of topCandidates; let i = index">
-        <div class="cand-top">
-          <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
-          <div class="cand-info">
-            <div class="cand-name-row">
-              <span class="cand-name">#{{ i + 1 }} {{ c.name }}</span>
-              <span class="applied-badge" *ngIf="c.applied">✓ A postulé</span>
+      <ng-container *ngIf="!computingScores">
+        <div class="cand-card" *ngFor="let c of topCandidates; let i = index">
+          <div class="cand-top">
+            <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
+            <div class="cand-info">
+              <div class="cand-name-row">
+                <span class="cand-name">#{{ i + 1 }} {{ c.name }}</span>
+                <span class="applied-badge" *ngIf="c.applied">✓ A postulé</span>
+              </div>
+              <div class="cand-role">{{ c.role }}</div>
+              <div class="cand-meta">
+                <span>📍 {{ c.location }}</span>
+                <span>·</span>
+                <span>Exp. : {{ c.dispo }}</span>
+              </div>
             </div>
-            <div class="cand-role">{{ c.role }}</div>
-            <div class="cand-meta">
-              <span>📍 {{ c.location }}</span>
-              <span>·</span>
-              <span>Exp. : {{ c.dispo }}</span>
+            <div class="match-badge" [ngClass]="getMatchClass(c.match)">
+              {{ getMatchArrow(c.match) }} {{ c.match }}% match
             </div>
           </div>
-          <div class="match-badge" [ngClass]="getMatchClass(c.match)">
-            {{ getMatchArrow(c.match) }} {{ c.match }}% match
+
+          <div class="compat-row">
+            <span class="compat-label">Score global</span>
+            <div class="compat-bar">
+              <div class="compat-fill" [ngClass]="getFillClass(c.match)" [style.width.%]="c.match"></div>
+            </div>
+            <span class="compat-val" [style.color]="getFillColor(c.match)">{{ c.match }}%</span>
+          </div>
+
+          <div class="score-breakdown" *ngIf="c.scoreSemantique !== undefined || c.scoreStructure !== undefined || c.scoreLlm !== undefined">
+            <div class="score-row">
+              <span class="score-lbl">Sémantique</span>
+              <div class="score-bar-wrap">
+                <div class="score-bar">
+                  <div class="score-fill fill-cyan" [style.width.%]="(c.scoreSemantique ?? 0) * 100"></div>
+                </div>
+              </div>
+              <span class="score-num">{{ ((c.scoreSemantique ?? 0) * 100) | number:'1.0-0' }}%</span>
+            </div>
+            <div class="score-row">
+              <span class="score-lbl">Structurel</span>
+              <div class="score-bar-wrap">
+                <div class="score-bar">
+                  <div class="score-fill fill-gold" [style.width.%]="(c.scoreStructure ?? 0) * 100"></div>
+                </div>
+              </div>
+              <span class="score-num">{{ ((c.scoreStructure ?? 0) * 100) | number:'1.0-0' }}%</span>
+            </div>
+            <div class="score-row">
+              <span class="score-lbl">LLM</span>
+              <div class="score-bar-wrap">
+                <div class="score-bar">
+                  <div class="score-fill fill-green" [style.width.%]="(c.scoreLlm ?? 0) * 100"></div>
+                </div>
+              </div>
+              <span class="score-num">{{ ((c.scoreLlm ?? 0) * 100) | number:'1.0-0' }}%</span>
+            </div>
+          </div>
+
+          <div class="cand-ai-block">
+            <div class="ai-label">
+              <span class="ai-spark">✦</span>
+              Pourquoi l'IA suggère ce candidat
+            </div>
+            <div class="cand-ai-text">{{ c.ai }}</div>
+          </div>
+
+          <div class="cand-actions">
+            <button class="btn-interested"
+                    *ngIf="!c.applied"
+                    [disabled]="c.companyInterested"
+                    (click)="markInterest(c)">
+              {{ c.companyInterested ? '✓ Intérêt marqué' : '★ Marquer comme intéressé' }}
+            </button>
+            <button class="btn-view-cv" *ngIf="c.userId" (click)="viewCv(c)">
+              Voir le CV
+            </button>
+            <button class="btn-skip" *ngIf="!c.applied">✕ Passer</button>
           </div>
         </div>
-
-        <div class="compat-row">
-          <span class="compat-label">Compatibilité profil</span>
-          <div class="compat-bar">
-            <div class="compat-fill" [ngClass]="getFillClass(c.match)" [style.width.%]="c.match"></div>
-          </div>
-          <span class="compat-val" [style.color]="getFillColor(c.match)">{{ c.match }}%</span>
-        </div>
-
-        <div class="cand-ai-block">
-          <div class="ai-label">
-            <span class="ai-spark">✦</span>
-            Pourquoi l'IA suggère ce candidat
-          </div>
-          <div class="cand-ai-text">{{ c.ai }}</div>
-        </div>
-
-        <div class="cand-actions">
-          <button class="btn-interested"
-                  *ngIf="!c.applied"
-                  [disabled]="c.companyInterested"
-                  (click)="markInterest(c)">
-            {{ c.companyInterested ? '✓ Intérêt marqué' : '★ Marquer comme intéressé' }}
-          </button>
-          <button class="btn-view-cv" *ngIf="c.userId" (click)="viewCv(c)">
-            Voir le CV
-          </button>
-          <button class="btn-skip" *ngIf="!c.applied">✕ Passer</button>
-        </div>
-      </div>
+      </ng-container>
 
     </div>
 

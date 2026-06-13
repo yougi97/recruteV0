@@ -65,6 +65,12 @@ def upsert_cv_categories(cv_id: int, categories: list[dict]):
 
 # ── OFFRES ────────────────────────────────────────────────────────────────────
 
+def get_active_job_offer_ids() -> list[int]:
+    """Returns a list of IDs for all active job offers."""
+    r = requests.get(_url("/api/internal/jobs/active"), headers=HEADERS)
+    r.raise_for_status()
+    return [item["id"] for item in r.json()]
+
 def get_job_offer(offre_id: int) -> dict:
     r = requests.get(_url(f"/api/internal/jobs/{offre_id}"), headers=HEADERS)
     r.raise_for_status()

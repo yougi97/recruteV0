@@ -18,7 +18,7 @@ import com.techlance.recrute.Services.CategoriesService;
 import com.techlance.recrute.Services.JobOfferService;
 
 @RestController
-@RequestMapping("/api/internal/jobs/{offre_id}")
+@RequestMapping("/api/internal/jobs")
 public class JobOfferIAController {
     private final JobOfferService jobOfferService;
     private final CategoriesService categoriesService;
@@ -28,17 +28,22 @@ public class JobOfferIAController {
         this.categoriesService = categoriesService;
     }
 
-    @GetMapping
+    @GetMapping("/active")
+    public List<Map<String, Object>> getActiveJobIds() {
+        return jobOfferService.getAllActiveJobIds();
+    }
+
+    @GetMapping("/{offre_id}")
     public JobOffers getOffer(@PathVariable Long offre_id) {
         return jobOfferService.getJobOffer(offre_id);
     }
 
-    @PatchMapping("/parsed")
+    @PatchMapping("/{offre_id}/parsed")
     public JobOffers updateJobOffers(@PathVariable Long offre_id, @RequestBody java.util.Map<String, Object> body) {
         return jobOfferService.updateJobOfferFromPython(offre_id, body);
     }
 
-    @PostMapping("/categories")
+    @PostMapping("/{offre_id}/categories")
     public List<JobCategories> createCvCategories(@PathVariable Long offre_id, @RequestBody List<Map<String, Object>> jobCategories) {
         List<JobCategories> jobCategorieses = new ArrayList<>();
         for (Map<String, Object> category : jobCategories) {
@@ -47,11 +52,8 @@ public class JobOfferIAController {
         return jobCategorieses;
     }
 
-    @GetMapping("/categories")
+    @GetMapping("/{offre_id}/categories")
     public List<Map<String,Object>> getcategoriesjob(@PathVariable Long offre_id) {
         return categoriesService.getcategoriesjob(offre_id);
     }
-
-
-
 }

@@ -11,4 +11,5 @@ import com.techlance.recrute.Entities.CvCategories;
 public interface CvCategoriesRepository extends JpaRepository<CvCategories, Long>{
     List<CvCategories> findByCvId(Long id);
     CvCategories findByCvIdAndCategoryId(Long CvId, Long CategoryId);
+    void deleteByCvId(Long cvId);
 }
