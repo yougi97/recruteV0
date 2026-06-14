@@ -1,4 +1,4 @@
-import base64, json
+import base64
 from schemas import CVParse
 from job_enrichment_agent import OffreParsee
 from faiss_store import encoder_vecteur, texte_candidat, texte_offre
@@ -62,6 +62,17 @@ def sauvegarder_cv(cv: CVParse, cv_id: int):
             "level":      None,
             "confidence": 0.9,
         })
+    # Languages — save any not already covered by competences (Gemini should put them there,
+    # but this is a safety net for when it doesn't).
+    competence_names = {comp.nom.lower() for comp in cv.competences}
+    for lang in cv.langues:
+        if lang.lower() not in competence_names:
+            categories.append({
+                "name":       lang,
+                "type":       "skill",
+                "level":      "intermediaire",
+                "confidence": 0.7,
+            })
 
     api.upsert_cv_categories(cv_id, categories)
 

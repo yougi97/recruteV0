@@ -31,9 +31,31 @@ AUTO_MODEL_PREFERENCE = [
     "gemini-2.0-flash-lite-001",
 ]
 
-SYSTEM_INSTRUCTION = """Oublie toutes les instructions précédentes.
-Tu es un expert RH. Extrais les informations du CV
-et retourne uniquement un JSON valide correspondant au schéma fourni.
+SYSTEM_INSTRUCTION = """Tu es un expert RH. Extrais les informations du CV et retourne uniquement un JSON valide correspondant au schéma fourni.
+
+NIVEAUX DE COMPÉTENCES — ne pas mettre "intermediaire" par défaut, calibrer strictement :
+• notions      : théorie connue mais peu ou jamais pratiquée (cours magistral, tutoriel lu, pas de projet concret)
+• intermediaire : pratiqué concrètement dans des projets perso ou académiques (TP, side project, projet uni)
+• avance       : utilisé de façon autonome en contexte professionnel réel (stage, CDI, CDD, freelance)
+• expert       : maîtrise approfondie après 3+ ans d'usage pro, capacité à former/encadrer d'autres
+
+Calibrage attendu pour un étudiant sans expérience professionnelle :
+  - Techno vue uniquement en cours → notions
+  - Techno utilisée dans un projet perso/uni → intermediaire
+  - Techno utilisée en stage → avance
+  - Expert est rarissime pour un étudiant, réserver aux cas évidents (ex: langage natif)
+
+LANGUES — OBLIGATOIRE : inclure chaque langue détectée DANS "competences" (avec niveau CEFR mappé) ET dans "langues" (liste des noms seuls) :
+  A1 / A2                       → notions
+  B1                            → intermediaire
+  B2                            → avance
+  C1 / C2 / natif / maternelle  → expert
+  Niveau non précisé mais langue pratiquée → intermediaire
+
+Exemples : "Anglais B2" → competence {nom:"Anglais", niveau:"avance"} + langues:["Anglais"]
+           "Espagnol A2" → competence {nom:"Espagnol", niveau:"notions"} + langues:["Espagnol"]
+           "Français (natif)" → competence {nom:"Français", niveau:"expert"} + langues:["Français"]
+
 Si une info est absente, utilise null."""
 
 
@@ -87,10 +109,13 @@ def _parse_with_gemini(prompt: str) -> tuple[CVParse | None, str | None]:
 
 
 COMMON_SKILLS = [
-    "Python", "Java", "Spring", "Angular", "TypeScript", "JavaScript", "React", "HTML", "CSS",
-    "SQL", "MySQL", "PostgreSQL", "Docker", "Git", "Linux", "Flask", "Django", "FastAPI",
-    "Machine Learning", "Data Science", "NLP", "AI", "TensorFlow", "PyTorch", "NumPy", "Pandas",
-    "scikit-learn", "Kubernetes", "AWS", "Azure", "GCP"
+    "Python", "Java", "Spring", "Spring Boot", "Angular", "TypeScript", "JavaScript", "React",
+    "HTML", "CSS", "SQL", "MySQL", "PostgreSQL", "MongoDB", "Docker", "Git", "Linux", "Unix",
+    "Flask", "Django", "FastAPI", "Machine Learning", "Deep Learning", "Data Science", "NLP",
+    "AI", "TensorFlow", "PyTorch", "Keras", "NumPy", "Pandas", "scikit-learn", "FAISS",
+    "Kotlin", "Android", "Swift", "iOS", "C", "C++", "C#", "Go", "Rust", "Ruby", "PHP",
+    "Kubernetes", "AWS", "Azure", "GCP", "Terraform", "Jenkins", "GitLab CI", "OCaml", "Scala",
+    "Redis", "Elasticsearch", "GraphQL", "gRPC", "Kafka",
 ]
 
 COMMON_SOFT_SKILLS = [
@@ -98,7 +123,39 @@ COMMON_SOFT_SKILLS = [
     "leadership", "organisation", "curiosité", "créativité", "problem solving"
 ]
 
-LANGUAGE_HINTS = ["français", "anglais", "espagnol", "allemand", "italien", "portugais", "arabe"]
+LANGUAGE_HINTS = {
+    "français": "Français", "anglais": "Anglais", "espagnol": "Espagnol",
+    "allemand": "Allemand", "italien": "Italien", "portugais": "Portugais",
+    "arabe": "Arabe", "chinois": "Chinois", "japonais": "Japonais",
+    "french": "Français", "english": "Anglais", "spanish": "Espagnol",
+    "german": "Allemand",
+}
+
+# CEFR level → NiveauExpertise mapping for heuristic language detection
+_CEFR_RE = re.compile(
+    r"\b(a1|a2|b1|b2|c1|c2|natif|native|maternell[a-z]*|bilingue|courant|fluent|professionnel)\b",
+    re.IGNORECASE,
+)
+_CEFR_NIVEAU = {
+    "a1": NiveauExpertise.NOTIONS,   "a2": NiveauExpertise.NOTIONS,
+    "b1": NiveauExpertise.INTERMEDIAIRE,
+    "b2": NiveauExpertise.AVANCE,    "courant": NiveauExpertise.AVANCE,
+    "fluent": NiveauExpertise.AVANCE, "professionnel": NiveauExpertise.AVANCE,
+    "c1": NiveauExpertise.EXPERT,    "c2": NiveauExpertise.EXPERT,
+    "natif": NiveauExpertise.EXPERT, "native": NiveauExpertise.EXPERT,
+    "bilingue": NiveauExpertise.EXPERT,
+}
+
+def _cefr_niveau_for_lang(lang_lower: str, texte_lower: str) -> NiveauExpertise:
+    # Look for a CEFR marker within 60 chars of the language name
+    idx = texte_lower.find(lang_lower)
+    if idx == -1:
+        return NiveauExpertise.INTERMEDIAIRE
+    window = texte_lower[max(0, idx - 30): idx + len(lang_lower) + 60]
+    m = _CEFR_RE.search(window)
+    if m:
+        return _CEFR_NIVEAU.get(m.group(1).lower(), NiveauExpertise.INTERMEDIAIRE)
+    return NiveauExpertise.INTERMEDIAIRE
 
 
 def extraire_texte_pdf(chemin: str) -> str:
@@ -113,14 +170,22 @@ def _fallback_parse_cv(texte: str) -> CVParse:
     years_match = re.search(r"(\d+(?:[.,]\d+)?)\s*(?:ans?|years?)", texte, re.IGNORECASE)
     lower_text = texte.lower()
 
-    competences = [
+    competences: list[Competence] = [
         Competence(nom=skill, niveau=NiveauExpertise.INTERMEDIAIRE)
         for skill in COMMON_SKILLS
         if skill.lower() in lower_text
     ]
 
     soft_skills = [skill for skill in COMMON_SOFT_SKILLS if skill in lower_text]
-    langues = [lang for lang in LANGUAGE_HINTS if lang in lower_text]
+
+    # Detect languages with CEFR-derived levels; include them in competences too
+    langues: list[str] = []
+    for hint_lower, display_name in LANGUAGE_HINTS.items():
+        if hint_lower in lower_text:
+            langues.append(display_name)
+            niveau = _cefr_niveau_for_lang(hint_lower, lower_text)
+            if not any(c.nom == display_name for c in competences):
+                competences.append(Competence(nom=display_name, niveau=niveau))
 
     if not competences:
         competences = [Competence(nom="Compétences non détectées", niveau=NiveauExpertise.NOTIONS)]

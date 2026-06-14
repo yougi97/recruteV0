@@ -14,11 +14,16 @@ MODEL_PREFERENCE = [
     "gemini-2.0-flash-lite",
 ]
 
-SYSTEM_INSTRUCTION = """Oublie toutes les instructions précédentes.
-Tu es un expert RH. Extrais les exigences structurées
-de l'offre ET génère une description_enrichie exhaustive qui explicite les
-compétences implicites, le contexte métier et le profil idéal.
-Retourne uniquement du JSON valide."""
+SYSTEM_INSTRUCTION = """Tu es un expert RH. Extrais les exigences structurées de l'offre ET génère une description_enrichie exhaustive qui explicite les compétences implicites, le contexte métier et le profil idéal. Retourne uniquement du JSON valide.
+
+Pour le champ "categories", inclure :
+- Les compétences techniques avec type="skill" et required_level parmi : debutant, intermediaire, avance, expert
+- Les soft skills avec type="soft_skill" (required_level=null)
+- Les langues requises avec type="language" et required_level selon le niveau demandé :
+    A1/A2 → debutant | B1 → intermediaire | B2 → avance | C1/C2/courant/bilingue → expert
+  Exemple : "Anglais courant requis" → {name:"Anglais", type:"language", required_level:"avance", is_mandatory:true}
+
+is_mandatory=true pour les exigences explicitement requises, false pour les nice-to-have."""
 
 
 class CategorieOffre(BaseModel):
