@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { JobOfferService } from '../services/job-offer';
+import { AuthService } from '../services/auth';
 import { JobOffer, OfferFilters } from '../model/job-offer';
 import { JobCardComponent } from '../candidat/components/job-card/job-card';
 import { FiltersBarComponent } from '../candidat/components/filters-bar/filters-bar';
@@ -29,18 +30,27 @@ export class OffresComponent implements OnInit {
   searchQuery = '';
   sortBy: SortBy = 'match';
   showDismissed = false;
+  viewMode: 'grid' | 'list' = 'grid';
+  selectedTag: string | null = null;
+  selectedOffer: JobOffer | null = null;
+  cvSkills: { name: string; level: string; type: string }[] = [];
+  private cvId: number | null = null;
   private currentFilters: OfferFilters = { contractType: null, workMode: null, minMatch: 0 };
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
   private actionErrorTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private jobOfferService: JobOfferService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.candidateId = Number(localStorage.getItem('user_id'));
     this.loadOffers();
+    if (this.candidateId > 0) {
+      this.loadCvId();
+    }
   }
 
   get totalCount(): number { return this.offers.filter(o => o.status !== 'dismissed').length; }
@@ -59,6 +69,45 @@ export class OffresComponent implements OnInit {
   setSortBy(sort: SortBy): void {
     this.sortBy = sort;
     this.applyFilters();
+  }
+
+  setViewMode(m: 'grid' | 'list'): void {
+    this.viewMode = m;
+  }
+
+  onTagClick(tag: string): void {
+    this.selectedTag = norm(this.selectedTag ?? '') === norm(tag) ? null : tag;
+    this.applyFilters();
+  }
+
+  clearTag(): void {
+    this.selectedTag = null;
+    this.applyFilters();
+  }
+
+  openDetail(offer: JobOffer): void {
+    this.selectedOffer = offer;
+    document.body.style.overflow = 'hidden';
+    if (this.cvId && this.cvSkills.length === 0) {
+      this.authService.getCvCategories(this.cvId).subscribe({
+        next: (cats) => {
+          const order: Record<string, number> = { expert: 4, avance: 3, intermediaire: 2, debutant: 1 };
+          this.cvSkills = cats
+            .filter((c: any) => c.type !== 'soft_skill')
+            .sort((a: any, b: any) => (order[b.level] ?? 0) - (order[a.level] ?? 0));
+        },
+        error: () => {}
+      });
+    }
+  }
+
+  closeDetail(): void {
+    this.selectedOffer = null;
+    document.body.style.overflow = '';
+  }
+
+  pct(v: number): number {
+    return Math.round((v ?? 0) * 100);
   }
 
   toggleDismissed(): void {
@@ -99,16 +148,30 @@ export class OffresComponent implements OnInit {
     }
   }
 
+  private loadCvId(): void {
+    this.authService.getCandidatebyId(this.candidateId).subscribe({
+      next: (profile) => {
+        if (!profile?.id) return;
+        this.authService.getCandidateCv(profile.id).subscribe({
+          next: (cv) => { if (cv?.id) this.cvId = cv.id; },
+          error: () => {}
+        });
+      },
+      error: () => {}
+    });
+  }
+
   private applyFilters(): void {
     const f = this.currentFilters;
     const q = norm(this.searchQuery);
 
-    let result = this.offers.filter(o => {
-      if (o.status === 'dismissed') return false;
-      if (f.contractType && norm(o.contractType) !== norm(f.contractType)) return false;
-      if (f.workMode && norm(o.workMode) !== norm(f.workMode)) return false;
-      if (o.matchScore < f.minMatch) return false;
-      if (q && !norm(`${o.title} ${o.company}`).includes(q)) return false;
+    let result = this.offers.filter(offer => {
+      if (offer.status === 'dismissed') return false;
+      if (f.contractType && norm(offer.contractType) !== norm(f.contractType)) return false;
+      if (f.workMode && norm(offer.workMode) !== norm(f.workMode)) return false;
+      if (offer.matchScore < f.minMatch) return false;
+      if (q && !norm(`${offer.title} ${offer.company}`).includes(q)) return false;
+      if (this.selectedTag && !offer.tags?.some(t => norm(t.label) === norm(this.selectedTag!))) return false;
       return true;
     });
 
@@ -173,7 +236,13 @@ export class OffresComponent implements OnInit {
         matchScore: ms,
         matchLevel: this.computeMatchLevel(ms),
         tags: item.tags ?? [],
-        aiReason: item.description ?? 'Offre d\'emploi disponible',
+        aiReason: item.aiReason ?? item.description ?? 'Offre d\'emploi disponible',
+        description: item.description ?? '',
+        scoreDetail: item.score_semantique != null ? {
+          sem: item.score_semantique,
+          str: item.score_structure ?? 0,
+          llm: item.score_llm ?? 0,
+        } : undefined,
         status: item.status ?? 'pending',
       } as JobOffer;
     });

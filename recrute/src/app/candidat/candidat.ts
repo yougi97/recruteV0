@@ -29,6 +29,10 @@ export class CandidatComponent implements OnInit {
   isRefreshing = false;
   computingScores = false;
   showDismissed = false;
+  hasCv: boolean | null = null;
+  cvSkills: { name: string; level: string; type: string }[] = [];
+  showCvInsights = false;
+  protected cvId: number | null = null;
   private currentFilters: OfferFilters = { contractType: null, workMode: null, minMatch: 0 };
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -53,6 +57,13 @@ export class CandidatComponent implements OnInit {
         const fallbackName = this.authService.getCurrentUser() ?? '';
         const displayName = `${profile.user?.firstName ?? ''} ${profile.user?.lastName ?? ''}`.trim();
         this.candidateName = displayName || fallbackName;
+
+        if (profile?.id) {
+          this.authService.getCandidateCv(profile.id).subscribe({
+            next: (cv) => { this.hasCv = !!cv?.id; if (cv?.id) this.cvId = cv.id; },
+            error: () => { this.hasCv = false; }
+          });
+        }
       },
       error: () => {
         this.candidateName = this.authService.getCurrentUser() ?? '';
@@ -73,6 +84,25 @@ export class CandidatComponent implements OnInit {
   onFiltersChange(filters: OfferFilters): void {
     this.currentFilters = filters;
     this.applyFilters();
+  }
+
+  toggleCvInsights(): void {
+    this.showCvInsights = !this.showCvInsights;
+    if (this.showCvInsights && this.cvSkills.length === 0 && this.cvId) {
+      const order: Record<string, number> = { expert: 4, avance: 3, intermediaire: 2, debutant: 1 };
+      this.authService.getCvCategories(this.cvId).subscribe({
+        next: (cats: any[]) => {
+          this.cvSkills = cats
+            .filter(c => c.type !== 'soft_skill')
+            .sort((a, b) => (order[b.level] ?? 0) - (order[a.level] ?? 0));
+        },
+        error: () => {}
+      });
+    }
+  }
+
+  pct(v: number): number {
+    return Math.round((v ?? 0) * 100);
   }
 
   refreshSuggestions(): void {
@@ -184,7 +214,8 @@ export class CandidatComponent implements OnInit {
         matchScore: ms,
         matchLevel: this.computeMatchLevel(ms),
         tags: item.tags ?? [],
-        aiReason: item.description ?? 'Offre d\'emploi disponible',
+        aiReason: item.aiReason ?? item.description ?? 'Offre d\'emploi disponible',
+        description: item.description ?? '',
         status: item.status ?? 'pending',
       } as JobOffer;
     });

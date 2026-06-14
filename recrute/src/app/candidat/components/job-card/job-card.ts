@@ -16,8 +16,15 @@ export class JobCardComponent {
     this._offer = value;
   }
   get offer(): JobOffer | undefined { return this._offer; }
+
+  @Input() compact = false;
+  @Input() clickableTags = false;
+  @Input() highlightTag: string | null = null;
+
   @Output() interested = new EventEmitter<JobOffer>();
   @Output() dismissed = new EventEmitter<JobOffer>();
+  @Output() tagClick = new EventEmitter<string>();
+  @Output() detail = new EventEmitter<JobOffer>();
 
   get matchIcon(): string {
     const offer = this.offer;
@@ -30,8 +37,6 @@ export class JobCardComponent {
     return map[offer.matchLevel];
   }
 
-  
-
   onInterest(): void {
     const offer = this.offer;
     if (!offer) return;
@@ -42,5 +47,21 @@ export class JobCardComponent {
     const offer = this.offer;
     if (!offer) return;
     this.dismissed.emit(offer);
+  }
+
+  onTagClick(label: string): void {
+    if (this.clickableTags) {
+      this.tagClick.emit(label);
+    }
+  }
+
+  onDetail(): void {
+    const offer = this.offer;
+    if (!offer) return;
+    this.detail.emit(offer);
+  }
+
+  pct(v: number): number {
+    return Math.round((v ?? 0) * 100);
   }
 }

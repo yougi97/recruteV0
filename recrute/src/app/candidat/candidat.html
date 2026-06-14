@@ -10,6 +10,16 @@
 
     <app-filters-bar (filtersChange)="onFiltersChange($event)" />
 
+    <!-- No CV banner -->
+    <div class="no-cv-banner" *ngIf="hasCv === false && !isLoading && !computingScores">
+      <div class="no-cv-icon">📄</div>
+      <div class="no-cv-text">
+        <div class="no-cv-title">Aucun CV uploadé</div>
+        <div class="no-cv-sub">Uploadez votre CV pour obtenir des suggestions personnalisées et un score de compatibilité IA.</div>
+      </div>
+      <a class="no-cv-btn" routerLink="/profil">Uploader mon CV →</a>
+    </div>
+
     <div class="computing-banner" *ngIf="computingScores">
       <div class="computing-pulse"></div>
       <div class="computing-text">
@@ -61,6 +71,22 @@
             (interested)="onInterested($event)"
             (dismissed)="onDismissed($event)"
           />
+        </div>
+      </div>
+
+      <!-- Ce que l'IA a retenu de votre CV -->
+      <div class="cv-insights-section" *ngIf="!isLoading && !computingScores && hasCv && cvId">
+        <button class="cv-insights-toggle" (click)="toggleCvInsights()">
+          <span class="ins-arrow">{{ showCvInsights ? '▾' : '▸' }}</span>
+          Ce que l'IA a retenu de votre CV
+          <span class="ins-count" *ngIf="cvSkills.length > 0">{{ cvSkills.length }} compétences détectées</span>
+        </button>
+        <div class="cv-insights-grid" *ngIf="showCvInsights">
+          <div class="ins-loading" *ngIf="cvSkills.length === 0">Chargement...</div>
+          <div class="cv-skill-chip" *ngFor="let s of cvSkills" [ngClass]="'lvl-' + s.level">
+            <span class="skill-name">{{ s.name }}</span>
+            <span class="skill-lvl">{{ s.level }}</span>
+          </div>
         </div>
       </div>
     </ng-container>

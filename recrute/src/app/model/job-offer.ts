@@ -8,6 +8,12 @@ export interface JobTag {
   accent: boolean;
 }
 
+export interface ScoreDetail {
+  sem: number;
+  str: number;
+  llm: number;
+}
+
 export interface JobOffer {
   id: number;
   title: string;
@@ -24,6 +30,7 @@ export interface JobOffer {
   aiReason: string;
   status: OfferStatus;
   description?: string;
+  scoreDetail?: ScoreDetail;
   companyId?: number;
   companyName?: string;
   isActive?: boolean;
