@@ -232,6 +232,11 @@ export class CandidatComponent implements OnInit {
         aiReason: item.aiReason ?? '',
         description: item.description ?? '',
         jobSkills: item.jobSkills ?? [],
+        scoreDetail: item.score_semantique != null ? {
+          sem: item.score_semantique,
+          str: item.score_structure ?? 0,
+          llm: item.score_llm ?? 0,
+        } : undefined,
         status: item.status ?? 'pending',
       } as JobOffer;
     });

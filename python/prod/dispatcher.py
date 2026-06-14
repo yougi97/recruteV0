@@ -13,7 +13,7 @@ def _niveau_mysql(niveau_str: str) -> str:
             .replace("avance", "avance")
             .replace("intermediaire", "intermediaire"))
 
-def sauvegarder_cv(cv: CVParse, cv_id: int):
+def sauvegarder_cv(cv: CVParse, cv_id: int, raw_text: str | None = None):
     vecteur_b64 = base64.b64encode(encoder_vecteur(texte_candidat(cv))).decode()
 
     cv_data = api.get_cv(cv_id)
@@ -21,12 +21,15 @@ def sauvegarder_cv(cv: CVParse, cv_id: int):
     candidate_user = candidate_profile.get("user") or {}
 
     # 1. Met à jour cvs via Spring
-    api.update_cv_parsed(cv_id, {
+    payload: dict = {
         "parsed_json":       cv.model_dump(),
         "embedding":         vecteur_b64,
         "annees_experience": cv.annees_experience,
         "niveau_etudes":     cv.niveau_etudes.value,
-    })
+    }
+    if raw_text:
+        payload["raw_text"] = raw_text
+    api.update_cv_parsed(cv_id, payload)
 
     # 2. Met à jour candidate_profiles avec les champs extraits du CV
     if candidate_profile.get("id"):

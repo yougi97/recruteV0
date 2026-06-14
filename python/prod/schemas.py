@@ -35,6 +35,7 @@ class CVParse(BaseModel):
     competences:            list[Competence]
     soft_skills:            list[str]
     langues:                list[str]
+    formations:             list[str] = []
     experiences:            list[Experience]
     resume_profil:          str
     parsing_source:         Optional[str] = None

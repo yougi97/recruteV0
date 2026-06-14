@@ -16,7 +16,9 @@ def decoder_vecteur(blob_b64: str) -> np.ndarray:
 def texte_candidat(cv) -> str:
     comp = ", ".join(f"{c.nom} {c.niveau.value}" for c in cv.competences)
     exps = " ".join(e.description for e in cv.experiences)
-    return f"{cv.resume_profil} Compétences : {comp}. {exps}"
+    forms = getattr(cv, "formations", []) or []
+    form_part = f" Formations : {', '.join(forms)}." if forms else ""
+    return f"{cv.resume_profil} Compétences : {comp}.{form_part} {exps}"
 
 def texte_offre(offre) -> str:
     return offre.description_enrichie

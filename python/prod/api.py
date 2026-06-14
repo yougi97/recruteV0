@@ -44,8 +44,8 @@ def parse_cv_endpoint():
             chemin = tmp.name
 
     try:
-        cv = parser_cv(chemin)
-        sauvegarder_cv(cv, cv_id)
+        cv, raw_text = parser_cv(chemin)
+        sauvegarder_cv(cv, cv_id, raw_text=raw_text)
         threading.Thread(target=_score_cv_against_all_jobs, args=(cv_id,), daemon=True).start()
         return jsonify(cv.model_dump()), 200
     except ValueError as e:

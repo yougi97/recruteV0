@@ -249,6 +249,13 @@
 }
 
 .drawer-main-score { display: flex; }
+
+.subscores { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.subscore-row { display: flex; align-items: center; gap: 10px; }
+.subscore-name { font-size: 12px; color: rgba(255,255,255,0.55); width: 90px; flex-shrink: 0; }
+.subscore-track { flex: 1; height: 5px; border-radius: 10px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.subscore-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #38bdf8, #2563eb); }
+.subscore-val { font-size: 12px; color: rgba(255,255,255,0.7); width: 34px; text-align: right; flex-shrink: 0; }
 .drawer-tags { display: flex; flex-wrap: wrap; gap: 7px; }
 
 .drawer-desc {

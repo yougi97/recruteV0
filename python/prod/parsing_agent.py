@@ -56,6 +56,18 @@ Exemples : "Anglais B2" → competence {nom:"Anglais", niveau:"avance"} + langue
            "Espagnol A2" → competence {nom:"Espagnol", niveau:"notions"} + langues:["Espagnol"]
            "Français (natif)" → competence {nom:"Français", niveau:"expert"} + langues:["Français"]
 
+FORMATIONS — Remplis "formations" avec les noms complets des programmes/diplômes suivis (ex: "BTS Informatique", "Licence Sciences des Données", "Master Finance de Marché", "DUT Réseaux et Télécom", "BUT Informatique", "École d'ingénieur spécialité Génie Logiciel"). Si plusieurs, les lister tous.
+
+INFÉRENCE DEPUIS LES FORMATIONS — Si le CV mentionne un programme avec un domaine technique identifiable, ajoute les compétences fondamentales de ce domaine avec niveau "notions", UNIQUEMENT si elles ne sont pas déjà présentes dans les compétences explicites du CV. Règles :
+  - BTS / DUT / BUT Informatique → SQL, Algorithmique, Programmation orientée objet, réseau
+  - Licence / Master Informatique → ajouter aussi des langages courants du domaine (Python, Java…)
+  - BTS Commerce / Management → PowerPoint, Excel, relation client
+  - Master Finance / Comptabilité → Excel, analyse financière, comptabilité
+  - BTS Électronique / Électrotechnique → électronique, schémas électriques
+  - Adapter à ce qui est le plus probable pour le programme spécifique mentionné
+  - Maximum 5 compétences inférées par formation, seulement si le domaine est clair
+  - Ne jamais inventer des compétences sans lien avec le programme
+
 Si une info est absente, utilise null."""
 
 
@@ -160,7 +172,61 @@ def _cefr_niveau_for_lang(lang_lower: str, texte_lower: str) -> NiveauExpertise:
 
 def extraire_texte_pdf(chemin: str) -> str:
     with pdfplumber.open(chemin) as pdf:
-        return "\n".join(p.extract_text() or "" for p in pdf.pages)
+        texte = "\n".join(p.extract_text() or "" for p in pdf.pages)
+
+    if len(texte.strip()) >= 100:
+        return texte
+
+    # Scanned PDF — render each page and OCR
+    try:
+        import fitz  # PyMuPDF
+        import pytesseract
+        from PIL import Image
+
+        doc = fitz.open(chemin)
+        pages = []
+        for page in doc:
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            try:
+                pages.append(pytesseract.image_to_string(img, lang="fra+eng"))
+            except Exception:
+                pages.append(pytesseract.image_to_string(img))
+        ocr_text = "\n".join(pages)
+        return ocr_text if ocr_text.strip() else texte
+    except Exception:
+        return texte
+
+
+# French educational programs → likely skills (notions level, conservative list)
+_FORMATION_SKILLS: list[tuple[re.Pattern, str, list[str]]] = [
+    (re.compile(r"\bsti2d\b|\bsyst[eè]me\s+d.information\s+num[eé]rique\b", re.I),
+     "Baccalauréat STI2D SIN",
+     ["Algorithmique", "Réseau informatique", "Électronique numérique", "Python"]),
+    (re.compile(r"\btsi\b|\bpr[eé]pa\s+tsi\b", re.I),
+     "Classe préparatoire TSI",
+     ["Algorithmique", "C", "Sciences industrielles", "Mathématiques"]),
+    (re.compile(r"\bepf\b|\b[eé]cole\s+d.ing[eé]ni", re.I),
+     "École d'ingénieur",
+     ["Algorithmique", "Programmation orientée objet", "Réseau informatique"]),
+    (re.compile(r"\bbts\s+info\w*\b|\bbts\s+sio\b|\bbts\s+snir\b|\bdut\s+info\w*\b|\bbut\s+info\w*\b", re.I),
+     "BTS/DUT Informatique",
+     ["SQL", "Algorithmique", "Programmation orientée objet", "Réseau informatique"]),
+    (re.compile(r"\blicence\s+info\w*\b|\bmaster\s+info\w*\b", re.I),
+     "Licence/Master Informatique",
+     ["SQL", "Python", "Java", "Algorithmique", "Programmation orientée objet"]),
+    (re.compile(r"\bbts\s+commerce\b|\bbts\s+mco\b|\bbts\s+management\b", re.I),
+     "BTS Commerce",
+     ["Pack Office", "Excel", "PowerPoint"]),
+    (re.compile(r"\bmaster\s+finance\b|\bbts\s+compta\w*\b|\bdcg\b", re.I),
+     "Formation Finance/Comptabilité",
+     ["Excel", "Comptabilité", "Analyse financière"]),
+    (re.compile(r"\br[eé]seaux?\s+et\s+t[eé]l[eé]com\b|\bdut\s+rt\b|\bbut\s+rt\b", re.I),
+     "DUT/BUT Réseaux et Télécom",
+     ["Réseau informatique", "TCP/IP", "Administration système", "Linux"]),
+]
+
+_WORD_BOUND_SKILL_RE = re.compile(r"(?<!\w){skill}(?!\w)", re.I)
 
 
 def _fallback_parse_cv(texte: str) -> CVParse:
@@ -170,10 +236,11 @@ def _fallback_parse_cv(texte: str) -> CVParse:
     years_match = re.search(r"(\d+(?:[.,]\d+)?)\s*(?:ans?|years?)", texte, re.IGNORECASE)
     lower_text = texte.lower()
 
+    # Use word-boundary matching to avoid "AI" hitting "mairie", "C" hitting any word
     competences: list[Competence] = [
         Competence(nom=skill, niveau=NiveauExpertise.INTERMEDIAIRE)
         for skill in COMMON_SKILLS
-        if skill.lower() in lower_text
+        if re.search(r"(?<!\w)" + re.escape(skill.lower()) + r"(?!\w)", lower_text)
     ]
 
     soft_skills = [skill for skill in COMMON_SOFT_SKILLS if skill in lower_text]
@@ -181,11 +248,22 @@ def _fallback_parse_cv(texte: str) -> CVParse:
     # Detect languages with CEFR-derived levels; include them in competences too
     langues: list[str] = []
     for hint_lower, display_name in LANGUAGE_HINTS.items():
-        if hint_lower in lower_text:
+        if re.search(r"(?<!\w)" + re.escape(hint_lower) + r"(?!\w)", lower_text):
             langues.append(display_name)
             niveau = _cefr_niveau_for_lang(hint_lower, lower_text)
             if not any(c.nom == display_name for c in competences):
                 competences.append(Competence(nom=display_name, niveau=niveau))
+
+    # Detect formations and infer skills from them
+    formations: list[str] = []
+    existing_names = {c.nom.lower() for c in competences}
+    for pattern, formation_name, inferred_skills in _FORMATION_SKILLS:
+        if pattern.search(texte):
+            formations.append(formation_name)
+            for skill_name in inferred_skills:
+                if skill_name.lower() not in existing_names:
+                    competences.append(Competence(nom=skill_name, niveau=NiveauExpertise.NOTIONS))
+                    existing_names.add(skill_name.lower())
 
     if not competences:
         competences = [Competence(nom="Compétences non détectées", niveau=NiveauExpertise.NOTIONS)]
@@ -200,12 +278,13 @@ def _fallback_parse_cv(texte: str) -> CVParse:
         competences=competences,
         soft_skills=soft_skills,
         langues=langues,
+        formations=formations,
         experiences=[],
         resume_profil=resume,
     )
 
 
-def parser_cv(chemin_pdf: str, max_retries: int = 3) -> CVParse:
+def parser_cv(chemin_pdf: str, max_retries: int = 3) -> tuple["CVParse", str]:
     texte = extraire_texte_pdf(chemin_pdf)
     erreur = ""
 
@@ -217,10 +296,10 @@ def parser_cv(chemin_pdf: str, max_retries: int = 3) -> CVParse:
         )
         parsed, gemini_error = _parse_with_gemini(prompt)
         if parsed is not None:
-            return parsed
+            return parsed, texte
 
         erreur = gemini_error or "Erreur lors de l'appel Gemini"
         if tentative == max_retries - 1:
             fallback = _fallback_parse_cv(texte)
             fallback.parsing_source = "heuristic"
-            return fallback
+            return fallback, texte

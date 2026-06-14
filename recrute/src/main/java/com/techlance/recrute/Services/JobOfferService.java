@@ -774,12 +774,17 @@ public class JobOfferService {
             }
         } catch (Exception ignored) {}
 
+        Float scoreSem = null, scoreStr = null, scoreLlm = null;
+
         // Prefer persisted AI score when available
         try {
             java.util.Optional<CandidateJobRatings> opt = candidateJobRatingsRepository.findLatestByCandidateAndJob(candidate.getId(), job.getId());
             if (opt.isPresent()) {
                 if (opt.get().getAi_score() > 0) {
                     matchScore = Math.max(0, Math.min(100, Math.round(opt.get().getAi_score())));
+                    scoreSem = opt.get().getScoreSemantique();
+                    scoreStr = opt.get().getScoreStructure();
+                    scoreLlm = opt.get().getScoreLlm();
                 }
                 if (status.equals("pending") && opt.get().getRating() == Rating.down) {
                     status = "dismissed";
@@ -800,6 +805,11 @@ public class JobOfferService {
         suggestion.put("salary", "Salaire non communiqué");
         suggestion.put("matchScore", matchScore);
         suggestion.put("matchLevel", toMatchLevel(matchScore));
+        if (scoreSem != null) {
+            suggestion.put("score_semantique", scoreSem);
+            suggestion.put("score_structure", scoreStr);
+            suggestion.put("score_llm", scoreLlm);
+        }
         suggestion.put("tags", buildTags(job, candidate));
         suggestion.put("jobSkills", buildJobSkills(job));
         suggestion.put("aiReason", buildReason(job, candidate));

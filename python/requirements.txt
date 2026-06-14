@@ -4,6 +4,8 @@ faiss-cpu
 numpy
 pdfplumber
 pytesseract
+pymupdf
+Pillow
 regex
 sentence-transformers
 google-genai
