@@ -31,6 +31,7 @@ export interface JobOffer {
   status: OfferStatus;
   description?: string;
   scoreDetail?: ScoreDetail;
+  jobSkills?: { name: string }[];
   companyId?: number;
   companyName?: string;
   isActive?: boolean;

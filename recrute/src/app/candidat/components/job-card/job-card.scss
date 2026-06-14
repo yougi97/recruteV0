@@ -189,6 +189,46 @@ $company-colors: (
   }
 }
 
+.ai-reason-text {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.matching-skills {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.matching-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.matching-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.matching-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  color: #6ee7b7;
+
+  &.lvl-avance    { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.28); color: #7dd3fc; }
+  &.lvl-expert    { background: rgba(52,211,153,0.14); border-color: rgba(52,211,153,0.38); color: #34d399; }
+  &.lvl-debutant  { opacity: 0.65; }
+}
+
 .card-actions {
   display: flex;
   flex-wrap: wrap;

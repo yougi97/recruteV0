@@ -24,11 +24,13 @@ import com.techlance.recrute.Entities.Cvs;
 import com.techlance.recrute.Entities.Users;
 import com.techlance.recrute.Entities.JobOffers;
 import com.techlance.recrute.Enum.Rating;
+import com.techlance.recrute.Entities.JobCategories;
 import com.techlance.recrute.Repositories.ApplicationsRepository;
 import com.techlance.recrute.Repositories.CandidateJobRatingsRepository;
 import com.techlance.recrute.Repositories.CandidateProfilesRepository;
 import com.techlance.recrute.Repositories.CompanyProfilesRepository;
 import com.techlance.recrute.Repositories.CvsRepository;
+import com.techlance.recrute.Repositories.JobCategoriesRepository;
 import com.techlance.recrute.Repositories.JobOfferRepository;
 
 @Service
@@ -39,6 +41,7 @@ public class JobOfferService {
     private final CvsRepository cvsRepository;
     private final CandidateJobRatingsRepository candidateJobRatingsRepository;
     private final ApplicationsRepository applicationsRepository;
+    private final JobCategoriesRepository jobCategoriesRepository;
     private final ObjectMapper objectMapper;
 
     public JobOfferService(
@@ -47,13 +50,15 @@ public class JobOfferService {
             CandidateProfilesRepository candidateProfilesRepository,
             CvsRepository cvsRepository,
             CandidateJobRatingsRepository candidateJobRatingsRepository,
-            ApplicationsRepository applicationsRepository) {
+            ApplicationsRepository applicationsRepository,
+            JobCategoriesRepository jobCategoriesRepository) {
         this.jobOfferRepository = jobOfferRepository;
         this.companyProfilesRepository = companyProfilesRepository;
         this.candidateProfilesRepository = candidateProfilesRepository;
         this.cvsRepository = cvsRepository;
         this.candidateJobRatingsRepository = candidateJobRatingsRepository;
         this.applicationsRepository = applicationsRepository;
+        this.jobCategoriesRepository = jobCategoriesRepository;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -796,7 +801,8 @@ public class JobOfferService {
         suggestion.put("matchScore", matchScore);
         suggestion.put("matchLevel", toMatchLevel(matchScore));
         suggestion.put("tags", buildTags(job, candidate));
-        suggestion.put("aiReason", buildReason(job, candidate, cv, matchScore));
+        suggestion.put("jobSkills", buildJobSkills(job));
+        suggestion.put("aiReason", buildReason(job, candidate));
         suggestion.put("status", status);
 
         return suggestion;
@@ -954,26 +960,22 @@ public class JobOfferService {
         return tag;
     }
 
-    private String buildReason(JobOffers job, CandidateProfiles candidate, Cvs cv, int matchScore) {
+    private String buildReason(JobOffers job, CandidateProfiles candidate) {
         List<String> reasons = new ArrayList<>();
         if (candidate.getAnneesExperience() >= job.getAnneesExperienceMin()) {
-            reasons.add(String.format(Locale.ROOT, "expérience compatible (%.1f ans)", candidate.getAnneesExperience()));
+            reasons.add(String.format(Locale.ROOT, "Expérience compatible (%.1f ans)", candidate.getAnneesExperience()));
         }
         if (candidate.getLocation() != null && job.getLocation() != null) {
             String candidateLocation = normalize(candidate.getLocation());
             String jobLocation = normalize(job.getLocation());
             if (candidateLocation.contains(jobLocation) || jobLocation.contains(candidateLocation)) {
-                reasons.add("localisation cohérente");
+                reasons.add("Localisation cohérente avec le poste");
             }
         }
-        if (cv != null && cv.getParsedJson() != null && !cv.getParsedJson().isBlank()) {
-            reasons.add("CV analysé par la base IA");
-        }
         if (reasons.isEmpty()) {
-            reasons.add("correspondance basée sur le titre et la description du poste");
+            return null;
         }
-
-        return String.format(Locale.ROOT, "%d%%: %s", matchScore, String.join(", ", reasons));
+        return String.join(" · ", reasons);
     }
 
     private String buildCompanyInitial(JobOffers job) {
@@ -1094,6 +1096,7 @@ public class JobOfferService {
         offer.put("salary", "Salaire non communiqué");
         offer.put("description", job.getDescription() != null ? job.getDescription() : "");
         offer.put("tags", buildPublicTags(job));
+        offer.put("jobSkills", buildJobSkills(job));
         offer.put("status", "pending");
         return offer;
     }
@@ -1124,7 +1127,7 @@ public class JobOfferService {
                     offer.put("score_semantique", opt.get().getScoreSemantique());
                     offer.put("score_structure", opt.get().getScoreStructure());
                     offer.put("score_llm", opt.get().getScoreLlm());
-                    offer.put("aiReason", buildReason(job, candidate, cv, matchScore));
+                    offer.put("aiReason", buildReason(job, candidate));
                     offer.put("status", status);
                     return offer;
                 }
@@ -1134,7 +1137,7 @@ public class JobOfferService {
         int matchScore = computeMatchScore(job, candidate, cv, candidateTerms);
         offer.put("matchScore", matchScore);
         offer.put("matchLevel", toMatchLevel(matchScore));
-        offer.put("aiReason", buildReason(job, candidate, cv, matchScore));
+        offer.put("aiReason", buildReason(job, candidate));
         offer.put("status", status);
 
         return offer;
@@ -1145,5 +1148,20 @@ public class JobOfferService {
         tags.add(tag(job.getContractType() != null ? job.getContractType().name() : "CDI", false));
         tags.add(tag(job.getLocation() != null ? job.getLocation() : "Télétravail possible", true));
         return tags;
+    }
+
+    private List<Map<String, Object>> buildJobSkills(JobOffers job) {
+        List<Map<String, Object>> skills = new ArrayList<>();
+        try {
+            List<JobCategories> cats = jobCategoriesRepository.findByjobOfferId(job.getId());
+            for (JobCategories jc : cats) {
+                if (jc.getCategory() != null) {
+                    Map<String, Object> s = new HashMap<>();
+                    s.put("name", jc.getCategory().getName());
+                    skills.add(s);
+                }
+            }
+        } catch (Exception ignored) {}
+        return skills;
     }
 }

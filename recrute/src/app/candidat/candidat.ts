@@ -32,6 +32,7 @@ export class CandidatComponent implements OnInit {
   hasCv: boolean | null = null;
   cvSkills: { name: string; level: string; type: string }[] = [];
   showCvInsights = false;
+  selectedOffer: JobOffer | null = null;
   protected cvId: number | null = null;
   private currentFilters: OfferFilters = { contractType: null, workMode: null, minMatch: 0 };
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -60,7 +61,10 @@ export class CandidatComponent implements OnInit {
 
         if (profile?.id) {
           this.authService.getCandidateCv(profile.id).subscribe({
-            next: (cv) => { this.hasCv = !!cv?.id; if (cv?.id) this.cvId = cv.id; },
+            next: (cv) => {
+              this.hasCv = !!cv?.id;
+              if (cv?.id) { this.cvId = cv.id; this.loadCvSkills(cv.id); }
+            },
             error: () => { this.hasCv = false; }
           });
         }
@@ -86,19 +90,30 @@ export class CandidatComponent implements OnInit {
     this.applyFilters();
   }
 
+  openDetail(offer: JobOffer): void {
+    this.selectedOffer = offer;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeDetail(): void {
+    this.selectedOffer = null;
+    document.body.style.overflow = '';
+  }
+
   toggleCvInsights(): void {
     this.showCvInsights = !this.showCvInsights;
-    if (this.showCvInsights && this.cvSkills.length === 0 && this.cvId) {
-      const order: Record<string, number> = { expert: 4, avance: 3, intermediaire: 2, debutant: 1 };
-      this.authService.getCvCategories(this.cvId).subscribe({
-        next: (cats: any[]) => {
-          this.cvSkills = cats
-            .filter(c => c.type !== 'soft_skill')
-            .sort((a, b) => (order[b.level] ?? 0) - (order[a.level] ?? 0));
-        },
-        error: () => {}
-      });
-    }
+  }
+
+  private loadCvSkills(cvId: number): void {
+    const order: Record<string, number> = { expert: 4, avance: 3, intermediaire: 2, debutant: 1 };
+    this.authService.getCvCategories(cvId).subscribe({
+      next: (cats: any[]) => {
+        this.cvSkills = cats
+          .filter(c => c.type !== 'soft_skill')
+          .sort((a, b) => (order[b.level] ?? 0) - (order[a.level] ?? 0));
+      },
+      error: () => {}
+    });
   }
 
   pct(v: number): number {
@@ -214,8 +229,9 @@ export class CandidatComponent implements OnInit {
         matchScore: ms,
         matchLevel: this.computeMatchLevel(ms),
         tags: item.tags ?? [],
-        aiReason: item.aiReason ?? item.description ?? 'Offre d\'emploi disponible',
+        aiReason: item.aiReason ?? '',
         description: item.description ?? '',
+        jobSkills: item.jobSkills ?? [],
         status: item.status ?? 'pending',
       } as JobOffer;
     });

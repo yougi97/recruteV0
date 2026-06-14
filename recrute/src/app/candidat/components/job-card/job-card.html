@@ -51,9 +51,17 @@
     </div>
   </div>
 
-  <div class="ai-reason">
+  <div class="ai-reason" *ngIf="offer?.aiReason || matchingSkills.length > 0">
     <strong>✦ Pourquoi l'IA vous suggère cette offre</strong>
-    {{ offer?.aiReason }}
+    <span class="ai-reason-text" *ngIf="offer?.aiReason">{{ offer?.aiReason }}</span>
+    <div class="matching-skills" *ngIf="matchingSkills.length > 0">
+      <span class="matching-label">Compétences en commun</span>
+      <div class="matching-chips">
+        <span *ngFor="let s of matchingSkills" class="matching-chip" [ngClass]="'lvl-' + s.level">
+          ✓ {{ s.label }}
+        </span>
+      </div>
+    </div>
   </div>
 
   <div class="card-actions">

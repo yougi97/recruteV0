@@ -88,17 +88,6 @@ export class OffresComponent implements OnInit {
   openDetail(offer: JobOffer): void {
     this.selectedOffer = offer;
     document.body.style.overflow = 'hidden';
-    if (this.cvId && this.cvSkills.length === 0) {
-      this.authService.getCvCategories(this.cvId).subscribe({
-        next: (cats) => {
-          const order: Record<string, number> = { expert: 4, avance: 3, intermediaire: 2, debutant: 1 };
-          this.cvSkills = cats
-            .filter((c: any) => c.type !== 'soft_skill')
-            .sort((a: any, b: any) => (order[b.level] ?? 0) - (order[a.level] ?? 0));
-        },
-        error: () => {}
-      });
-    }
   }
 
   closeDetail(): void {
@@ -153,9 +142,23 @@ export class OffresComponent implements OnInit {
       next: (profile) => {
         if (!profile?.id) return;
         this.authService.getCandidateCv(profile.id).subscribe({
-          next: (cv) => { if (cv?.id) this.cvId = cv.id; },
+          next: (cv) => {
+            if (cv?.id) { this.cvId = cv.id; this.loadCvSkills(cv.id); }
+          },
           error: () => {}
         });
+      },
+      error: () => {}
+    });
+  }
+
+  private loadCvSkills(cvId: number): void {
+    const order: Record<string, number> = { expert: 4, avance: 3, intermediaire: 2, debutant: 1 };
+    this.authService.getCvCategories(cvId).subscribe({
+      next: (cats: any[]) => {
+        this.cvSkills = cats
+          .filter((c: any) => c.type !== 'soft_skill')
+          .sort((a: any, b: any) => (order[b.level] ?? 0) - (order[a.level] ?? 0));
       },
       error: () => {}
     });
@@ -236,13 +239,14 @@ export class OffresComponent implements OnInit {
         matchScore: ms,
         matchLevel: this.computeMatchLevel(ms),
         tags: item.tags ?? [],
-        aiReason: item.aiReason ?? item.description ?? 'Offre d\'emploi disponible',
+        aiReason: item.aiReason ?? '',
         description: item.description ?? '',
         scoreDetail: item.score_semantique != null ? {
           sem: item.score_semantique,
           str: item.score_structure ?? 0,
           llm: item.score_llm ?? 0,
         } : undefined,
+        jobSkills: item.jobSkills ?? [],
         status: item.status ?? 'pending',
       } as JobOffer;
     });
