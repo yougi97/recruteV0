@@ -10,26 +10,43 @@
 
     <app-filters-bar (filtersChange)="onFiltersChange($event)" />
 
-    <div class="status-card" *ngIf="isLoading || isRefreshing">
+    <div class="computing-banner" *ngIf="computingScores">
+      <div class="computing-pulse"></div>
+      <div class="computing-text">
+        <div class="computing-title">Analyse IA en cours…</div>
+        <div class="computing-sub">Vos scores de compatibilité sont recalculés. Cela prend quelques secondes.</div>
+      </div>
+      <div class="computing-bars">
+        <div class="cbar cbar-1"></div>
+        <div class="cbar cbar-2"></div>
+        <div class="cbar cbar-3"></div>
+        <div class="cbar cbar-4"></div>
+        <div class="cbar cbar-5"></div>
+      </div>
+    </div>
+
+    <div class="status-card" *ngIf="!computingScores && (isLoading || isRefreshing)">
       <span>{{ isRefreshing ? 'Actualisation des suggestions...' : 'Chargement des suggestions...' }}</span>
     </div>
 
-    <div class="status-card error" *ngIf="!isLoading && errorMessage">
+    <div class="status-card error" *ngIf="!computingScores && !isLoading && errorMessage">
       <span>{{ errorMessage }}</span>
     </div>
 
-    <div class="cards-grid" *ngIf="!isLoading && !errorMessage">
-      <app-job-card
-        *ngFor="let offer of filteredOffers"
-        [offer]="offer"
-        (interested)="onInterested($event)"
-        (dismissed)="onDismissed($event)"
-      />
-    </div>
+    <ng-container *ngIf="!computingScores">
+      <div class="cards-grid" *ngIf="!isLoading && !errorMessage">
+        <app-job-card
+          *ngFor="let offer of filteredOffers"
+          [offer]="offer"
+          (interested)="onInterested($event)"
+          (dismissed)="onDismissed($event)"
+        />
+      </div>
 
-    <div class="status-card empty" *ngIf="!isLoading && !errorMessage && !filteredOffers.length">
-      <span>Aucune offre ne correspond pour le moment.</span>
-    </div>
+      <div class="status-card empty" *ngIf="!isLoading && !errorMessage && !filteredOffers.length">
+        <span>Aucune offre ne correspond pour le moment.</span>
+      </div>
+    </ng-container>
 
     <div class="toast" [class.show]="toastVisible">
       ✓ L'entreprise a été notifiée de votre intérêt !

@@ -19,15 +19,21 @@ SYSTEM_INSTRUCTION = """Tu es un recruteur senior exigeant.
 Évalue la compatibilité candidat/offre de façon STRICTE et DIFFÉRENCIÉE.
 
 Règles impératives sur le niveau d'expérience :
-- Un étudiant ou junior avec uniquement des cours/formations académiques sans projet personnel
-  significatif ni expérience professionnelle doit recevoir un score bas (≤ 0.35) sur
-  coherence_trajectoire et potentiel_evolution, même si les compétences listées correspondent.
-- Des projets personnels sérieux, open-source, ou freelance comptent comme de l'expérience réelle
-  et rehaussent le score.
-- Plusieurs expériences professionnelles réussies dans le domaine → scores élevés (≥ 0.70).
-- Beaucoup de projets complexes et variés compensent partiellement le manque d'années.
-- Ne sois PAS généreux par défaut : un profil « correct sur le papier » sans preuves concrètes
-  de réalisations obtient au maximum 0.55.
+- Un étudiant ou junior sans AUCUN projet personnel ni expérience concrète (seulement des cours
+  théoriques) → score bas (≤ 0.35) sur coherence_trajectoire et potentiel_evolution.
+- Un projet personnel technique concret (pas juste un cours) compte autant qu'un mois
+  d'expérience professionnelle. 3 projets sérieux ≈ junior avec 3 mois d'expérience.
+- Un candidat avec 3 projets personnels ou plus DIRECTEMENT liés aux compétences clés de l'offre
+  → traite-le comme un junior solide : score_global ≥ 0.65 si les projets couvrent les
+  technologies demandées, même sans année de salariat.
+- Un candidat avec 5 projets ou plus variés et pertinents → traite-le comme quelqu'un avec
+  1 an d'expérience professionnelle : score_global peut atteindre 0.75.
+- Plusieurs expériences professionnelles réussies dans le domaine → scores élevés (≥ 0.80).
+- Ne sois PAS généreux par défaut : un profil sans aucune réalisation concrète (cours, certifs,
+  aucun projet) obtient au maximum 0.40.
+- Regarde les TITRES et DESCRIPTIONS des expériences/projets : des projets avec des technos
+  spécifiques nommées (ex. FAISS, Kotlin, TensorFlow) prouvent une maîtrise réelle, pas
+  théorique. Ces profils doivent être valorisés et mis en avant.
 
 Tous les scores DOIVENT être des décimaux entre 0.0 et 1.0. JSON uniquement."""
 
@@ -42,6 +48,14 @@ class ScoreLLM(BaseModel):
 
 
 def score_llm(cv: CVParse, offre: OffreParsee) -> ScoreLLM:
+    PROJET_MARKERS = ("projet personnel", "personal project", "side project", "projet perso")
+    projets_perso = [
+        e for e in cv.experiences
+        if any(m in (e.description or "").lower() or m in (e.titre or "").lower()
+               for m in PROJET_MARKERS)
+    ]
+    nb_projets = len(projets_perso)
+
     experiences_detail = "\n".join(
         f"  • {e.titre} chez {e.entreprise}"
         + (f" ({e.duree_mois} mois)" if e.duree_mois else "")
@@ -49,11 +63,22 @@ def score_llm(cv: CVParse, offre: OffreParsee) -> ScoreLLM:
         for e in cv.experiences
     ) if cv.experiences else "  Aucune expérience professionnelle ou projet renseigné"
 
+    projet_note = ""
+    if nb_projets >= 3:
+        projet_note = (
+            f"\n⚠️  NOTE IMPORTANTE : Ce candidat a {nb_projets} projets personnels concrets "
+            f"identifiés ci-dessous. Chaque projet personnel technique avec des technos nommées "
+            f"compte comme de l'expérience réelle. Avec {nb_projets} projets, pénaliser le "
+            f"manque d'années de salariat serait une erreur d'évaluation : applique les règles "
+            f"du barème pour les profils avec de nombreux projets (score_global ≥ 0.65).\n"
+        )
+
     prompt = f"""
 Candidat :
 - Profil résumé : {cv.resume_profil}
 - Niveau d'études : {cv.niveau_etudes.value}
 - Années d'expérience déclarées : {cv.annees_experience}
+- Projets personnels concrets identifiés : {nb_projets}{projet_note}
 - Compétences : {", ".join(f"{c.nom} ({c.niveau.value})" for c in cv.competences)}
 - Soft skills : {", ".join(cv.soft_skills) or "—"}
 - Expériences / projets (les descriptions révèlent si c'est pro, académique ou personnel) :

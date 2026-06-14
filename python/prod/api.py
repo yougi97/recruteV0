@@ -53,6 +53,15 @@ def parse_cv_endpoint():
     finally:
         os.unlink(chemin)
 
+@app.post("/score-cv")
+def score_cv_endpoint():
+    body = request.json or {}
+    cv_id = body.get("cv_id")
+    if not cv_id:
+        return jsonify({"erreur": "cv_id manquant"}), 400
+    _score_cv_against_all_jobs(int(cv_id))
+    return jsonify({"status": "ok"}), 200
+
 @app.post("/enrich-job")
 def enrich_job_endpoint():
     body     = request.json
@@ -74,10 +83,13 @@ def match_endpoint():
 
     explication = None
     if resultat.detail_llm:
-        cv    = _charger_cv(cv_id)
-        offre = _charger_offre(offre_id)
-        expl  = expliquer(resultat, cv, offre)
-        explication = expl.model_dump()
+        try:
+            cv    = _charger_cv(cv_id)
+            offre = _charger_offre(offre_id)
+            expl  = expliquer(resultat, cv, offre)
+            explication = expl.model_dump()
+        except Exception:
+            pass
 
     return jsonify({
         "score_final": resultat.score_final,

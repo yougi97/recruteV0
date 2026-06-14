@@ -26,6 +26,7 @@ export class CandidatComponent implements OnInit {
   errorMessage = '';
   toastVisible = false;
   isRefreshing = false;
+  computingScores = false;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -71,7 +72,22 @@ export class CandidatComponent implements OnInit {
   }
 
   refreshSuggestions(): void {
-    this.loadSuggestions(true);
+    // candidateProfile.id is the candidate profile ID; getCandidateCv resolves by profile ID
+    const profileId = this.candidateProfile?.id;
+    if (!profileId) { this.loadSuggestions(true); return; }
+
+    this.computingScores = true;
+    this.authService.getCandidateCv(profileId).subscribe({
+      next: (cv) => {
+        const cvId = cv?.id;
+        if (!cvId) { this.computingScores = false; this.loadSuggestions(true); return; }
+        this.authService.scoreCandidateCv(cvId).subscribe({
+          next: () => { this.computingScores = false; this.loadSuggestions(true); },
+          error: () => { this.computingScores = false; this.loadSuggestions(true); },
+        });
+      },
+      error: () => { this.computingScores = false; this.loadSuggestions(true); },
+    });
   }
 
   onInterested(offer: JobOffer): void {

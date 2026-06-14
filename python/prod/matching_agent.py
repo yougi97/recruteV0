@@ -21,14 +21,15 @@ class ResultatMatching:
 
 def _charger_cv(cv_id: int) -> CVParse:
     data = api.get_cv(cv_id)
-    parsed = data.get("parsed_json") or {}
+    # Spring serialises to camelCase; accept both forms
+    parsed = data.get("parsedJson") or data.get("parsed_json") or {}
     if isinstance(parsed, str):
         parsed = json.loads(parsed) if parsed.strip() not in ("", "{}") else {}
     return CVParse(**parsed)
 
 def _charger_offre(offre_id: int) -> OffreParsee:
     data = api.get_job_offer(offre_id)
-    parsed = data.get("parsed_json") or {}
+    parsed = data.get("parsedJson") or data.get("parsed_json") or {}
     if isinstance(parsed, str):
         parsed = json.loads(parsed) if parsed.strip() not in ("", "{}") else {}
     return OffreParsee(**parsed)
@@ -44,20 +45,46 @@ def matcher(cv_id: int, offre_id: int) -> ResultatMatching:
     except Exception:
         s_str = 0.5
 
-    # Always attempt Gemini scoring; fall back to interpolation if unavailable
+    # Load CV/offer for LLM scoring and project-count boost
+    cv_parsed    = None
+    offre_parsed = None
+    try:
+        cv_parsed    = _charger_cv(cv_id)
+        offre_parsed = _charger_offre(offre_id)
+    except Exception:
+        pass
+
+    # LLM scoring — falls back to (sem+str)/2 if Gemini is unavailable
     detail_llm = None
     try:
-        cv         = _charger_cv(cv_id)
-        offre      = _charger_offre(offre_id)
-        detail_llm = score_llm(cv, offre)
-        s_llm_val  = detail_llm.score_global
-        # Normalize to 0-1 if Gemini returned 0-100 scale
-        if s_llm_val > 1.0:
-            s_llm_val /= 100.0
-        if detail_llm.score_global > 1.0:
-            detail_llm.score_global /= 100.0
+        if cv_parsed and offre_parsed:
+            detail_llm = score_llm(cv_parsed, offre_parsed)
+            s_llm_val  = detail_llm.score_global
+            if s_llm_val > 1.0:
+                s_llm_val /= 100.0
+            if detail_llm.score_global > 1.0:
+                detail_llm.score_global /= 100.0
+        else:
+            s_llm_val = (s_sem + s_str) / 2
     except Exception:
         s_llm_val = (s_sem + s_str) / 2
+
+    # Boost for personal projects — applied even when Gemini is rate-limited.
+    # Gate: only boost when the CV is actually relevant to this offer
+    # (structural shows some skill overlap OR semantic similarity is strong).
+    if cv_parsed is not None and (s_str >= 0.1 or s_sem >= 0.50):
+        PROJET_MARKERS = ("projet personnel", "personal project", "side project", "projet perso")
+        nb_projets = sum(
+            1 for e in cv_parsed.experiences
+            if any(m in (e.description or "").lower() or m in (e.titre or "").lower()
+                   for m in PROJET_MARKERS)
+        )
+        if nb_projets >= 5:
+            s_llm_val = max(s_llm_val, 0.72)
+        elif nb_projets >= 3:
+            s_llm_val = max(s_llm_val, 0.65)
+        if detail_llm:
+            detail_llm.score_global = s_llm_val
 
     score_final = (
         POIDS["semantique"] * s_sem +

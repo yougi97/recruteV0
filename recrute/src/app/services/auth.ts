@@ -53,6 +53,10 @@ export class AuthService {
     return this.httpClient.post<any>(`${this.pythonUrl}/parse-cv`, formData);
   }
 
+  scoreCandidateCv(cvId: number): Observable<any> {
+    return this.httpClient.post<any>(`${this.pythonUrl}/score-cv`, { cv_id: cvId });
+  }
+
   getCvCategories(cvId: number): Observable<any[]> {
     return this.httpClient.get<any[]>(`${this.url}/api/internal/cvs/${cvId}/categories`);
   }
