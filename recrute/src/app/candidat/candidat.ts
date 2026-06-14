@@ -8,6 +8,7 @@ import { CandidateProfiles } from '../model/candidateProfiles';
 import { JobCardComponent } from './components/job-card/job-card';
 import { FiltersBarComponent } from './components/filters-bar/filters-bar';
 import { PageHeaderComponent } from './components/page-header/page-header';
+import { norm } from '../utils/normalize';
 
 @Component({
   selector: 'app-candidat',
@@ -114,8 +115,8 @@ export class CandidatComponent implements OnInit {
     const f = this.currentFilters;
     this.filteredOffers = this.offers.filter(o => {
       if (o.status === 'dismissed') return false;
-      if (f.contractType && o.contractType !== f.contractType) return false;
-      if (f.workMode && o.workMode !== f.workMode) return false;
+      if (f.contractType && norm(o.contractType) !== norm(f.contractType)) return false;
+      if (f.workMode && norm(o.workMode) !== norm(f.workMode)) return false;
       if (o.matchScore < f.minMatch) return false;
       return true;
     });

@@ -6,6 +6,7 @@ import { JobOfferService } from '../services/job-offer';
 import { JobOffer, OfferFilters } from '../model/job-offer';
 import { JobCardComponent } from '../candidat/components/job-card/job-card';
 import { FiltersBarComponent } from '../candidat/components/filters-bar/filters-bar';
+import { norm } from '../utils/normalize';
 
 type SortBy = 'match' | 'title' | 'recent';
 
@@ -100,14 +101,14 @@ export class OffresComponent implements OnInit {
 
   private applyFilters(): void {
     const f = this.currentFilters;
-    const q = this.searchQuery.toLowerCase().trim();
+    const q = norm(this.searchQuery);
 
     let result = this.offers.filter(o => {
       if (o.status === 'dismissed') return false;
-      if (f.contractType && o.contractType !== f.contractType) return false;
-      if (f.workMode && o.workMode !== f.workMode) return false;
+      if (f.contractType && norm(o.contractType) !== norm(f.contractType)) return false;
+      if (f.workMode && norm(o.workMode) !== norm(f.workMode)) return false;
       if (o.matchScore < f.minMatch) return false;
-      if (q && !`${o.title} ${o.company}`.toLowerCase().includes(q)) return false;
+      if (q && !norm(`${o.title} ${o.company}`).includes(q)) return false;
       return true;
     });
 
