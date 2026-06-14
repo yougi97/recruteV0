@@ -43,8 +43,25 @@
         />
       </div>
 
-      <div class="status-card empty" *ngIf="!isLoading && !errorMessage && !filteredOffers.length">
+      <div class="status-card empty" *ngIf="!isLoading && !errorMessage && !filteredOffers.length && !dismissedOffers.length">
         <span>Aucune offre ne correspond pour le moment.</span>
+      </div>
+
+      <!-- Offres ignorées -->
+      <div class="dismissed-section" *ngIf="!isLoading && dismissedOffers.length > 0">
+        <button class="dismissed-toggle" (click)="toggleDismissed()">
+          <span class="dismissed-arrow">{{ showDismissed ? '▾' : '▸' }}</span>
+          Offres ignorées
+          <span class="dismissed-count">{{ dismissedOffers.length }}</span>
+        </button>
+        <div class="dismissed-grid" *ngIf="showDismissed">
+          <app-job-card
+            *ngFor="let offer of dismissedOffers"
+            [offer]="offer"
+            (interested)="onInterested($event)"
+            (dismissed)="onDismissed($event)"
+          />
+        </div>
       </div>
     </ng-container>
 

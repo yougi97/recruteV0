@@ -6,19 +6,45 @@
       </div>
       <h1>Toutes les <span class="highlight">offres d'emploi</span></h1>
       <p>
-        Découvrez l'ensemble des offres d'emploi disponibles sur notre plateforme.
-        Filtrez par contrat, lieu ou niveau d'exigence pour trouver l'opportunité idéale.
+        Recherchez parmi l'ensemble des offres disponibles sur la plateforme.
+        Filtrez par contrat, lieu ou score de match pour trouver l'opportunité idéale.
       </p>
 
       <div class="header-meta">
         <div class="meta-chip">📋 {{ totalCount }} offres disponibles</div>
+        <div class="meta-chip accent" *ngIf="activeCount !== totalCount">
+          ✦ {{ activeCount }} correspondent
+        </div>
         <button class="refresh-btn" type="button" (click)="refreshOffers()">
           {{ isRefreshing ? 'Actualisation...' : '↻ Rafraîchir' }}
         </button>
       </div>
     </div>
 
+    <!-- Barre de recherche -->
+    <div class="search-wrap">
+      <div class="search-bar" [class.has-value]="searchQuery">
+        <span class="search-icon">⌕</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher par titre, entreprise..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange()"
+        />
+        <button *ngIf="searchQuery" class="search-clear" (click)="searchQuery = ''; onSearchChange()">✕</button>
+      </div>
+    </div>
+
     <app-filters-bar (filtersChange)="onFiltersChange($event)" />
+
+    <!-- Tri -->
+    <div class="sort-row">
+      <span class="sort-label">Trier par</span>
+      <button class="sort-btn" [class.on]="sortBy === 'match'"  (click)="setSortBy('match')">↓ Meilleur match</button>
+      <button class="sort-btn" [class.on]="sortBy === 'title'"  (click)="setSortBy('title')">A→Z Titre</button>
+      <button class="sort-btn" [class.on]="sortBy === 'recent'" (click)="setSortBy('recent')">Récent</button>
+    </div>
 
     <div class="status-card" *ngIf="isLoading || isRefreshing">
       <span>{{ isRefreshing ? 'Actualisation des offres...' : 'Chargement des offres...' }}</span>
@@ -28,7 +54,7 @@
       <span>{{ errorMessage }}</span>
     </div>
 
-    <div class="cards-grid" *ngIf="!isLoading && !errorMessage">
+    <div class="cards-grid" *ngIf="!isLoading && !errorMessage && filteredOffers.length > 0">
       <app-job-card
         *ngFor="let offer of filteredOffers"
         [offer]="offer"
@@ -37,8 +63,25 @@
       />
     </div>
 
-    <div class="status-card empty" *ngIf="!isLoading && !errorMessage && !filteredOffers.length">
+    <div class="status-card empty" *ngIf="!isLoading && !errorMessage && !filteredOffers.length && !dismissedOffers.length">
       <span>Aucune offre ne correspond aux critères sélectionnés.</span>
+    </div>
+
+    <!-- Offres ignorées -->
+    <div class="dismissed-section" *ngIf="!isLoading && dismissedOffers.length > 0">
+      <button class="dismissed-toggle" (click)="toggleDismissed()">
+        <span class="dismissed-arrow">{{ showDismissed ? '▾' : '▸' }}</span>
+        Offres ignorées
+        <span class="dismissed-count">{{ dismissedOffers.length }}</span>
+      </button>
+      <div class="dismissed-grid" *ngIf="showDismissed">
+        <app-job-card
+          *ngFor="let offer of dismissedOffers"
+          [offer]="offer"
+          (interested)="onInterested($event)"
+          (dismissed)="onDismissed($event)"
+        />
+      </div>
     </div>
 
     <div class="toast" [class.show]="toastVisible">

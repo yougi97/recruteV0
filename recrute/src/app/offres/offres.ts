@@ -1,15 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { JobOfferService } from '../services/job-offer';
 import { JobOffer, OfferFilters } from '../model/job-offer';
 import { JobCardComponent } from '../candidat/components/job-card/job-card';
 import { FiltersBarComponent } from '../candidat/components/filters-bar/filters-bar';
 
+type SortBy = 'match' | 'title' | 'recent';
+
 @Component({
   selector: 'app-offres',
   standalone: true,
-  imports: [CommonModule, RouterModule, JobCardComponent, FiltersBarComponent],
+  imports: [CommonModule, FormsModule, RouterModule, JobCardComponent, FiltersBarComponent],
   templateUrl: './offres.html',
   styleUrls: ['./offres.scss'],
 })
@@ -22,6 +25,10 @@ export class OffresComponent implements OnInit {
   isRefreshing = false;
   toastVisible = false;
   actionError = '';
+  searchQuery = '';
+  sortBy: SortBy = 'match';
+  showDismissed = false;
+  private currentFilters: OfferFilters = { contractType: null, workMode: null, minMatch: 0 };
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
   private actionErrorTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -35,15 +42,26 @@ export class OffresComponent implements OnInit {
     this.loadOffers();
   }
 
-  get totalCount(): number { return this.offers.length; }
+  get totalCount(): number { return this.offers.filter(o => o.status !== 'dismissed').length; }
+  get activeCount(): number { return this.filteredOffers.length; }
+  get dismissedOffers(): JobOffer[] { return this.offers.filter(o => o.status === 'dismissed'); }
 
   onFiltersChange(filters: OfferFilters): void {
-    this.filteredOffers = this.offers.filter(o => {
-      if (filters.contractType && o.contractType !== filters.contractType) return false;
-      if (filters.workMode && o.workMode !== filters.workMode) return false;
-      if (o.matchScore < filters.minMatch) return false;
-      return true;
-    });
+    this.currentFilters = filters;
+    this.applyFilters();
+  }
+
+  onSearchChange(): void {
+    this.applyFilters();
+  }
+
+  setSortBy(sort: SortBy): void {
+    this.sortBy = sort;
+    this.applyFilters();
+  }
+
+  toggleDismissed(): void {
+    this.showDismissed = !this.showDismissed;
   }
 
   refreshOffers(): void {
@@ -74,9 +92,34 @@ export class OffresComponent implements OnInit {
 
   onDismissed(offer: JobOffer): void {
     offer.status = 'dismissed';
+    this.applyFilters();
     if (this.candidateId > 0) {
       this.jobOfferService.dismissOffer(this.candidateId, offer.id).subscribe();
     }
+  }
+
+  private applyFilters(): void {
+    const f = this.currentFilters;
+    const q = this.searchQuery.toLowerCase().trim();
+
+    let result = this.offers.filter(o => {
+      if (o.status === 'dismissed') return false;
+      if (f.contractType && o.contractType !== f.contractType) return false;
+      if (f.workMode && o.workMode !== f.workMode) return false;
+      if (o.matchScore < f.minMatch) return false;
+      if (q && !`${o.title} ${o.company}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+
+    if (this.sortBy === 'match') {
+      result = [...result].sort((a, b) => b.matchScore - a.matchScore);
+    } else if (this.sortBy === 'title') {
+      result = [...result].sort((a, b) => a.title.localeCompare(b.title, 'fr'));
+    } else if (this.sortBy === 'recent') {
+      result = [...result].sort((a, b) => b.id - a.id);
+    }
+
+    this.filteredOffers = result;
   }
 
   private loadOffers(isRefresh = false): void {
@@ -91,7 +134,7 @@ export class OffresComponent implements OnInit {
     this.jobOfferService.getAllOffers().subscribe({
       next: (data) => {
         this.offers = this.convertToJobOffers(data);
-        this.filteredOffers = this.offers;
+        this.applyFilters();
         this.isLoading = false;
         this.isRefreshing = false;
       },
@@ -113,7 +156,6 @@ export class OffresComponent implements OnInit {
     return data.map(item => {
       let raw = item.matchScore ?? 50;
       let ms = raw;
-      // Normalize scores coming from backend: if in [0,1] treat as ratio and convert to percent
       if (typeof ms === 'number' && ms <= 1) ms = Math.round(ms * 100);
       else if (typeof ms === 'number') ms = Math.round(ms);
 

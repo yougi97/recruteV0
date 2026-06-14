@@ -27,6 +27,8 @@ export class CandidatComponent implements OnInit {
   toastVisible = false;
   isRefreshing = false;
   computingScores = false;
+  showDismissed = false;
+  private currentFilters: OfferFilters = { contractType: null, workMode: null, minMatch: 0 };
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -59,20 +61,20 @@ export class CandidatComponent implements OnInit {
     this.loadSuggestions();
   }
 
-  get totalCount(): number { return this.offers.length; }
+  get totalCount(): number { return this.offers.filter(o => o.status !== 'dismissed').length; }
   get interestedCount(): number { return this.offers.filter(o => o.status === 'interested').length; }
+  get dismissedOffers(): JobOffer[] { return this.offers.filter(o => o.status === 'dismissed'); }
+
+  toggleDismissed(): void {
+    this.showDismissed = !this.showDismissed;
+  }
 
   onFiltersChange(filters: OfferFilters): void {
-    this.filteredOffers = this.offers.filter(o => {
-      if (filters.contractType && o.contractType !== filters.contractType) return false;
-      if (filters.workMode && o.workMode !== filters.workMode) return false;
-      if (o.matchScore < filters.minMatch) return false;
-      return true;
-    });
+    this.currentFilters = filters;
+    this.applyFilters();
   }
 
   refreshSuggestions(): void {
-    // candidateProfile.id is the candidate profile ID; getCandidateCv resolves by profile ID
     const profileId = this.candidateProfile?.id;
     if (!profileId) { this.loadSuggestions(true); return; }
 
@@ -92,18 +94,31 @@ export class CandidatComponent implements OnInit {
 
   onInterested(offer: JobOffer): void {
     offer.status = 'interested';
+    this.applyFilters();
     this.jobOfferService.notifyInterest(this.candidateId, offer.id).subscribe();
     this.showToast();
   }
 
   onDismissed(offer: JobOffer): void {
     offer.status = 'dismissed';
+    this.applyFilters();
     this.jobOfferService.dismissOffer(this.candidateId, offer.id).subscribe();
   }
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  private applyFilters(): void {
+    const f = this.currentFilters;
+    this.filteredOffers = this.offers.filter(o => {
+      if (o.status === 'dismissed') return false;
+      if (f.contractType && o.contractType !== f.contractType) return false;
+      if (f.workMode && o.workMode !== f.workMode) return false;
+      if (o.matchScore < f.minMatch) return false;
+      return true;
+    });
   }
 
   private showToast(): void {
@@ -129,9 +144,8 @@ export class CandidatComponent implements OnInit {
 
     this.jobOfferService.getSuggestions(this.candidateId).subscribe({
       next: (data) => {
-        const normalized = this.normalizeJobOffers(data);
-        this.offers = normalized;
-        this.filteredOffers = normalized;
+        this.offers = this.normalizeJobOffers(data);
+        this.applyFilters();
         this.isLoading = false;
         this.isRefreshing = false;
       },
