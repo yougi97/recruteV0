@@ -33,7 +33,21 @@ AUTO_MODEL_PREFERENCE = [
 
 SYSTEM_INSTRUCTION = """Tu es un expert RH. Extrais les informations du CV et retourne uniquement un JSON valide correspondant au schéma fourni.
 
-NIVEAUX DE COMPÉTENCES — ne pas mettre "intermediaire" par défaut, calibrer strictement :
+EXHAUSTIVITÉ DES COMPÉTENCES — RÈGLE PRINCIPALE : sois le plus exhaustif possible sur ce que tu inclus dans "competences". Chaque outil, framework, technologie, langage, domaine, et méthodologie doit apparaître. En plus des compétences explicites, inclus les domaines/champs impliqués par les outils :
+  Keras / TensorFlow / PyTorch / scikit-learn / FAISS     → ajouter aussi : Machine Learning, Deep Learning, Intelligence Artificielle
+  React / Vue / Angular / Next.js                         → ajouter aussi : JavaScript, HTML, CSS (si absents)
+  Angular / NestJS                                        → ajouter aussi : TypeScript (si absent)
+  Spring Boot / Spring                                    → ajouter aussi : Java (si absent)
+  Django / Flask / FastAPI                                → ajouter aussi : Python (si absent)
+  Docker / Kubernetes                                     → ajouter aussi : DevOps (si absent)
+  MySQL / PostgreSQL / MongoDB / Redis                    → ajouter aussi : Base de données (si absent)
+  AWS / Azure / GCP                                       → ajouter aussi : Cloud (si absent)
+  Pandas / NumPy / Jupyter                                → ajouter aussi : Data Science, Python (si absents)
+  Android / Kotlin                                        → ajouter aussi : Développement mobile (si absent)
+  Applique la même logique à tout autre outil reconnu.
+  Ces compétences implicites héritent du même niveau que l'outil source.
+
+NIVEAUX DE COMPÉTENCES — calibrer le NIVEAU strictement (mais ne pas limiter le nombre) :
 • notions      : théorie connue mais peu ou jamais pratiquée (cours magistral, tutoriel lu, pas de projet concret)
 • intermediaire : pratiqué concrètement dans des projets perso ou académiques (TP, side project, projet uni)
 • avance       : utilisé de façon autonome en contexte professionnel réel (stage, CDI, CDD, freelance)
@@ -59,11 +73,11 @@ Exemples : "Anglais B2" → competence {nom:"Anglais", niveau:"avance"} + langue
 FORMATIONS — Remplis "formations" avec les noms complets des programmes/diplômes suivis (ex: "BTS Informatique", "Licence Sciences des Données", "Master Finance de Marché", "DUT Réseaux et Télécom", "BUT Informatique", "École d'ingénieur spécialité Génie Logiciel"). Si plusieurs, les lister tous.
 
 INFÉRENCE DEPUIS LES FORMATIONS — Si le CV mentionne un programme avec un domaine technique identifiable, ajoute les compétences fondamentales de ce domaine avec niveau "notions", UNIQUEMENT si elles ne sont pas déjà présentes dans les compétences explicites du CV. Règles :
-  - BTS / DUT / BUT Informatique → SQL, Algorithmique, Programmation orientée objet, réseau
+  - BTS / DUT / BUT Informatique → SQL, Algorithmique, Programmation orientée objet, Réseau informatique
   - Licence / Master Informatique → ajouter aussi des langages courants du domaine (Python, Java…)
-  - BTS Commerce / Management → PowerPoint, Excel, relation client
-  - Master Finance / Comptabilité → Excel, analyse financière, comptabilité
-  - BTS Électronique / Électrotechnique → électronique, schémas électriques
+  - BTS Commerce / Management → PowerPoint, Excel, Relation client
+  - Master Finance / Comptabilité → Excel, Analyse financière, Comptabilité
+  - BTS Électronique / Électrotechnique → Électronique, Schémas électriques
   - Adapter à ce qui est le plus probable pour le programme spécifique mentionné
   - Maximum 5 compétences inférées par formation, seulement si le domaine est clair
   - Ne jamais inventer des compétences sans lien avec le programme
@@ -124,11 +138,45 @@ COMMON_SKILLS = [
     "Python", "Java", "Spring", "Spring Boot", "Angular", "TypeScript", "JavaScript", "React",
     "HTML", "CSS", "SQL", "MySQL", "PostgreSQL", "MongoDB", "Docker", "Git", "Linux", "Unix",
     "Flask", "Django", "FastAPI", "Machine Learning", "Deep Learning", "Data Science", "NLP",
-    "AI", "TensorFlow", "PyTorch", "Keras", "NumPy", "Pandas", "scikit-learn", "FAISS",
+    "Intelligence Artificielle", "TensorFlow", "PyTorch", "Keras", "NumPy", "Pandas", "scikit-learn", "FAISS",
     "Kotlin", "Android", "Swift", "iOS", "C", "C++", "C#", "Go", "Rust", "Ruby", "PHP",
     "Kubernetes", "AWS", "Azure", "GCP", "Terraform", "Jenkins", "GitLab CI", "OCaml", "Scala",
-    "Redis", "Elasticsearch", "GraphQL", "gRPC", "Kafka",
+    "Redis", "Elasticsearch", "GraphQL", "gRPC", "Kafka", "Vue", "Next.js", "NestJS",
 ]
+
+# tool → implied domain skills (for heuristic fallback — mirrors Gemini SYSTEM_INSTRUCTION)
+_SKILL_IMPLICATIONS: dict[str, list[str]] = {
+    "keras":          ["Machine Learning", "Deep Learning", "Intelligence Artificielle"],
+    "tensorflow":     ["Machine Learning", "Deep Learning", "Intelligence Artificielle"],
+    "pytorch":        ["Machine Learning", "Deep Learning", "Intelligence Artificielle"],
+    "scikit-learn":   ["Machine Learning", "Intelligence Artificielle"],
+    "faiss":          ["Machine Learning", "Intelligence Artificielle"],
+    "xgboost":        ["Machine Learning", "Intelligence Artificielle"],
+    "pandas":         ["Data Science", "Python"],
+    "numpy":          ["Data Science", "Python"],
+    "react":          ["JavaScript", "HTML", "CSS"],
+    "angular":        ["TypeScript", "JavaScript", "HTML", "CSS"],
+    "vue":            ["JavaScript", "HTML", "CSS"],
+    "next.js":        ["JavaScript", "React", "HTML"],
+    "nestjs":         ["TypeScript", "JavaScript"],
+    "spring boot":    ["Java", "Spring"],
+    "spring":         ["Java"],
+    "django":         ["Python"],
+    "flask":          ["Python"],
+    "fastapi":        ["Python"],
+    "docker":         ["DevOps"],
+    "kubernetes":     ["DevOps", "Docker"],
+    "android":        ["Kotlin", "Développement mobile"],
+    "kotlin":         ["Développement mobile"],
+    "swift":          ["iOS", "Développement mobile"],
+    "aws":            ["Cloud"],
+    "azure":          ["Cloud"],
+    "gcp":            ["Cloud"],
+    "mysql":          ["SQL", "Base de données"],
+    "postgresql":     ["SQL", "Base de données"],
+    "mongodb":        ["Base de données"],
+    "redis":          ["Base de données"],
+}
 
 COMMON_SOFT_SKILLS = [
     "communication", "autonomie", "esprit d'équipe", "rigueur", "adaptabilité", "collaboration",
@@ -243,6 +291,15 @@ def _fallback_parse_cv(texte: str) -> CVParse:
         if re.search(r"(?<!\w)" + re.escape(skill.lower()) + r"(?!\w)", lower_text)
     ]
 
+    # Apply tool → domain implications (e.g. Keras → Machine Learning, Intelligence Artificielle)
+    existing_names = {c.nom.lower() for c in competences}
+    for skill_lower, implied in _SKILL_IMPLICATIONS.items():
+        if re.search(r"(?<!\w)" + re.escape(skill_lower) + r"(?!\w)", lower_text):
+            for imp in implied:
+                if imp.lower() not in existing_names:
+                    competences.append(Competence(nom=imp, niveau=NiveauExpertise.INTERMEDIAIRE))
+                    existing_names.add(imp.lower())
+
     soft_skills = [skill for skill in COMMON_SOFT_SKILLS if skill in lower_text]
 
     # Detect languages with CEFR-derived levels; include them in competences too
@@ -256,7 +313,6 @@ def _fallback_parse_cv(texte: str) -> CVParse:
 
     # Detect formations and infer skills from them
     formations: list[str] = []
-    existing_names = {c.nom.lower() for c in competences}
     for pattern, formation_name, inferred_skills in _FORMATION_SKILLS:
         if pattern.search(texte):
             formations.append(formation_name)
