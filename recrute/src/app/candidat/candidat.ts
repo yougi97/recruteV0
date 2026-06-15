@@ -59,15 +59,13 @@ export class CandidatComponent implements OnInit {
         const displayName = `${profile.user?.firstName ?? ''} ${profile.user?.lastName ?? ''}`.trim();
         this.candidateName = displayName || fallbackName;
 
-        if (profile?.id) {
-          this.authService.getCandidateCv(profile.id).subscribe({
-            next: (cv) => {
-              this.hasCv = !!cv?.id;
-              if (cv?.id) { this.cvId = cv.id; this.loadCvSkills(cv.id); }
-            },
-            error: () => { this.hasCv = false; }
-          });
-        }
+        this.authService.getCandidateCv(this.candidateId).subscribe({
+          next: (cv) => {
+            this.hasCv = !!cv?.id;
+            if (cv?.id) { this.cvId = cv.id; this.loadCvSkills(cv.id); }
+          },
+          error: () => { this.hasCv = false; }
+        });
       },
       error: () => {
         this.candidateName = this.authService.getCurrentUser() ?? '';
@@ -121,11 +119,8 @@ export class CandidatComponent implements OnInit {
   }
 
   refreshSuggestions(): void {
-    const profileId = this.candidateProfile?.id;
-    if (!profileId) { this.loadSuggestions(true); return; }
-
     this.computingScores = true;
-    this.authService.getCandidateCv(profileId).subscribe({
+    this.authService.getCandidateCv(this.candidateId).subscribe({
       next: (cv) => {
         const cvId = cv?.id;
         if (!cvId) { this.computingScores = false; this.loadSuggestions(true); return; }

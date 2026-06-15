@@ -112,11 +112,18 @@
       </div>
 
       <!-- Review form -->
-      <div *ngIf="isCandidate && !reviewsData.alreadyReviewed">
-        <button class="btn-add-review" *ngIf="!showReviewForm" (click)="showReviewForm = true">
-          + Laisser un avis
-        </button>
+      <div *ngIf="isCandidate">
+        <ng-container *ngIf="!showReviewForm">
+          <button class="btn-add-review" *ngIf="!reviewsData.alreadyReviewed" (click)="showReviewForm = true">
+            + Laisser un avis
+          </button>
+          <div *ngIf="reviewsData.alreadyReviewed" class="co-already-reviewed">
+            ✓ Avis publié
+            <button class="btn-edit-review" (click)="startEditReview()">✎ Modifier</button>
+          </div>
+        </ng-container>
         <div class="co-review-form" *ngIf="showReviewForm">
+          <div class="co-form-edit-label" *ngIf="isEditingReview">Modifier votre avis</div>
           <div class="co-form-stars">
             <button *ngFor="let r of stars" class="star-btn" [class.selected]="newRating >= r" (click)="newRating = r">★</button>
           </div>
@@ -126,15 +133,12 @@
           </label>
           <div class="co-form-error" *ngIf="submitReviewError">{{ submitReviewError }}</div>
           <div class="co-form-actions">
-            <button class="btn-cancel" (click)="showReviewForm = false; submitReviewError = ''">Annuler</button>
+            <button class="btn-cancel" (click)="showReviewForm = false; isEditingReview = false; submitReviewError = ''">Annuler</button>
             <button class="btn-submit" (click)="submitReview()" [disabled]="submittingReview">
-              {{ submittingReview ? 'Envoi…' : 'Publier' }}
+              {{ submittingReview ? 'Envoi…' : (isEditingReview ? 'Mettre à jour' : 'Publier') }}
             </button>
           </div>
         </div>
-      </div>
-      <div *ngIf="isCandidate && reviewsData.alreadyReviewed" class="co-already-reviewed">
-        ✓ Vous avez déjà laissé un avis
       </div>
     </div>
 

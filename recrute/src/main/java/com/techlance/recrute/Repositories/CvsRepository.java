@@ -11,6 +11,5 @@ import com.techlance.recrute.Entities.Cvs;
 public interface CvsRepository extends JpaRepository<Cvs, Long> {
     Cvs findByCandidateProfilesId(Long id);
     List<Cvs> findAllByCandidateProfilesIdOrderByCreatedAtDesc(Long id);
-    List<Cvs> findAllByCandidateProfilesUserIdOrderByCreatedAtDesc(Long userId);
     void deleteByCandidateProfilesId(Long id);
 }

@@ -503,6 +503,32 @@ $green: #22d3a0;
   margin-top: 12px;
   font-size: 13px;
   color: $green;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-edit-review {
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: $cyan;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+  &:hover { background: rgba(56, 189, 248, 0.1); }
+}
+
+.co-form-edit-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: $cyan;
+  margin-bottom: 12px;
 }
 
 // ── SALARY ─────────────────────────────────────────────────────────────────

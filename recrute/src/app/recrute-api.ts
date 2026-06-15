@@ -42,6 +42,10 @@ export class RecruteApi {
     return this.httpClient.get<any[]>(`${this.url}/api/salaries/company/${companyUserId}`);
   }
 
+  updateReview(reviewId: number, body: object): Observable<any> {
+    return this.httpClient.put<any>(`${this.url}/api/reviews/${reviewId}`, body);
+  }
+
   submitSalary(companyUserId: number, body: object): Observable<any> {
     return this.httpClient.post<any>(`${this.url}/api/salaries/company/${companyUserId}`, body);
   }

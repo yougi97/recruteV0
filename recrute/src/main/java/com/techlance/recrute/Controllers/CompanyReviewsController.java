@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -54,8 +55,10 @@ public class CompanyReviewsController {
                 ? all.stream().filter(r -> r.getRating() == ratingFilter).collect(Collectors.toList())
                 : all;
 
-        boolean alreadyReviewed = myUserId != null
-                && reviewsRepo.findByCompanyProfileIdAndReviewerId(company.getId(), myUserId).isPresent();
+        Optional<CompanyReviews> myReviewOpt = myUserId != null
+                ? reviewsRepo.findByCompanyProfileIdAndReviewerId(company.getId(), myUserId)
+                : Optional.empty();
+        boolean alreadyReviewed = myReviewOpt.isPresent();
 
         Double avg = reviewsRepo.avgRatingByCompanyProfileId(company.getId());
         Long count = reviewsRepo.countByCompanyProfileId(company.getId());
@@ -65,6 +68,15 @@ public class CompanyReviewsController {
         result.put("count", count);
         result.put("alreadyReviewed", alreadyReviewed);
         result.put("reviews", filtered.stream().map(this::reviewToMap).collect(Collectors.toList()));
+        if (myReviewOpt.isPresent()) {
+            CompanyReviews mr = myReviewOpt.get();
+            Map<String, Object> myReviewMap = new LinkedHashMap<>();
+            myReviewMap.put("id", mr.getId());
+            myReviewMap.put("rating", mr.getRating());
+            myReviewMap.put("comment", mr.getComment());
+            myReviewMap.put("anonymous", mr.isAnonymous());
+            result.put("myReview", myReviewMap);
+        }
         return result;
     }
 
@@ -96,6 +108,32 @@ public class CompanyReviewsController {
         review.setAnonymous(anonymous);
         review.setRating(rating);
         review.setComment(comment != null ? comment.trim() : null);
+
+        return reviewToMap(reviewsRepo.save(review));
+    }
+
+    @PutMapping("/reviews/{reviewId}")
+    public Map<String, Object> updateReview(@PathVariable Long reviewId,
+                                            @RequestBody Map<String, Object> body) {
+        Long reviewerUserId = toLong(body.get("reviewerUserId"));
+        Integer rating = toInt(body.get("rating"));
+        String comment = (String) body.get("comment");
+        boolean anonymous = Boolean.TRUE.equals(body.get("anonymous"));
+
+        if (rating == null || rating < 1 || rating > 5) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Champs invalides");
+        }
+
+        CompanyReviews review = reviewsRepo.findById(reviewId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Avis introuvable"));
+
+        if (reviewerUserId == null || !review.getReviewer().getId().equals(reviewerUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non autorisé");
+        }
+
+        review.setRating(rating);
+        review.setComment(comment != null ? comment.trim() : null);
+        review.setAnonymous(anonymous);
 
         return reviewToMap(reviewsRepo.save(review));
     }

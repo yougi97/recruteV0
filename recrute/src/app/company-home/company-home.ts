@@ -54,11 +54,17 @@ export class CompanyHome implements OnInit {
   companyUserId = 0;
 
   // Reviews
-  reviewsData: { avg: number | null; count: number; alreadyReviewed: boolean; reviews: Review[] } = {
-    avg: null, count: 0, alreadyReviewed: false, reviews: []
-  };
+  reviewsData: {
+    avg: number | null;
+    count: number;
+    alreadyReviewed: boolean;
+    reviews: Review[];
+    myReview?: { id: number; rating: number; comment: string | null; anonymous: boolean };
+  } = { avg: null, count: 0, alreadyReviewed: false, reviews: [] };
   ratingFilter = 0;
   showReviewForm = false;
+  isEditingReview = false;
+  currentReviewId: number | null = null;
   newRating = 5;
   newComment = '';
   newAnonymous = false;
@@ -173,18 +179,39 @@ export class CompanyHome implements OnInit {
     this.loadReviews();
   }
 
+  startEditReview(): void {
+    const mr = this.reviewsData.myReview;
+    if (!mr) return;
+    this.currentReviewId = mr.id;
+    this.newRating = mr.rating;
+    this.newComment = mr.comment ?? '';
+    this.newAnonymous = mr.anonymous;
+    this.isEditingReview = true;
+    this.showReviewForm = true;
+    this.submitReviewError = '';
+  }
+
   submitReview(): void {
     if (!this.newRating || this.submittingReview) return;
     this.submittingReview = true;
     this.submitReviewError = '';
-    this.recruteApi.submitReview(this.companyUserId, {
+
+    const payload = {
       reviewerUserId: this.myUserId,
       rating: this.newRating,
       comment: this.newComment.trim() || null,
       anonymous: this.newAnonymous,
-    }).subscribe({
+    };
+
+    const request$ = this.isEditingReview && this.currentReviewId
+      ? this.recruteApi.updateReview(this.currentReviewId, payload)
+      : this.recruteApi.submitReview(this.companyUserId, payload);
+
+    request$.subscribe({
       next: () => {
         this.showReviewForm = false;
+        this.isEditingReview = false;
+        this.currentReviewId = null;
         this.newComment = '';
         this.newRating = 5;
         this.newAnonymous = false;

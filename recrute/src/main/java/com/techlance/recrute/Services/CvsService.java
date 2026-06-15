@@ -50,10 +50,10 @@ public class CvsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le fichier n'est pas un PDF valide");
         }
 
-        CandidateProfiles candidate = candidateProfilesRepository.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidat introuvable"));
+        CandidateProfiles candidate = candidateProfilesRepository.findByUserId(id);
+        if (candidate == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidat introuvable");
 
-        Cvs cv = findLatestCvByCandidateId(id);
+        Cvs cv = findLatestCvByProfileId(candidate.getId());
         if (cv == null) {
             cv = new Cvs();
             cv.setCandidateProfiles(candidate);
@@ -77,9 +77,8 @@ public class CvsService {
         return cvsRepository.save(cv);
     }
 
-    public Cvs getCvByUserId(Long id) {
-        Cvs cv = findLatestCvByCandidateId(id);
-        return materializeLegacyCvIfNeeded(cv);
+    public Cvs getCvByUserId(Long userId) {
+        return cvForUser(userId);
     }
 
     public Cvs getCvById(Long id) {
@@ -133,38 +132,40 @@ public class CvsService {
         return cvsRepository.save(cv);
     }
 
-    public Resource getCvFileResource(Long candidateId) {
-        Cvs cv = materializeLegacyCvIfNeeded(findLatestCvByCandidateId(candidateId));
+    public Resource getCvFileResource(Long userId) {
+        Cvs cv = cvForUser(userId);
         if (cv == null || cv.getFileData() == null || cv.getFileData().length == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun CV disponible pour ce candidat");
         }
-
         return new ByteArrayResource(cv.getFileData());
     }
 
-    public String getCvDownloadFileName(Long candidateId) {
-        Cvs cv = materializeLegacyCvIfNeeded(findLatestCvByCandidateId(candidateId));
+    public String getCvDownloadFileName(Long userId) {
+        Cvs cv = cvForUser(userId);
         if (cv == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun CV disponible pour ce candidat");
         }
-
         if (cv.getFileName() != null && !cv.getFileName().isBlank()) {
             return cv.getFileName();
         }
-
         if (cv.getFile_url() != null && !cv.getFile_url().isBlank()) {
             return extractFileName(cv.getFile_url());
         }
-
-        return String.format("candidate-%s-cv.pdf", candidateId);
+        return String.format("candidate-%s-cv.pdf", userId);
     }
 
-    public String getCvContentType(Long candidateId) {
-        Cvs cv = materializeLegacyCvIfNeeded(findLatestCvByCandidateId(candidateId));
+    public String getCvContentType(Long userId) {
+        Cvs cv = cvForUser(userId);
         if (cv == null || cv.getContentType() == null || cv.getContentType().isBlank()) {
             return "application/pdf";
         }
         return cv.getContentType();
+    }
+
+    private Cvs cvForUser(Long userId) {
+        CandidateProfiles profile = candidateProfilesRepository.findByUserId(userId);
+        if (profile == null) return null;
+        return materializeLegacyCvIfNeeded(findLatestCvByProfileId(profile.getId()));
     }
 
     public Resource getCvFileResourceByCvId(Long cvId) {
@@ -266,8 +267,8 @@ public class CvsService {
         return cv;
     }
 
-    private Cvs findLatestCvByCandidateId(Long candidateId) {
-        List<Cvs> cvs = cvsRepository.findAllByCandidateProfilesIdOrderByCreatedAtDesc(candidateId);
+    private Cvs findLatestCvByProfileId(Long profileId) {
+        List<Cvs> cvs = cvsRepository.findAllByCandidateProfilesIdOrderByCreatedAtDesc(profileId);
         if (cvs == null || cvs.isEmpty()) {
             return null;
         }

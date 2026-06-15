@@ -257,6 +257,24 @@
             </div>
           </div>
 
+          <div class="cand-skills-section" *ngIf="c.cvSkills && c.cvSkills.length > 0">
+            <div class="skills-label">
+              Compétences
+              <span class="skills-match-count" *ngIf="countMatchingSkills(c) > 0">
+                · {{ countMatchingSkills(c) }} en commun avec l'offre
+              </span>
+            </div>
+            <div class="skills-chips">
+              <span class="cand-skill-tag"
+                    *ngFor="let s of c.cvSkills.slice(0, 10)"
+                    [attr.data-level]="s.level"
+                    [class.skill-match]="isSkillInOffer(s.name)">
+                {{ s.name }}<span class="skill-match-tick" *ngIf="isSkillInOffer(s.name)">✓</span>
+              </span>
+              <span class="cand-skill-more" *ngIf="c.cvSkills.length > 10">+{{ c.cvSkills.length - 10 }}</span>
+            </div>
+          </div>
+
           <div class="cand-actions">
             <button class="btn-interested"
                     *ngIf="!c.applied"
@@ -267,6 +285,9 @@
             <button class="btn-view-cv" *ngIf="c.userId" (click)="viewCv(c)">
               Voir le CV
             </button>
+            <a class="btn-view-profile" *ngIf="c.userId" [routerLink]="['/users/candidate', c.userId]" target="_blank">
+              Voir le profil →
+            </a>
             <button class="btn-skip" *ngIf="!c.applied">✕ Passer</button>
           </div>
         </div>
@@ -309,10 +330,13 @@
                 </ng-container>
               </div>
               <div class="cand-skills" *ngIf="c.cvSkills && c.cvSkills.length > 0">
-                <span class="cand-skill-tag" *ngFor="let s of c.cvSkills.slice(0, 6)" [attr.data-level]="s.level">
-                  {{ s.name }}
+                <span class="cand-skill-tag"
+                      *ngFor="let s of c.cvSkills.slice(0, 8)"
+                      [attr.data-level]="s.level"
+                      [class.skill-match]="isSkillInOffer(s.name)">
+                  {{ s.name }}<span class="skill-match-tick" *ngIf="isSkillInOffer(s.name)">✓</span>
                 </span>
-                <span class="cand-skill-more" *ngIf="c.cvSkills.length > 6">+{{ c.cvSkills.length - 6 }}</span>
+                <span class="cand-skill-more" *ngIf="c.cvSkills.length > 8">+{{ c.cvSkills.length - 8 }}</span>
               </div>
             </div>
           </div>
@@ -324,6 +348,9 @@
               {{ getStatusLabel(c.applicationStatus) }}
             </div>
             <button class="btn-view-cv btn-sm" *ngIf="c.userId" (click)="viewCv(c)">CV</button>
+            <a class="btn-view-profile btn-sm" *ngIf="c.userId" [routerLink]="['/users/candidate', c.userId]" target="_blank">
+              Profil →
+            </a>
             <button class="btn-interested btn-sm"
                     *ngIf="c.applicationStatus !== 'accepte'"
                     (click)="reviewApp(c, 'accepte')">✓ Accepter</button>

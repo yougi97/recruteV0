@@ -136,7 +136,7 @@ export class Profile implements OnInit {
 
   saveCandidateCvUpload(formValue: CandidateCvUploadFormValue): void {
     if (!this.user) return;
-    const candidateId = this.candidateProfile.id;
+    const candidateId = this.candidateProfile.user_id;
 
     if (!candidateId) {
       this.toastr.error('Profil candidat introuvable.', 'Erreur');
@@ -165,7 +165,7 @@ export class Profile implements OnInit {
 
   downloadCV(): void {
     if (!this.activeCV || !this.candidateProfile.id) return;
-    const baseUrl = this.authService.getCandidateCvDownloadUrl(this.candidateProfile.id);
+    const baseUrl = this.authService.getCandidateCvDownloadUrl(this.candidateProfile.user_id);
     window.open(`${baseUrl}?t=${Date.now()}`, '_blank');
   }
 
@@ -460,7 +460,7 @@ export class Profile implements OnInit {
 
         this.activeCV = null;
         this.cvCategories = [];
-        this.loadCandidateCv(this.candidateProfile.id);
+        this.loadCandidateCv(this.candidateProfile.user_id);
         this.isLoading = false;
       },
       error: () => {

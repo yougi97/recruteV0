@@ -138,15 +138,9 @@ export class OffresComponent implements OnInit {
   }
 
   private loadCvId(): void {
-    this.authService.getCandidatebyId(this.candidateId).subscribe({
-      next: (profile) => {
-        if (!profile?.id) return;
-        this.authService.getCandidateCv(profile.id).subscribe({
-          next: (cv) => {
-            if (cv?.id) { this.cvId = cv.id; this.loadCvSkills(cv.id); }
-          },
-          error: () => {}
-        });
+    this.authService.getCandidateCv(this.candidateId).subscribe({
+      next: (cv) => {
+        if (cv?.id) { this.cvId = cv.id; this.loadCvSkills(cv.id); }
       },
       error: () => {}
     });

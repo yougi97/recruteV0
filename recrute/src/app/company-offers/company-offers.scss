@@ -556,6 +556,68 @@ $bar-track:      rgba(255, 255, 255, 0.10);
   min-width: 32px; text-align: right;
 }
 
+// ── CANDIDATE SKILLS ──────────────────────────────────────────────────────────
+.cand-skills-section {
+  margin-bottom: 10px;
+}
+
+.skills-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+  color: $text-muted; margin-bottom: 7px;
+}
+
+.skills-match-count {
+  color: $green; font-weight: 700; text-transform: none; letter-spacing: 0;
+}
+
+.skills-chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+
+.cand-skills {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+}
+
+.cand-skill-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 6px;
+  font-size: 11px; font-weight: 500;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  color: $text-secondary; transition: all .15s;
+
+  &.skill-match {
+    background: rgba(34, 211, 160, 0.1);
+    border-color: rgba(34, 211, 160, 0.4);
+    color: $green;
+    font-weight: 600;
+    box-shadow: 0 0 8px rgba(34, 211, 160, 0.1);
+  }
+}
+
+.skill-match-tick {
+  font-size: 9px; font-weight: 700; opacity: 0.85;
+}
+
+.cand-skill-more {
+  display: inline-flex; align-items: center;
+  padding: 3px 9px; border-radius: 6px; font-size: 11px;
+  color: $text-muted; border: 1px dashed rgba(255,255,255,0.15);
+}
+
+// ── VIEW PROFILE BUTTON ───────────────────────────────────────────────────────
+.btn-view-profile {
+  display: inline-flex; align-items: center;
+  padding: 8px 14px; border-radius: 9px;
+  background: transparent; border: 1px solid rgba(255,255,255,0.15);
+  color: $text-secondary; font-size: 12px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; text-decoration: none;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+
+  &:hover { border-color: $cyan; color: $cyan; background: $cyan-dim; }
+
+  &.btn-sm { padding: 6px 10px; font-size: 11px; }
+}
+
 // ── CV VIEWER MODAL ───────────────────────────────────────────────────────────
 .cv-modal-backdrop {
   position: fixed;

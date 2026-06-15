@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../services/auth';
 import { JobOffer, mapJobOffers, mapCompanyProfile } from '../profil/profil.types';
@@ -32,7 +33,7 @@ interface CompanyCandidateView {
 @Component({
   selector: 'app-company-offers',
   standalone: true,
-  imports: [CommonModule, ChatComponent],
+  imports: [CommonModule, RouterModule, ChatComponent],
   templateUrl: './company-offers.html',
   styleUrls: ['./company-offers.scss'],
 })
@@ -65,6 +66,9 @@ export class CompanyOffers implements OnInit, OnDestroy {
 
   // CV viewer modal
   cvViewUrl: SafeResourceUrl | null = null;
+
+  // Offer skill matching
+  private offerSearchText = '';
 
   // chat
   myCompanyUserId = 0;
@@ -136,6 +140,7 @@ export class CompanyOffers implements OnInit, OnDestroy {
     this.selectedOffer = offer;
     this.panelOpen = true;
     this.panelTab = 'top';
+    this.offerSearchText = ((offer.title ?? '') + ' ' + (offer.description ?? '')).toLowerCase();
     this.computeAndLoadCandidates(offer.id);
   }
 
@@ -241,6 +246,14 @@ export class CompanyOffers implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.cvViewUrl = null;
+  }
+
+  isSkillInOffer(skillName: string): boolean {
+    return !!skillName && this.offerSearchText.includes(skillName.toLowerCase());
+  }
+
+  countMatchingSkills(c: CompanyCandidateView): number {
+    return (c.cvSkills ?? []).filter(s => this.isSkillInOffer(s.name)).length;
   }
 
   reviewApp(c: CompanyCandidateView, status: string): void {
