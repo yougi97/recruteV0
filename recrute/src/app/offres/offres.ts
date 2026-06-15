@@ -99,6 +99,12 @@ export class OffresComponent implements OnInit {
     return Math.round((v ?? 0) * 100);
   }
 
+  isJobSkillInCv(skillName: string): boolean {
+    if (!skillName || !this.cvSkills.length) return false;
+    const nl = norm(skillName);
+    return this.cvSkills.some(s => norm(s.name) === nl);
+  }
+
   toggleDismissed(): void {
     this.showDismissed = !this.showDismissed;
   }

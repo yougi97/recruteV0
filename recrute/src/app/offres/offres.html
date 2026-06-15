@@ -155,11 +155,22 @@
         </div>
       </div>
 
-      <!-- Tags -->
+      <!-- Tags (metadata: contrat, lieu, etc.) -->
       <div class="drawer-section" *ngIf="selectedOffer.tags?.length">
-        <div class="dsec-label">Compétences requises</div>
         <div class="drawer-tags">
           <span *ngFor="let tag of selectedOffer.tags" class="tag" [class.accent]="tag.accent">{{ tag.label }}</span>
+        </div>
+      </div>
+
+      <!-- Job skills with cv match highlight -->
+      <div class="drawer-section" *ngIf="selectedOffer.jobSkills?.length">
+        <div class="dsec-label">Compétences requises</div>
+        <div class="drawer-tags">
+          <span *ngFor="let s of selectedOffer.jobSkills"
+                class="tag"
+                [class.tag-match]="isJobSkillInCv(s.name)">
+            {{ s.name }}<span *ngIf="isJobSkillInCv(s.name)" class="tag-match-tick"> ✓</span>
+          </span>
         </div>
       </div>
 
