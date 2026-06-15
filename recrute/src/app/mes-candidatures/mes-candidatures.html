@@ -56,7 +56,49 @@
         <h2 class="section-title">Entreprises qui vous contactent <span class="section-count">{{ interestedCount }}</span></h2>
       </div>
       <div class="cand-list">
-        <div class="cand-card interested-card" *ngFor="let item of interestedOffers">
+        <div class="cand-card-wrap" *ngFor="let item of interestedOffers">
+          <div class="cand-card interested-card">
+            <div class="card-left">
+              <div class="company-avatar"
+                   [style.background]="colorVar(item.companyColor)"
+                   [style.color]="colorText(item.companyColor)">
+                {{ item.companyInitial }}
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="card-title">{{ item.jobTitle }}</div>
+              <div class="card-company">{{ item.companyName }}</div>
+              <div class="card-meta">
+                <span>📍 {{ item.location }}</span>
+                <span class="dot">·</span>
+                <span>{{ item.contractType }}</span>
+              </div>
+            </div>
+            <div class="card-right">
+              <span class="status-badge interested-badge">★ Intéressée</span>
+              <button class="btn-chat" *ngIf="item.companyUserId"
+                [class.active]="openChatOfferId === item.jobOfferId"
+                (click)="toggleChat(item.jobOfferId)">
+                💬 {{ openChatOfferId === item.jobOfferId ? 'Fermer' : 'Messagerie' }}
+              </button>
+            </div>
+          </div>
+          <app-chat
+            *ngIf="openChatOfferId === item.jobOfferId && item.companyUserId"
+            [offerId]="item.jobOfferId"
+            [myUserId]="userId"
+            [otherUserId]="item.companyUserId!"
+            [otherName]="item.companyName"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- LIST -->
+    <div class="cand-list" *ngIf="!loading && !error && candidatures.length > 0">
+      <div class="cand-card-wrap" *ngFor="let item of candidatures">
+        <div class="cand-card">
+
           <div class="card-left">
             <div class="company-avatar"
                  [style.background]="colorVar(item.companyColor)"
@@ -64,6 +106,7 @@
               {{ item.companyInitial }}
             </div>
           </div>
+
           <div class="card-body">
             <div class="card-title">{{ item.jobTitle }}</div>
             <div class="card-company">{{ item.companyName }}</div>
@@ -71,52 +114,37 @@
               <span>📍 {{ item.location }}</span>
               <span class="dot">·</span>
               <span>{{ item.contractType }}</span>
+              <span class="dot">·</span>
+              <span>Postulé le {{ formatDate(item.appliedAt) }}</span>
             </div>
           </div>
+
           <div class="card-right">
-            <span class="status-badge interested-badge">★ Intéressée</span>
+            <span class="status-badge" [ngClass]="statusClass(item.status)">
+              {{ statusLabel(item.status) }}
+            </span>
+            <button
+              class="btn-retract"
+              *ngIf="item.status === 'attente'"
+              [disabled]="retractingId === item.applicationId"
+              (click)="retract(item)">
+              {{ retractingId === item.applicationId ? '...' : 'Retirer' }}
+            </button>
+            <button class="btn-chat" *ngIf="item.companyUserId"
+              [class.active]="openChatOfferId === item.jobOfferId"
+              (click)="toggleChat(item.jobOfferId)">
+              💬 {{ openChatOfferId === item.jobOfferId ? 'Fermer' : 'Messagerie' }}
+            </button>
           </div>
+
         </div>
-      </div>
-    </div>
-
-    <!-- LIST -->
-    <div class="cand-list" *ngIf="!loading && !error && candidatures.length > 0">
-      <div class="cand-card" *ngFor="let item of candidatures">
-
-        <div class="card-left">
-          <div class="company-avatar"
-               [style.background]="colorVar(item.companyColor)"
-               [style.color]="colorText(item.companyColor)">
-            {{ item.companyInitial }}
-          </div>
-        </div>
-
-        <div class="card-body">
-          <div class="card-title">{{ item.jobTitle }}</div>
-          <div class="card-company">{{ item.companyName }}</div>
-          <div class="card-meta">
-            <span>📍 {{ item.location }}</span>
-            <span class="dot">·</span>
-            <span>{{ item.contractType }}</span>
-            <span class="dot">·</span>
-            <span>Postulé le {{ formatDate(item.appliedAt) }}</span>
-          </div>
-        </div>
-
-        <div class="card-right">
-          <span class="status-badge" [ngClass]="statusClass(item.status)">
-            {{ statusLabel(item.status) }}
-          </span>
-          <button
-            class="btn-retract"
-            *ngIf="item.status === 'attente'"
-            [disabled]="retractingId === item.applicationId"
-            (click)="retract(item)">
-            {{ retractingId === item.applicationId ? '...' : 'Retirer' }}
-          </button>
-        </div>
-
+        <app-chat
+          *ngIf="openChatOfferId === item.jobOfferId && item.companyUserId"
+          [offerId]="item.jobOfferId"
+          [myUserId]="userId"
+          [otherUserId]="item.companyUserId!"
+          [otherName]="item.companyName"
+        />
       </div>
     </div>
 

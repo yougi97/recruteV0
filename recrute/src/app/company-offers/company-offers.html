@@ -292,38 +292,52 @@
         <div class="empty-title">Aucune candidature pour cette offre</div>
       </div>
 
-      <div class="app-card" *ngFor="let c of selectedCandidates; let i = index">
-        <div class="app-card-left">
-          <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
-          <div class="cand-info">
-            <div class="cand-name">{{ c.name }}</div>
-            <div class="cand-role">{{ c.role }}</div>
-            <div class="cand-meta">
-              <span>📍 {{ c.location }}</span>
-              <span>·</span>
-              <span>Exp. : {{ c.dispo }}</span>
-              <ng-container *ngIf="c.appliedAt">
+      <div class="app-card-wrap" *ngFor="let c of selectedCandidates; let i = index">
+        <div class="app-card">
+          <div class="app-card-left">
+            <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
+            <div class="cand-info">
+              <div class="cand-name">{{ c.name }}</div>
+              <div class="cand-role">{{ c.role }}</div>
+              <div class="cand-meta">
+                <span>📍 {{ c.location }}</span>
                 <span>·</span>
-                <span>{{ c.appliedAt | date:'dd/MM/yyyy' }}</span>
-              </ng-container>
+                <span>Exp. : {{ c.dispo }}</span>
+                <ng-container *ngIf="c.appliedAt">
+                  <span>·</span>
+                  <span>{{ c.appliedAt | date:'dd/MM/yyyy' }}</span>
+                </ng-container>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="app-card-right">
-          <div class="match-badge" [ngClass]="getMatchClass(c.match)">
-            {{ getMatchArrow(c.match) }} {{ c.match }}%
+          <div class="app-card-right">
+            <div class="match-badge" [ngClass]="getMatchClass(c.match)">
+              {{ getMatchArrow(c.match) }} {{ c.match }}%
+            </div>
+            <div class="app-status" [ngClass]="getStatusClass(c.applicationStatus)">
+              {{ getStatusLabel(c.applicationStatus) }}
+            </div>
+            <button class="btn-view-cv btn-sm" *ngIf="c.userId" (click)="viewCv(c)">CV</button>
+            <button class="btn-interested btn-sm"
+                    *ngIf="c.applicationStatus !== 'accepte'"
+                    (click)="reviewApp(c, 'accepte')">✓ Accepter</button>
+            <button class="btn-skip btn-sm"
+                    *ngIf="c.applicationStatus !== 'refuse'"
+                    (click)="reviewApp(c, 'refuse')">✗ Refuser</button>
+            <button class="btn-chat-sm" *ngIf="c.userId"
+              [class.active]="openChatCandidateUserId === c.userId"
+              (click)="toggleCandidateChat(c.userId!)">
+              💬 {{ openChatCandidateUserId === c.userId ? 'Fermer' : 'Messagerie' }}
+            </button>
           </div>
-          <div class="app-status" [ngClass]="getStatusClass(c.applicationStatus)">
-            {{ getStatusLabel(c.applicationStatus) }}
-          </div>
-          <button class="btn-view-cv btn-sm" *ngIf="c.userId" (click)="viewCv(c)">CV</button>
-          <button class="btn-interested btn-sm"
-                  *ngIf="c.applicationStatus !== 'accepte'"
-                  (click)="reviewApp(c, 'accepte')">✓ Accepter</button>
-          <button class="btn-skip btn-sm"
-                  *ngIf="c.applicationStatus !== 'refuse'"
-                  (click)="reviewApp(c, 'refuse')">✗ Refuser</button>
         </div>
+        <app-chat
+          *ngIf="openChatCandidateUserId === c.userId && c.userId && selectedOffer"
+          [offerId]="selectedOffer!.id"
+          [myUserId]="myCompanyUserId"
+          [otherUserId]="c.userId!"
+          [otherName]="c.name"
+        />
       </div>
 
     </div>

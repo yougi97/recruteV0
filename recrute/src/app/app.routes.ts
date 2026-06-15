@@ -11,6 +11,7 @@ import { CandidatComponent } from './candidat/candidat';
 import { OffresComponent } from './offres/offres';
 import { CompanyOffers } from './company-offers/company-offers';
 import { MesCandidaturesComponent } from './mes-candidatures/mes-candidatures';
+import { MessagerieComponent } from './messagerie/messagerie';
 
 export const routes: Routes = [
     { path: '', component: Home },
@@ -26,4 +27,5 @@ export const routes: Routes = [
     { path: 'mes-candidatures', component: MesCandidaturesComponent },
     { path: 'about', component: AboutComponent },
     { path: 'company-offers', component: CompanyOffers },
+    { path: 'messagerie', component: MessagerieComponent },
 ];

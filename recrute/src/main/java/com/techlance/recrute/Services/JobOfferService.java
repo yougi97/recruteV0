@@ -124,6 +124,9 @@ public class JobOfferService {
                     map.put("companyName", fallback(job.getCompanyProfiles().getCompanyName(), "", "Entreprise inconnue"));
                     map.put("companyInitial", buildCompanyInitial(job));
                     map.put("companyColor", pickCompanyColor(job));
+                    if (job.getCompanyProfiles().getUser() != null) {
+                        map.put("companyUserId", job.getCompanyProfiles().getUser().getId());
+                    }
                 } else {
                     map.put("companyName", "Entreprise inconnue");
                     map.put("companyInitial", "?");
@@ -187,6 +190,9 @@ public class JobOfferService {
                     map.put("companyName", fallback(job.getCompanyProfiles().getCompanyName(), "", "Entreprise inconnue"));
                     map.put("companyInitial", buildCompanyInitial(job));
                     map.put("companyColor", pickCompanyColor(job));
+                    if (job.getCompanyProfiles().getUser() != null) {
+                        map.put("companyUserId", job.getCompanyProfiles().getUser().getId());
+                    }
                 } else {
                     map.put("companyName", "Entreprise inconnue");
                     map.put("companyInitial", "?");
@@ -676,7 +682,7 @@ public class JobOfferService {
         item.put("applicationStatus", application != null ? application.getStatus() : null);
         item.put("applicationId", application != null ? application.getId() : null);
         item.put("companyInterested", application != null && application.isCompanyInterested());
-        item.put("userId", candidate != null ? candidate.getId() : null);
+        item.put("userId", user != null ? user.getId() : null);
         item.put("scoreSemantique", rating != null ? rating.getScoreSemantique() : null);
         item.put("scoreStructure", rating != null ? rating.getScoreStructure() : null);
         item.put("scoreLlm", rating != null ? rating.getScoreLlm() : null);

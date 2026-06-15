@@ -15,7 +15,8 @@
       "Bash(curl -s -X POST http://localhost:5001/match -H \"Content-Type: application/json\" -d '{\"cv_id\": 1, \"offre_id\": 6}')",
       "Bash(curl -s 'http://localhost:8080/users/candidate/list')",
       "Bash(curl -s \"http://localhost:8080/api/internal/cvs/$\\(curl -s 'http://localhost:8080/users/candidate/list')",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('id'\\), d.get\\('parsedJson',''\\)[:300] if d.get\\('parsedJson'\\) else 'NO PARSED JSON'\\)\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('id'\\), d.get\\('parsedJson',''\\)[:300] if d.get\\('parsedJson'\\) else 'NO PARSED JSON'\\)\")",
+      "Bash(npx ng *)"
     ]
   }
 }

@@ -4,6 +4,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../services/auth';
 import { JobOffer, mapJobOffers, mapCompanyProfile } from '../profil/profil.types';
 import { CompanyProfiles } from '../model/companyProfiles';
+import { ChatComponent } from '../components/chat/chat';
 
 interface CompanyCandidateView {
   candidateId: number;
@@ -30,7 +31,7 @@ interface CompanyCandidateView {
 @Component({
   selector: 'app-company-offers',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ChatComponent],
   templateUrl: './company-offers.html',
   styleUrls: ['./company-offers.scss'],
 })
@@ -64,6 +65,10 @@ export class CompanyOffers implements OnInit, OnDestroy {
   // CV viewer modal
   cvViewUrl: SafeResourceUrl | null = null;
 
+  // chat
+  myCompanyUserId = 0;
+  openChatCandidateUserId: number | null = null;
+
   // filtre offres
   activeFilter: 'all' | 'active' | 'inactive' | 'cdi' | 'stage' = 'all';
 
@@ -81,6 +86,7 @@ export class CompanyOffers implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const userId = Number(localStorage.getItem('user_id'));
+    this.myCompanyUserId = userId;
     const userType = this.authService.getCurrentUserType();
     if (userType !== 'company') {
       this.error = 'Réservé aux entreprises.';
@@ -139,6 +145,11 @@ export class CompanyOffers implements OnInit, OnDestroy {
     this.candidatesError = '';
     this.topCandidates = [];
     this.topError = '';
+    this.openChatCandidateUserId = null;
+  }
+
+  toggleCandidateChat(candidateUserId: number): void {
+    this.openChatCandidateUserId = this.openChatCandidateUserId === candidateUserId ? null : candidateUserId;
   }
 
   getStatusLabel(status: string | null | undefined): string {

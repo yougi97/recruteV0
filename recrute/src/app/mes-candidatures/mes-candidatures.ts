@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth';
+import { ChatComponent } from '../components/chat/chat';
 
 interface CandidatureItem {
   applicationId: number;
@@ -14,6 +15,7 @@ interface CandidatureItem {
   companyColor: string;
   location: string;
   contractType: string;
+  companyUserId?: number;
 }
 
 interface InterestedOfferItem {
@@ -26,12 +28,13 @@ interface InterestedOfferItem {
   location: string;
   contractType: string;
   status: string;
+  companyUserId?: number;
 }
 
 @Component({
   selector: 'app-mes-candidatures',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ChatComponent],
   templateUrl: './mes-candidatures.html',
   styleUrls: ['./mes-candidatures.scss'],
 })
@@ -43,6 +46,7 @@ export class MesCandidaturesComponent implements OnInit {
   error = '';
   retractingId: number | null = null;
   userId = 0;
+  openChatOfferId: number | null = null;
 
   get totalCount() { return this.candidatures.length; }
   get pendingCount() { return this.candidatures.filter(c => c.status === 'attente').length; }
@@ -78,6 +82,7 @@ export class MesCandidaturesComponent implements OnInit {
           companyColor: item.companyColor ?? 'blue',
           location: item.location ?? '—',
           contractType: item.contractType ?? 'CDI',
+          companyUserId: item.companyUserId ? Number(item.companyUserId) : undefined,
         }));
         this.loading = false;
       },
@@ -102,6 +107,7 @@ export class MesCandidaturesComponent implements OnInit {
           location: item.location ?? '—',
           contractType: item.contractType ?? 'CDI',
           status: item.status ?? '',
+          companyUserId: item.companyUserId ? Number(item.companyUserId) : undefined,
         }));
         this.loadingInterested = false;
       },
@@ -130,6 +136,10 @@ export class MesCandidaturesComponent implements OnInit {
       refuse: 'Refusée',
     };
     return labels[status] ?? status;
+  }
+
+  toggleChat(offerId: number): void {
+    this.openChatOfferId = this.openChatOfferId === offerId ? null : offerId;
   }
 
   statusClass(status: string): string {

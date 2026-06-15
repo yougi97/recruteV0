@@ -1,0 +1,56 @@
+<div class="msg-shell">
+
+  <!-- SIDEBAR -->
+  <div class="msg-sidebar">
+    <div class="sidebar-header">
+      <h2 class="sidebar-title">Messagerie</h2>
+      <span class="conv-count" *ngIf="conversations.length > 0">{{ conversations.length }}</span>
+    </div>
+
+    <div class="conv-loading" *ngIf="loading">Chargement…</div>
+
+    <div class="conv-empty" *ngIf="!loading && conversations.length === 0">
+      <div class="conv-empty-icon">💬</div>
+      <div class="conv-empty-text">Aucune conversation</div>
+    </div>
+
+    <div class="conv-list" *ngIf="!loading && conversations.length > 0">
+      <div
+        class="conv-item"
+        *ngFor="let c of conversations"
+        [class.active]="selected?.offerId === c.offerId && selected?.otherUserId === c.otherUserId"
+        (click)="select(c)"
+      >
+        <div class="conv-avatar">{{ initials(c.otherName) }}</div>
+        <div class="conv-body">
+          <div class="conv-top">
+            <span class="conv-name">{{ c.otherName }}</span>
+            <span class="conv-time">{{ formatTime(c.lastAt) }}</span>
+          </div>
+          <div class="conv-offer">{{ c.offerTitle }}</div>
+          <div class="conv-preview">{{ c.lastBody }}</div>
+        </div>
+        <span class="conv-unread" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div class="msg-main">
+    <div class="chat-empty-state" *ngIf="!selected">
+      <div class="empty-icon">✉️</div>
+      <div class="empty-title">Sélectionnez une conversation</div>
+      <div class="empty-sub">Vos échanges avec les recruteurs et candidats apparaissent ici.</div>
+    </div>
+
+    <app-chat
+      *ngIf="selected"
+      [offerId]="selected.offerId"
+      [myUserId]="myUserId"
+      [otherUserId]="selected.otherUserId"
+      [otherName]="selected.otherName + ' — ' + selected.offerTitle"
+      [fullHeight]="true"
+    />
+  </div>
+
+</div>

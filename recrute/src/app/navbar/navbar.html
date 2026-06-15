@@ -28,6 +28,9 @@
         </ng-container>
         <button class="profile-btn" routerLink="/profil">Profil</button>
         <button *ngIf="authService.getCurrentUserType() === 'company'" class="profile-btn" routerLink="/company-offers">Candidatures</button>
+        <button class="nav-pill secondary" routerLink="/messagerie">
+          💬 Messagerie
+        </button>
         <span class="user-email">{{ getCurrentUser() }}</span>
         <button class="logout-btn" (click)="logout()">Déconnexion</button>
       </div>
