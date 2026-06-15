@@ -83,9 +83,20 @@ $surface: rgba(17, 24, 39, 0.65);
   margin-bottom: 4px;
 }
 
-.cpv-location {
-  font-size: 13px;
+.cpv-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cpv-chip {
+  font-size: 12px;
   color: $text-secondary;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 3px 10px;
 }
 
 // ── Cards ──────────────────────────────────────────────
@@ -191,7 +202,54 @@ $surface: rgba(17, 24, 39, 0.65);
   padding-left: 6px;
 }
 
-.cpv-empty-skills {
+// ── Contact card ──────────────────────────────────────
+.cpv-contact-row {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.cpv-contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cpv-contact-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.38);
+}
+
+.cpv-contact-value {
+  font-size: 14px;
+  color: $text-primary;
+}
+
+.cpv-email {
+  color: $cyan;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+.cpv-location-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cpv-loc-chip {
+  font-size: 12px;
+  background: rgba(56,189,248,0.08);
+  border: 1px solid rgba(56,189,248,0.2);
+  color: #7dd3fc;
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.cpv-no-skills {
   font-size: 13px;
   color: $text-muted;
   font-style: italic;

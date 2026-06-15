@@ -62,7 +62,7 @@
           </div>
           <div class="co-job-right">
             <span class="co-app-count">{{ j.applicationCount }} candidature{{ j.applicationCount !== 1 ? 's' : '' }}</span>
-            <a class="btn-postuler" routerLink="/offres">Postuler →</a>
+            <button class="btn-voir-offre" (click)="selectedJob = j; $event.stopPropagation()">Voir l'offre →</button>
           </div>
         </div>
       </div>
@@ -194,4 +194,52 @@
     </div>
 
   </ng-container>
+</div>
+
+<!-- ── JOB DETAIL DRAWER ──────────────────────────────────────────────── -->
+<div class="co-drawer-overlay" *ngIf="selectedJob" (click)="selectedJob = null">
+  <aside class="co-drawer" (click)="$event.stopPropagation()">
+    <button class="co-drawer-close" (click)="selectedJob = null">✕</button>
+
+    <div class="co-drawer-body">
+      <div class="co-drawer-hero">
+        <div class="co-drawer-company-logo">{{ initials(profile?.companyName ?? '') }}</div>
+        <div>
+          <div class="co-drawer-title">{{ selectedJob!.title }}</div>
+          <div class="co-drawer-meta">
+            <span *ngIf="profile?.companyName">{{ profile!.companyName }}</span>
+            <span class="co-drawer-dot">·</span>
+            <span>📍 {{ selectedJob!.location }}</span>
+            <span class="co-drawer-dot">·</span>
+            <span>{{ selectedJob!.contractType }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="co-drawer-section" *ngIf="selectedJob!.description">
+        <div class="co-drawer-label">Description du poste</div>
+        <p class="co-drawer-desc">{{ selectedJob!.description }}</p>
+      </div>
+
+      <div class="co-drawer-section">
+        <div class="co-drawer-label">Informations</div>
+        <div class="co-drawer-info-row">
+          <span class="co-drawer-info-chip">📋 {{ selectedJob!.contractType }}</span>
+          <span class="co-drawer-info-chip">📍 {{ selectedJob!.location }}</span>
+          <span class="co-drawer-info-chip">📅 {{ daysAgo(selectedJob!.createdAt) }}j en ligne</span>
+          <span class="co-drawer-info-chip">👥 {{ selectedJob!.applicationCount }} candidature{{ selectedJob!.applicationCount !== 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="co-drawer-footer" *ngIf="isCandidate">
+      <button class="co-btn-interest"
+              [class.sent]="jobInterestStatus[selectedJob!.id] === 'interested'"
+              [disabled]="jobInterestStatus[selectedJob!.id] === 'interested'"
+              (click)="markInterested(selectedJob!)">
+        <ng-container *ngIf="jobInterestStatus[selectedJob!.id] !== 'interested'">→ Je suis intéressé(e)</ng-container>
+        <ng-container *ngIf="jobInterestStatus[selectedJob!.id] === 'interested'">✓ Intérêt envoyé</ng-container>
+      </button>
+    </div>
+  </aside>
 </div>

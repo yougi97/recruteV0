@@ -138,7 +138,7 @@ public class CompanyReviewsController {
         report.setMinSalary(minSalary);
         report.setMaxSalary(maxSalary);
         if (contractTypeStr != null) {
-            try { report.setContractType(ContratType.valueOf(contractTypeStr)); } catch (Exception ignored) {}
+            try { report.setContratType(ContratType.valueOf(contractTypeStr)); } catch (Exception ignored) {}
         }
 
         return salaryToMap(salaryRepo.save(report));
@@ -168,7 +168,7 @@ public class CompanyReviewsController {
         m.put("jobTitle", s.getJobTitle());
         m.put("minSalary", s.getMinSalary());
         m.put("maxSalary", s.getMaxSalary());
-        m.put("contractType", s.getContractType() != null ? s.getContractType().name() : null);
+        m.put("contractType", s.getContratType() != null ? s.getContratType().name() : null);
         m.put("createdAt", s.getCreatedAt().toString());
         return m;
     }

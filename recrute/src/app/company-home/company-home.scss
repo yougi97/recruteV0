@@ -223,6 +223,21 @@ $green: #22d3a0;
   color: $text-muted;
 }
 
+.btn-voir-offre {
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: $cyan;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  white-space: nowrap;
+  &:hover { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.6); }
+}
+
 .btn-postuler {
   padding: 8px 16px;
   border-radius: 10px;
@@ -562,4 +577,174 @@ $green: #22d3a0;
 .co-form-sep {
   color: $text-muted;
   flex-shrink: 0;
+}
+
+// ── JOB DETAIL DRAWER ─────────────────────────────────
+.co-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: flex-end;
+  animation: coFadeIn 0.2s ease;
+}
+
+@keyframes coFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.co-drawer {
+  width: 480px;
+  max-width: 95vw;
+  height: 100vh;
+  background: linear-gradient(180deg, #0d1829 0%, #0f2035 100%);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  animation: coSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes coSlideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+.co-drawer-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.6);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  &:hover { background: rgba(255, 255, 255, 0.13); color: white; }
+}
+
+.co-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.co-drawer-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding-right: 40px;
+  padding-top: 4px;
+}
+
+.co-drawer-company-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: $cyan;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.co-drawer-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: white;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+
+.co-drawer-meta {
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.co-drawer-dot { opacity: 0.4; }
+
+.co-drawer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.co-drawer-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.co-drawer-desc {
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(226, 232, 240, 0.72);
+  white-space: pre-wrap;
+  max-height: 240px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.co-drawer-info-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.co-drawer-info-chip {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.co-drawer-footer {
+  padding: 14px 28px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.co-btn-interest {
+  width: 100%;
+  padding: 13px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  color: white;
+
+  &.sent {
+    background: linear-gradient(135deg, #34d399, #059669);
+    cursor: default;
+  }
+
+  &:disabled { opacity: 0.7; cursor: default; }
 }

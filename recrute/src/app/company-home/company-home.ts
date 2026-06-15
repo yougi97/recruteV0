@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RecruteApi } from '../recrute-api';
 import { AuthService } from '../services/auth';
+import { JobOfferService } from '../services/job-offer';
 import { CompanyProfiles } from '../model/companyProfiles';
 
 interface PublicJobOffer {
@@ -77,10 +78,15 @@ export class CompanyHome implements OnInit {
 
   stars = [1, 2, 3, 4, 5];
 
+  // Job detail drawer
+  selectedJob: PublicJobOffer | null = null;
+  jobInterestStatus: Record<number, 'pending' | 'interested'> = {};
+
   constructor(
     private route: ActivatedRoute,
     private recruteApi: RecruteApi,
     private authService: AuthService,
+    private jobOfferService: JobOfferService,
   ) {}
 
   ngOnInit(): void {
@@ -219,6 +225,12 @@ export class CompanyHome implements OnInit {
         this.submitSalaryError = 'Erreur lors de la publication. Vérifiez votre connexion et réessayez.';
       },
     });
+  }
+
+  markInterested(job: PublicJobOffer): void {
+    if (this.jobInterestStatus[job.id] === 'interested' || !this.myUserId) return;
+    this.jobInterestStatus[job.id] = 'interested';
+    this.jobOfferService.notifyInterest(this.myUserId, job.id).subscribe();
   }
 
   get isCandidate(): boolean { return this.myUserType === 'candidate'; }

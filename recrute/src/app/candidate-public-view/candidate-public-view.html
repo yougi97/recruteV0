@@ -19,7 +19,25 @@
         <div class="cpv-header-info">
           <h1 class="cpv-name">{{ fullName }}</h1>
           <div class="cpv-title" *ngIf="profile.title">{{ profile.title }}</div>
-          <div class="cpv-location" *ngIf="profile.location">📍 {{ profile.location }}</div>
+          <div class="cpv-meta-chips">
+            <span class="cpv-chip" *ngIf="profile.location">📍 {{ profile.location }}</span>
+            <span class="cpv-chip" *ngIf="profile.anneesExperience">🕐 {{ profile.anneesExperience }} ans d'exp.</span>
+            <span class="cpv-chip" *ngIf="profile.niveauEtudes">🎓 {{ profile.niveauEtudes }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact row -->
+      <div class="cpv-card cpv-contact-row" *ngIf="profile.user?.email || targetLocations.length > 0">
+        <div class="cpv-contact-item" *ngIf="profile.user?.email">
+          <span class="cpv-contact-label">Email</span>
+          <a class="cpv-contact-value cpv-email" [href]="'mailto:' + profile.user.email">{{ profile.user.email }}</a>
+        </div>
+        <div class="cpv-contact-item" *ngIf="targetLocations.length > 0">
+          <span class="cpv-contact-label">Mobilité</span>
+          <div class="cpv-location-chips">
+            <span class="cpv-loc-chip" *ngFor="let loc of targetLocations">{{ loc }}</span>
+          </div>
         </div>
       </div>
 
@@ -27,18 +45,6 @@
       <div class="cpv-card" *ngIf="profile.bio">
         <div class="cpv-section-label">À propos</div>
         <p class="cpv-bio">{{ profile.bio }}</p>
-      </div>
-
-      <!-- Experience & Education -->
-      <div class="cpv-card cpv-meta-row" *ngIf="profile.anneesExperience || profile.niveauEtudes">
-        <div class="cpv-meta-item" *ngIf="profile.anneesExperience">
-          <span class="cpv-meta-label">Expérience</span>
-          <span class="cpv-meta-value">{{ profile.anneesExperience }} ans</span>
-        </div>
-        <div class="cpv-meta-item" *ngIf="profile.niveauEtudes">
-          <span class="cpv-meta-label">Formation</span>
-          <span class="cpv-meta-value">{{ profile.niveauEtudes }}</span>
-        </div>
       </div>
 
       <!-- CV Skills -->
@@ -52,7 +58,7 @@
         </div>
       </div>
 
-      <div class="cpv-empty-skills" *ngIf="cvSkills.length === 0 && !loading">
+      <div class="cpv-no-skills" *ngIf="!loadingCv && cvSkills.length === 0">
         <span>Aucun CV analysé pour ce candidat.</span>
       </div>
 

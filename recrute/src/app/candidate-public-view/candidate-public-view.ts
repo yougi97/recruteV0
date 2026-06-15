@@ -16,7 +16,15 @@ export class CandidatePublicView implements OnInit {
   profile: any = null;
   cvSkills: { name: string; level: string | null; type: string | null }[] = [];
   loading = true;
+  loadingCv = true;
   error = '';
+
+  get targetLocations(): string[] {
+    const raw = this.profile?.targetLocation;
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw as string[];
+    try { return JSON.parse(raw as string) as string[]; } catch { return []; }
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -50,12 +58,15 @@ export class CandidatePublicView implements OnInit {
                   level: c.level ? (c.level as string).toLowerCase() : null,
                   type: c.type ? (c.type as string).toLowerCase() : null,
                 }));
+              this.loadingCv = false;
             },
-            error: () => {},
+            error: () => { this.loadingCv = false; },
           });
+        } else {
+          this.loadingCv = false;
         }
       },
-      error: () => {},
+      error: () => { this.loadingCv = false; },
     });
   }
 
