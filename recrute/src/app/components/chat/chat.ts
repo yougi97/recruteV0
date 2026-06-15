@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessagesService } from '../../services/messages';
@@ -11,7 +11,7 @@ import { Message } from '../../model/message';
   templateUrl: './chat.html',
   styleUrls: ['./chat.scss'],
 })
-export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class ChatComponent implements OnInit, OnChanges, OnDestroy, AfterViewChecked {
   @Input() offerId!: number;
   @Input() myUserId!: number;
   @Input() otherUserId!: number;
@@ -25,12 +25,23 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   sending = false;
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private shouldScroll = false;
+  private initialized = false;
 
   constructor(private svc: MessagesService) {}
 
   ngOnInit(): void {
     this.load();
     this.pollTimer = setInterval(() => this.load(), 4000);
+    this.initialized = true;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.initialized) return;
+    if (changes['offerId'] || changes['otherUserId']) {
+      this.messages = [];
+      this.draft = '';
+      this.load();
+    }
   }
 
   ngOnDestroy(): void {

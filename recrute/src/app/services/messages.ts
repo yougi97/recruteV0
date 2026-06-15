@@ -8,6 +8,8 @@ export interface ConversationItem {
   offerTitle: string;
   otherUserId: number;
   otherName: string;
+  otherUserType: string;
+  otherProfileId?: number;
   lastBody: string;
   lastAt: string;
   unreadCount: number;

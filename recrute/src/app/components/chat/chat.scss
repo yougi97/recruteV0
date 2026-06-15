@@ -13,6 +13,8 @@
     border: none;
     flex: 1;
 
+    .chat-header { display: none; }
+
     .chat-messages {
       flex: 1;
       max-height: none;

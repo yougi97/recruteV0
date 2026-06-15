@@ -1,2 +1,64 @@
-<h1>Bienvenue {{company()?.companyName}}</h1>
-{{company()?.user?.email}}
+<div class="co-page">
+
+  <!-- LOADING -->
+  <div class="co-state" *ngIf="loading">
+    <div class="co-state-icon">⏳</div>
+    <div>Chargement du profil…</div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="co-state" *ngIf="!loading && error">
+    <div class="co-state-icon">❌</div>
+    <div>{{ error }}</div>
+  </div>
+
+  <ng-container *ngIf="!loading && !error && profile">
+
+    <!-- HEADER -->
+    <div class="co-header">
+      <div class="co-avatar">{{ initials(profile!.companyName) }}</div>
+      <div class="co-header-info">
+        <h1 class="co-name">{{ profile!.companyName }}</h1>
+        <div class="co-meta">
+          <span *ngIf="profile!.location">📍 {{ profile!.location }}</span>
+          <span *ngIf="profile!.industry" class="co-chip">{{ profile!.industry }}</span>
+        </div>
+        <p class="co-desc" *ngIf="profile!.description">{{ profile!.description }}</p>
+      </div>
+    </div>
+
+    <!-- JOBS -->
+    <div class="co-section">
+      <div class="co-section-header">
+        <div class="co-section-line"></div>
+        <h2 class="co-section-title">Offres actives <span class="co-count">{{ jobs.length }}</span></h2>
+      </div>
+
+      <div class="co-empty" *ngIf="jobs.length === 0">
+        <div class="co-empty-icon">📭</div>
+        <div>Aucune offre active pour le moment</div>
+      </div>
+
+      <div class="co-jobs" *ngIf="jobs.length > 0">
+        <div class="co-job-card" *ngFor="let j of jobs">
+          <div class="co-job-left">
+            <div class="co-job-title">{{ j.title }}</div>
+            <div class="co-job-meta">
+              <span>📍 {{ j.location }}</span>
+              <span class="co-dot">·</span>
+              <span>{{ j.contractType }}</span>
+              <span class="co-dot">·</span>
+              <span>{{ daysAgo(j.createdAt) }}j en ligne</span>
+            </div>
+            <p class="co-job-desc" *ngIf="j.description">{{ j.description }}</p>
+          </div>
+          <div class="co-job-right">
+            <span class="co-app-count">{{ j.applicationCount }} candidature{{ j.applicationCount !== 1 ? 's' : '' }}</span>
+            <a class="btn-postuler" routerLink="/offres">Voir les offres →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

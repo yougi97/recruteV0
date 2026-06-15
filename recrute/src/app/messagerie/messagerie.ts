@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MessagesService, ConversationItem } from '../services/messages';
 import { ChatComponent } from '../components/chat/chat';
 
 @Component({
   selector: 'app-messagerie',
   standalone: true,
-  imports: [CommonModule, ChatComponent],
+  imports: [CommonModule, RouterModule, ChatComponent],
   templateUrl: './messagerie.html',
   styleUrls: ['./messagerie.scss'],
 })

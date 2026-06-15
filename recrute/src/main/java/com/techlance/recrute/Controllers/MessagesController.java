@@ -1,8 +1,10 @@
 package com.techlance.recrute.Controllers;
 
+import com.techlance.recrute.Entities.CompanyProfiles;
 import com.techlance.recrute.Entities.JobOffers;
 import com.techlance.recrute.Entities.Messages;
 import com.techlance.recrute.Entities.Users;
+import com.techlance.recrute.Repositories.CompanyProfilesRepository;
 import com.techlance.recrute.Repositories.JobOfferRepository;
 import com.techlance.recrute.Repositories.MessagesRepository;
 import com.techlance.recrute.Repositories.UserRepository;
@@ -24,13 +26,16 @@ public class MessagesController {
     private final MessagesRepository messagesRepository;
     private final JobOfferRepository jobOfferRepository;
     private final UserRepository userRepository;
+    private final CompanyProfilesRepository companyProfilesRepository;
 
     public MessagesController(MessagesRepository messagesRepository,
                               JobOfferRepository jobOfferRepository,
-                              UserRepository userRepository) {
+                              UserRepository userRepository,
+                              CompanyProfilesRepository companyProfilesRepository) {
         this.messagesRepository = messagesRepository;
         this.jobOfferRepository = jobOfferRepository;
         this.userRepository = userRepository;
+        this.companyProfilesRepository = companyProfilesRepository;
     }
 
     @GetMapping("/thread")
@@ -80,11 +85,19 @@ public class MessagesController {
             String key = m.getOffer().getId() + "_" + otherId;
             if (!convMap.containsKey(key)) {
                 Users other = m.getSender().getId().equals(userId) ? m.getRecipient() : m.getSender();
+                String otherType = other.getUserType();
+                Long otherProfileId = null;
+                if ("company".equals(otherType)) {
+                    CompanyProfiles cp = companyProfilesRepository.findByUserId(otherId);
+                    if (cp != null) otherProfileId = cp.getId();
+                }
                 Map<String, Object> conv = new LinkedHashMap<>();
                 conv.put("offerId", m.getOffer().getId());
                 conv.put("offerTitle", m.getOffer().getTitle());
                 conv.put("otherUserId", otherId);
                 conv.put("otherName", other.getFirstName() + " " + other.getLastName());
+                conv.put("otherUserType", otherType);
+                conv.put("otherProfileId", otherProfileId);
                 conv.put("lastBody", m.getBody());
                 conv.put("lastAt", m.getCreatedAt().toString());
                 conv.put("unreadCount", 0L);

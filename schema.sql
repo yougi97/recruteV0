@@ -207,3 +207,20 @@ CREATE TABLE ai_scores (
     FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
     FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
 );
+-- ─── MESSAGERIE ───────────────────────────────────────────────────────────────
+
+CREATE TABLE messages (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    offer_id            INT NOT NULL,
+    sender_user_id      INT NOT NULL,
+    recipient_user_id   INT NOT NULL,
+    body                TEXT NOT NULL,
+    is_read             TINYINT(1) NOT NULL DEFAULT 0,
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_msg_offer (offer_id),
+    KEY idx_msg_sender (sender_user_id),
+    KEY idx_msg_recipient (recipient_user_id),
+    CONSTRAINT fk_msg_offer FOREIGN KEY (offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
+    CONSTRAINT fk_msg_sender FOREIGN KEY (sender_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_msg_recipient FOREIGN KEY (recipient_user_id) REFERENCES users(id) ON DELETE CASCADE
+);

@@ -166,10 +166,15 @@ $text-muted: rgba(100, 116, 139, 0.8);
   text-overflow: ellipsis;
 }
 
+.conv-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .conv-unread {
-  position: absolute;
-  right: 14px;
-  top: 14px;
   background: $cyan;
   color: #0b1221;
   font-size: 10px;
@@ -178,6 +183,27 @@ $text-muted: rgba(100, 116, 139, 0.8);
   padding: 1px 6px;
   min-width: 18px;
   text-align: center;
+}
+
+.conv-profile-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: $cyan;
+  font-size: 12px;
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 0.15s, border-color 0.15s;
+
+  &:hover {
+    opacity: 1;
+    border-color: rgba(56, 189, 248, 0.6);
+    background: rgba(56, 189, 248, 0.08);
+  }
 }
 
 // ── MAIN PANEL ─────────────────────────────────────────
@@ -191,15 +217,75 @@ $text-muted: rgba(100, 116, 139, 0.8);
     flex: 1;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    overflow: hidden;
+  }
+}
 
-    .chat-panel {
-      flex: 1;
-      border-radius: 0;
-      border: none;
-      border-left: 1px solid $border;
-      height: 100%;
-    }
+// ── PROFILE BAR ────────────────────────────────────────
+.chat-profile-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid $border;
+  background: rgba(17, 24, 39, 0.4);
+  flex-shrink: 0;
+}
+
+.chat-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.12);
+  color: $cyan;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.chat-profile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.chat-profile-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.chat-profile-offer {
+  font-size: 11px;
+  color: $text-muted;
+}
+
+.btn-view-profile {
+  padding: 6px 14px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: $cyan;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.55);
   }
 }
 

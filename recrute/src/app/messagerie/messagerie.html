@@ -30,7 +30,14 @@
           <div class="conv-offer">{{ c.offerTitle }}</div>
           <div class="conv-preview">{{ c.lastBody }}</div>
         </div>
-        <span class="conv-unread" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</span>
+        <div class="conv-right">
+          <span class="conv-unread" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</span>
+          <a class="conv-profile-link"
+             *ngIf="c.otherUserType === 'company'"
+             [routerLink]="['/users/company', c.otherUserId]"
+             (click)="$event.stopPropagation()"
+             title="Voir le profil">↗</a>
+        </div>
       </div>
     </div>
   </div>
@@ -43,14 +50,30 @@
       <div class="empty-sub">Vos échanges avec les recruteurs et candidats apparaissent ici.</div>
     </div>
 
-    <app-chat
-      *ngIf="selected"
-      [offerId]="selected.offerId"
-      [myUserId]="myUserId"
-      [otherUserId]="selected.otherUserId"
-      [otherName]="selected.otherName + ' — ' + selected.offerTitle"
-      [fullHeight]="true"
-    />
+    <ng-container *ngIf="selected">
+      <div class="chat-profile-bar">
+        <div class="chat-profile-info">
+          <div class="chat-profile-avatar">{{ initials(selected.otherName) }}</div>
+          <div class="chat-profile-text">
+            <span class="chat-profile-name">{{ selected.otherName }}</span>
+            <span class="chat-profile-offer">{{ selected.offerTitle }}</span>
+          </div>
+        </div>
+        <a class="btn-view-profile"
+           *ngIf="selected.otherUserType === 'company'"
+           [routerLink]="['/users/company', selected.otherUserId]">
+          Voir le profil &amp; offres →
+        </a>
+      </div>
+
+      <app-chat
+        [offerId]="selected.offerId"
+        [myUserId]="myUserId"
+        [otherUserId]="selected.otherUserId"
+        [otherName]="selected.otherName"
+        [fullHeight]="true"
+      />
+    </ng-container>
   </div>
 
 </div>
