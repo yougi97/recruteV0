@@ -629,3 +629,34 @@ $bar-track:      rgba(255, 255, 255, 0.10);
   border: none;
   background: #fff;
 }
+
+// ── CANDIDATE CV SKILLS ──────────────────────────────────────────────────────
+.cand-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.cand-skill-tag {
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(226, 232, 240, 0.8);
+
+  &[data-level="avance"]       { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.25); color: #38bdf8; }
+  &[data-level="expert"]       { background: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.25); color: #a855f7; }
+  &[data-level="intermediaire"]{ background: rgba(34,211,160,0.08); border-color: rgba(34,211,160,0.2); color: #22d3a0; }
+  &[data-level="debutant"]     { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(148,163,184,0.8); }
+}
+
+.cand-skill-more {
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}

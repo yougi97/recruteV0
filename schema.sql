@@ -224,3 +224,33 @@ CREATE TABLE messages (
     CONSTRAINT fk_msg_sender FOREIGN KEY (sender_user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_msg_recipient FOREIGN KEY (recipient_user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- ─── AVIS ENTREPRISES ─────────────────────────────────────────────────────────
+
+CREATE TABLE company_reviews (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    company_profile_id  INT NOT NULL,
+    reviewer_user_id    INT NOT NULL,
+    is_anonymous        TINYINT(1) NOT NULL DEFAULT 0,
+    rating              TINYINT NOT NULL,
+    comment             TEXT,
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_review (company_profile_id, reviewer_user_id),
+    CONSTRAINT fk_review_company FOREIGN KEY (company_profile_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_review_user FOREIGN KEY (reviewer_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- ─── TRANSPARENCE SALARIALE ───────────────────────────────────────────────────
+
+CREATE TABLE salary_reports (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    company_profile_id  INT NOT NULL,
+    reporter_user_id    INT NOT NULL,
+    job_title           VARCHAR(255) NOT NULL,
+    min_salary          INT NOT NULL,
+    max_salary          INT NOT NULL,
+    contract_type       ENUM('CDI','CDD','freelance','stage','alternance'),
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_salary_company FOREIGN KEY (company_profile_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_salary_user FOREIGN KEY (reporter_user_id) REFERENCES users(id) ON DELETE CASCADE
+);

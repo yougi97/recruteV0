@@ -308,6 +308,12 @@
                   <span>{{ c.appliedAt | date:'dd/MM/yyyy' }}</span>
                 </ng-container>
               </div>
+              <div class="cand-skills" *ngIf="c.cvSkills && c.cvSkills.length > 0">
+                <span class="cand-skill-tag" *ngFor="let s of c.cvSkills.slice(0, 6)" [attr.data-level]="s.level">
+                  {{ s.name }}
+                </span>
+                <span class="cand-skill-more" *ngIf="c.cvSkills.length > 6">+{{ c.cvSkills.length - 6 }}</span>
+              </div>
             </div>
           </div>
           <div class="app-card-right">

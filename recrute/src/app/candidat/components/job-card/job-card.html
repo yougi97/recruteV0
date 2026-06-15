@@ -8,9 +8,12 @@
   [class.is-dismissed]="offer?.status === 'dismissed'"
 >
   <div class="card-top">
-    <div class="company-logo" [ngClass]="'color-' + offer?.companyColor">
+    <a class="company-logo" [ngClass]="'color-' + offer?.companyColor"
+       [routerLink]="offer?.companyUserId ? ['/users/company', offer!.companyUserId] : null"
+       (click)="$event.stopPropagation()"
+       [class.clickable]="!!offer?.companyUserId">
       {{ offer?.companyInitial }}
-    </div>
+    </a>
     <div class="match-badge" [ngClass]="offer?.matchLevel">
       {{ matchIcon }} {{ offer?.matchScore }}% match
     </div>
@@ -18,7 +21,10 @@
 
   <div class="card-body">
     <div class="job-title" (click)="onDetail()" style="cursor:pointer">{{ offer?.title }}</div>
-    <div class="company-name">{{ offer?.company }}</div>
+    <a class="company-name"
+       [routerLink]="offer?.companyUserId ? ['/users/company', offer!.companyUserId] : null"
+       (click)="$event.stopPropagation()"
+       [class.company-link]="!!offer?.companyUserId">{{ offer?.company }}</a>
     <div class="job-location">
       📍 {{ offer?.location }} · {{ offer?.contractType }} · {{ offer?.workMode }}
     </div>
@@ -99,7 +105,10 @@
   [class.is-dismissed]="offer?.status === 'dismissed'"
 >
   <div class="compact-row">
-    <div class="company-logo compact-logo" [ngClass]="'color-' + offer?.companyColor">{{ offer?.companyInitial }}</div>
+    <a class="company-logo compact-logo" [ngClass]="'color-' + offer?.companyColor"
+       [routerLink]="offer?.companyUserId ? ['/users/company', offer!.companyUserId] : null"
+       (click)="$event.stopPropagation()"
+       [class.clickable]="!!offer?.companyUserId">{{ offer?.companyInitial }}</a>
     <div class="compact-info">
       <div class="compact-title" (click)="onDetail()">{{ offer?.title }}</div>
       <div class="compact-sub">{{ offer?.company }} · {{ offer?.location }} · {{ offer?.contractType }}</div>

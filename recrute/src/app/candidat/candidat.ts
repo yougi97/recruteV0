@@ -220,6 +220,7 @@ export class CandidatComponent implements OnInit {
         id: item.id,
         title: item.title,
         company: item.company,
+        companyUserId: item.companyUserId ?? undefined,
         companyInitial: item.companyInitial,
         companyColor: item.companyColor,
         location: item.location,

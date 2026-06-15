@@ -1,0 +1,199 @@
+:host {
+  display: block;
+  min-height: calc(100vh - 70px);
+  background: linear-gradient(135deg, #151f35 0%, #1e3058 40%, #284574 70%, #375674 100%);
+  color: #fff;
+}
+:host, :host * { box-sizing: border-box; }
+
+$cyan: #38bdf8;
+$text-primary: rgba(226, 232, 240, 0.95);
+$text-secondary: rgba(148, 163, 184, 0.85);
+$text-muted: rgba(100, 116, 139, 0.8);
+$border: rgba(255, 255, 255, 0.07);
+$surface: rgba(17, 24, 39, 0.65);
+
+.cpv-page {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.cpv-shell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+// ── State ──────────────────────────────────────────────
+.cpv-state {
+  text-align: center;
+  padding: 80px 24px;
+  color: $text-muted;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  &.cpv-state-error { color: rgba(248, 113, 113, 0.8); }
+}
+
+.cpv-state-icon { font-size: 32px; }
+
+// ── Header ─────────────────────────────────────────────
+.cpv-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.cpv-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: $cyan;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.cpv-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cpv-name {
+  font-size: 26px;
+  font-weight: 700;
+  color: $text-primary;
+  margin: 0 0 6px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.cpv-title {
+  font-size: 15px;
+  color: $cyan;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.cpv-location {
+  font-size: 13px;
+  color: $text-secondary;
+}
+
+// ── Cards ──────────────────────────────────────────────
+.cpv-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.cpv-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.38);
+  margin-bottom: 14px;
+}
+
+.cpv-bio {
+  font-size: 14px;
+  line-height: 1.7;
+  color: $text-secondary;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+// ── Meta row ───────────────────────────────────────────
+.cpv-meta-row {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.cpv-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cpv-meta-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.cpv-meta-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+// ── Skills ─────────────────────────────────────────────
+.cpv-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cpv-skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(226, 232, 240, 0.8);
+
+  &[data-level="avance"] {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.3);
+    color: #7dd3fc;
+  }
+
+  &[data-level="expert"] {
+    background: rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.3);
+    color: #6ee7b7;
+  }
+
+  &[data-level="intermediaire"] {
+    background: rgba(74, 222, 128, 0.07);
+    border-color: rgba(74, 222, 128, 0.2);
+    color: #86efac;
+  }
+
+  &[data-level="debutant"] {
+    opacity: 0.6;
+  }
+}
+
+.cpv-skill-lvl {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 6px;
+}
+
+.cpv-empty-skills {
+  font-size: 13px;
+  color: $text-muted;
+  font-style: italic;
+  margin-top: 8px;
+}

@@ -12,10 +12,12 @@ import { OffresComponent } from './offres/offres';
 import { CompanyOffers } from './company-offers/company-offers';
 import { MesCandidaturesComponent } from './mes-candidatures/mes-candidatures';
 import { MessagerieComponent } from './messagerie/messagerie';
+import { CandidatePublicView } from './candidate-public-view/candidate-public-view';
 
 export const routes: Routes = [
     { path: '', component: Home },
     { path: 'login', component: Login },
+    { path: 'users/candidate/:id', component: CandidatePublicView },
     { path: 'users/candidate/:id/update', component: UpdateCandidate },
     { path: 'users/company/:id/update', component: UpdateCompany },
     { path: 'users/company/:id', component: CompanyHome },

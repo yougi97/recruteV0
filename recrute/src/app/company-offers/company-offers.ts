@@ -26,6 +26,7 @@ interface CompanyCandidateView {
   scoreSemantique?: number;
   scoreStructure?: number;
   scoreLlm?: number;
+  cvSkills?: { name: string; level: string | null; type: string | null }[];
 }
 
 @Component({
@@ -277,6 +278,7 @@ export class CompanyOffers implements OnInit, OnDestroy {
       scoreSemantique: c.scoreSemantique,
       scoreStructure: c.scoreStructure,
       scoreLlm: c.scoreLlm,
+      cvSkills: c.cvSkills ?? [],
     };
   }
 

@@ -241,3 +241,325 @@ $green: #22d3a0;
     border-color: rgba(56, 189, 248, 0.55);
   }
 }
+
+// ── NAME ROW WITH RATING ────────────────────────────────────────────────────
+.co-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.co-name { margin: 0; }
+
+.co-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.co-star { color: #facc15; font-size: 14px; }
+.co-rating-val { color: #facc15; }
+.co-rating-count { color: $text-muted; font-size: 11px; }
+
+// ── EDIT BUTTON ────────────────────────────────────────────────────────────
+.btn-edit-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: $text-secondary;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.2s;
+  &:hover { background: rgba(255, 255, 255, 0.06); }
+}
+
+// ── STARS ──────────────────────────────────────────────────────────────────
+.star-filled { color: #facc15; }
+.star-empty  { color: rgba(250, 204, 21, 0.25); }
+
+.co-avg-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  color: $text-secondary;
+  margin-left: 8px;
+}
+
+// ── FILTER PILLS ───────────────────────────────────────────────────────────
+.co-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.co-filter-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: transparent;
+  border: 1px solid $border;
+  color: $text-secondary;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover { border-color: rgba(250, 204, 21, 0.4); color: #facc15; }
+  &.active { background: rgba(250, 204, 21, 0.1); border-color: rgba(250, 204, 21, 0.5); color: #facc15; }
+}
+
+// ── REVIEWS ────────────────────────────────────────────────────────────────
+.co-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.co-review-card {
+  padding: 16px 18px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 12px;
+}
+
+.co-review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.co-review-stars { display: flex; gap: 1px; font-size: 14px; }
+.co-review-author { color: $text-primary; font-weight: 600; flex: 1; }
+.co-review-date { color: $text-muted; }
+
+.co-review-body {
+  margin: 0;
+  font-size: 13px;
+  color: $text-secondary;
+  line-height: 1.6;
+}
+
+// ── REVIEW FORM ────────────────────────────────────────────────────────────
+.btn-add-review {
+  margin-top: 12px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: $cyan;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover { background: rgba(56, 189, 248, 0.08); }
+}
+
+.co-review-form, .co-salary-form {
+  margin-top: 14px;
+  padding: 18px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.co-form-stars {
+  display: flex;
+  gap: 6px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: rgba(250, 204, 21, 0.25);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s, transform 0.1s;
+  &.selected { color: #facc15; }
+  &:hover { transform: scale(1.2); }
+}
+
+.co-form-textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid $border;
+  border-radius: 10px;
+  color: $text-primary;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 10px 12px;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+  &:focus { border-color: rgba(56, 189, 248, 0.4); }
+}
+
+.co-form-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid $border;
+  border-radius: 10px;
+  color: $text-primary;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  outline: none;
+  &:focus { border-color: rgba(56, 189, 248, 0.4); }
+
+  option { background: #1e293b; }
+}
+
+.co-form-anon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: $text-secondary;
+  cursor: pointer;
+}
+
+.co-form-error {
+  font-size: 12px;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.co-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-cancel {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid $border;
+  color: $text-muted;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  &:hover { background: rgba(255, 255, 255, 0.04); }
+}
+
+.btn-submit {
+  padding: 8px 20px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: $cyan;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover { background: rgba(56, 189, 248, 0.25); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.co-already-reviewed {
+  margin-top: 12px;
+  font-size: 13px;
+  color: $green;
+}
+
+// ── SALARY ─────────────────────────────────────────────────────────────────
+.co-salary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.co-salary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 12px;
+}
+
+.co-salary-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.co-salary-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-primary;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.co-salary-contract {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  color: $cyan;
+}
+
+.co-salary-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.co-salary-range {
+  font-size: 15px;
+  font-weight: 700;
+  color: $green;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.co-salary-count {
+  font-size: 11px;
+  color: $text-muted;
+}
+
+.co-salary-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  .co-form-input { flex: 1; width: auto; }
+}
+
+.co-form-sep {
+  color: $text-muted;
+  flex-shrink: 0;
+}

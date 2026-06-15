@@ -26,4 +26,23 @@ export class RecruteApi {
   updateCompany(company: CompanyProfiles): Observable<CompanyProfiles> {
     return this.httpClient.put<CompanyProfiles>(`${this.url}/users/company/${company.id}`, company);
   }
+
+  getReviews(companyUserId: number, ratingFilter?: number, myUserId?: number): Observable<any> {
+    let params = '';
+    if (ratingFilter) params += `?ratingFilter=${ratingFilter}`;
+    if (myUserId) params += `${params ? '&' : '?'}myUserId=${myUserId}`;
+    return this.httpClient.get<any>(`${this.url}/api/reviews/company/${companyUserId}${params}`);
+  }
+
+  submitReview(companyUserId: number, body: object): Observable<any> {
+    return this.httpClient.post<any>(`${this.url}/api/reviews/company/${companyUserId}`, body);
+  }
+
+  getSalaries(companyUserId: number): Observable<any[]> {
+    return this.httpClient.get<any[]>(`${this.url}/api/salaries/company/${companyUserId}`);
+  }
+
+  submitSalary(companyUserId: number, body: object): Observable<any> {
+    return this.httpClient.post<any>(`${this.url}/api/salaries/company/${companyUserId}`, body);
+  }
 }

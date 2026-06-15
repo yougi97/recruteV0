@@ -1,0 +1,61 @@
+<div class="cpv-page">
+  <div class="cpv-shell">
+
+    <div class="cpv-state" *ngIf="loading">
+      <div class="cpv-state-icon">⏳</div>
+      <div>Chargement du profil…</div>
+    </div>
+
+    <div class="cpv-state cpv-state-error" *ngIf="!loading && error">
+      <div class="cpv-state-icon">⚠️</div>
+      <div>{{ error }}</div>
+    </div>
+
+    <ng-container *ngIf="!loading && !error && profile">
+
+      <!-- Header -->
+      <div class="cpv-header">
+        <div class="cpv-avatar">{{ initials(fullName) }}</div>
+        <div class="cpv-header-info">
+          <h1 class="cpv-name">{{ fullName }}</h1>
+          <div class="cpv-title" *ngIf="profile.title">{{ profile.title }}</div>
+          <div class="cpv-location" *ngIf="profile.location">📍 {{ profile.location }}</div>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="cpv-card" *ngIf="profile.bio">
+        <div class="cpv-section-label">À propos</div>
+        <p class="cpv-bio">{{ profile.bio }}</p>
+      </div>
+
+      <!-- Experience & Education -->
+      <div class="cpv-card cpv-meta-row" *ngIf="profile.anneesExperience || profile.niveauEtudes">
+        <div class="cpv-meta-item" *ngIf="profile.anneesExperience">
+          <span class="cpv-meta-label">Expérience</span>
+          <span class="cpv-meta-value">{{ profile.anneesExperience }} ans</span>
+        </div>
+        <div class="cpv-meta-item" *ngIf="profile.niveauEtudes">
+          <span class="cpv-meta-label">Formation</span>
+          <span class="cpv-meta-value">{{ profile.niveauEtudes }}</span>
+        </div>
+      </div>
+
+      <!-- CV Skills -->
+      <div class="cpv-card" *ngIf="cvSkills.length > 0">
+        <div class="cpv-section-label">Compétences détectées par l'IA</div>
+        <div class="cpv-skills">
+          <span class="cpv-skill-tag" *ngFor="let s of cvSkills" [attr.data-level]="s.level">
+            {{ s.name }}
+            <span class="cpv-skill-lvl" *ngIf="s.level">{{ s.level }}</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="cpv-empty-skills" *ngIf="cvSkills.length === 0 && !loading">
+        <span>Aucun CV analysé pour ce candidat.</span>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

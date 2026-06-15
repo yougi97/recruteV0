@@ -36,7 +36,12 @@
              *ngIf="c.otherUserType === 'company'"
              [routerLink]="['/users/company', c.otherUserId]"
              (click)="$event.stopPropagation()"
-             title="Voir le profil">↗</a>
+             title="Voir le profil entreprise">↗</a>
+          <a class="conv-profile-link"
+             *ngIf="c.otherUserType === 'candidate'"
+             [routerLink]="['/users/candidate', c.otherUserId]"
+             (click)="$event.stopPropagation()"
+             title="Voir le profil candidat">↗</a>
         </div>
       </div>
     </div>
@@ -63,6 +68,11 @@
            *ngIf="selected.otherUserType === 'company'"
            [routerLink]="['/users/company', selected.otherUserId]">
           Voir le profil &amp; offres →
+        </a>
+        <a class="btn-view-profile"
+           *ngIf="selected.otherUserType === 'candidate'"
+           [routerLink]="['/users/candidate', selected.otherUserId]">
+          Voir le profil candidat →
         </a>
       </div>
 

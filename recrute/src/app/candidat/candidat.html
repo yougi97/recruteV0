@@ -104,69 +104,77 @@
   <aside class="drawer" (click)="$event.stopPropagation()">
     <button class="drawer-close" (click)="closeDetail()">✕</button>
 
-    <div class="drawer-hero">
-      <div class="company-logo" [ngClass]="'color-' + selectedOffer.companyColor">{{ selectedOffer.companyInitial }}</div>
-      <div>
-        <div class="drawer-title">{{ selectedOffer.title }}</div>
-        <div class="drawer-company">{{ selectedOffer.company }}</div>
-        <div class="drawer-meta">📍 {{ selectedOffer.location }} · {{ selectedOffer.contractType }} · {{ selectedOffer.workMode }}</div>
-      </div>
-    </div>
-
-    <div class="drawer-section">
-      <div class="dsec-label">Compatibilité</div>
-      <div class="drawer-main-score">
-        <div class="match-badge" [ngClass]="selectedOffer.matchLevel">{{ selectedOffer.matchScore }}% match</div>
-      </div>
-      <div class="subscores" *ngIf="selectedOffer.scoreDetail">
-        <div class="subscore-row">
-          <span class="subscore-name">Sémantique</span>
-          <div class="subscore-track"><div class="subscore-fill" [style.width.%]="pct(selectedOffer.scoreDetail.sem)"></div></div>
-          <span class="subscore-val">{{ pct(selectedOffer.scoreDetail.sem) }}%</span>
-        </div>
-        <div class="subscore-row">
-          <span class="subscore-name">Structurel</span>
-          <div class="subscore-track"><div class="subscore-fill" [style.width.%]="pct(selectedOffer.scoreDetail.str)"></div></div>
-          <span class="subscore-val">{{ pct(selectedOffer.scoreDetail.str) }}%</span>
-        </div>
-        <div class="subscore-row">
-          <span class="subscore-name">Analyse IA</span>
-          <div class="subscore-track"><div class="subscore-fill" [style.width.%]="pct(selectedOffer.scoreDetail.llm)"></div></div>
-          <span class="subscore-val">{{ pct(selectedOffer.scoreDetail.llm) }}%</span>
+    <div class="drawer-body">
+      <div class="drawer-hero">
+        <a class="company-logo" [ngClass]="'color-' + selectedOffer.companyColor"
+           [routerLink]="selectedOffer.companyUserId ? ['/users/company', selectedOffer.companyUserId] : null"
+           (click)="selectedOffer.companyUserId && closeDetail()"
+           [class.clickable]="!!selectedOffer.companyUserId">{{ selectedOffer.companyInitial }}</a>
+        <div>
+          <div class="drawer-title">{{ selectedOffer.title }}</div>
+          <a class="drawer-company"
+             [routerLink]="selectedOffer.companyUserId ? ['/users/company', selectedOffer.companyUserId] : null"
+             (click)="selectedOffer.companyUserId && closeDetail()"
+             [class.drawer-company-link]="!!selectedOffer.companyUserId">{{ selectedOffer.company }}</a>
+          <div class="drawer-meta">📍 {{ selectedOffer.location }} · {{ selectedOffer.contractType }} · {{ selectedOffer.workMode }}</div>
         </div>
       </div>
-    </div>
 
-    <div class="drawer-section" *ngIf="selectedOffer.tags?.length">
-      <div class="dsec-label">Tags</div>
-      <div class="drawer-tags">
-        <span *ngFor="let tag of selectedOffer.tags" class="tag" [class.accent]="tag.accent">{{ tag.label }}</span>
+      <div class="drawer-section">
+        <div class="dsec-label">Compatibilité</div>
+        <div class="drawer-main-score">
+          <div class="match-badge" [ngClass]="selectedOffer.matchLevel">{{ selectedOffer.matchScore }}% match</div>
+        </div>
+        <div class="subscores" *ngIf="selectedOffer.scoreDetail">
+          <div class="subscore-row">
+            <span class="subscore-name">Sémantique</span>
+            <div class="subscore-track"><div class="subscore-fill" [style.width.%]="pct(selectedOffer.scoreDetail.sem)"></div></div>
+            <span class="subscore-val">{{ pct(selectedOffer.scoreDetail.sem) }}%</span>
+          </div>
+          <div class="subscore-row">
+            <span class="subscore-name">Structurel</span>
+            <div class="subscore-track"><div class="subscore-fill" [style.width.%]="pct(selectedOffer.scoreDetail.str)"></div></div>
+            <span class="subscore-val">{{ pct(selectedOffer.scoreDetail.str) }}%</span>
+          </div>
+          <div class="subscore-row">
+            <span class="subscore-name">Analyse IA</span>
+            <div class="subscore-track"><div class="subscore-fill" [style.width.%]="pct(selectedOffer.scoreDetail.llm)"></div></div>
+            <span class="subscore-val">{{ pct(selectedOffer.scoreDetail.llm) }}%</span>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="drawer-section" *ngIf="selectedOffer.jobSkills?.length">
-      <div class="dsec-label">Compétences requises</div>
-      <div class="drawer-tags">
-        <span *ngFor="let s of selectedOffer.jobSkills" class="tag">{{ s.name }}</span>
+      <div class="drawer-section" *ngIf="selectedOffer.tags?.length">
+        <div class="dsec-label">Tags</div>
+        <div class="drawer-tags">
+          <span *ngFor="let tag of selectedOffer.tags" class="tag" [class.accent]="tag.accent">{{ tag.label }}</span>
+        </div>
       </div>
-    </div>
 
-    <div class="drawer-section" *ngIf="selectedOffer.description">
-      <div class="dsec-label">Description du poste</div>
-      <div class="drawer-desc">{{ selectedOffer.description }}</div>
-    </div>
+      <div class="drawer-section" *ngIf="selectedOffer.jobSkills?.length">
+        <div class="dsec-label">Compétences requises</div>
+        <div class="drawer-tags">
+          <span *ngFor="let s of selectedOffer.jobSkills" class="tag">{{ s.name }}</span>
+        </div>
+      </div>
 
-    <div class="drawer-section" *ngIf="selectedOffer.aiReason && selectedOffer.aiReason !== selectedOffer.description">
-      <div class="dsec-label">✦ Pourquoi l'IA vous suggère cette offre</div>
-      <div class="drawer-ai-reason">{{ selectedOffer.aiReason }}</div>
-    </div>
+      <div class="drawer-section" *ngIf="selectedOffer.description">
+        <div class="dsec-label">Description du poste</div>
+        <div class="drawer-desc">{{ selectedOffer.description }}</div>
+      </div>
 
-    <div class="drawer-section" *ngIf="cvSkills.length > 0">
-      <div class="dsec-label">Ce que l'IA a retenu de votre CV</div>
-      <div class="drawer-cv-skills">
-        <div class="cv-skill-chip" *ngFor="let s of cvSkills" [ngClass]="'lvl-' + s.level">
-          <span>{{ s.name }}</span>
-          <span class="skill-lvl-badge">{{ s.level }}</span>
+      <div class="drawer-section" *ngIf="selectedOffer.aiReason && selectedOffer.aiReason !== selectedOffer.description">
+        <div class="dsec-label">✦ Pourquoi l'IA vous suggère cette offre</div>
+        <div class="drawer-ai-reason">{{ selectedOffer.aiReason }}</div>
+      </div>
+
+      <div class="drawer-section" *ngIf="cvSkills.length > 0">
+        <div class="dsec-label">Ce que l'IA a retenu de votre CV</div>
+        <div class="drawer-cv-skills">
+          <div class="cv-skill-chip" *ngFor="let s of cvSkills" [ngClass]="'lvl-' + s.level">
+            <span>{{ s.name }}</span>
+            <span class="skill-lvl-badge">{{ s.level }}</span>
+          </div>
         </div>
       </div>
     </div>

@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { JobOffer } from '../../../model/job-offer';
 import { norm } from '../../../utils/normalize';
 
 @Component({
   selector: 'app-job-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './job-card.html',
   styleUrls: ['./job-card.scss'],
 })

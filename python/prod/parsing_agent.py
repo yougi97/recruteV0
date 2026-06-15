@@ -191,6 +191,28 @@ LANGUAGE_HINTS = {
     "german": "Allemand",
 }
 
+# Professional experience markers — skills found near these get AVANCE
+_PRO_MARKER_RE = re.compile(
+    r"\b(stage|cdi|cdd|alternance|alternant|freelance|emploi|mission\s+pro|"
+    r"exp[eé]rience\s+(?:professionnel|en|chez|de|dans)|"
+    r"(?:assistant|d[eé]veloppeur|ing[eé]nieur|consultant|analyste|chef\s+de\s+projet)"
+    r"\s+(?:chez|@|at)\b)",
+    re.IGNORECASE,
+)
+_PRO_WINDOW = 700  # chars around each marker to search for nearby skills
+
+
+def _is_skill_in_pro_context(skill_lower: str, texte_lower: str) -> bool:
+    """True if the skill appears within _PRO_WINDOW chars of a professional marker."""
+    for m in _PRO_MARKER_RE.finditer(texte_lower):
+        start = max(0, m.start() - _PRO_WINDOW)
+        end = min(len(texte_lower), m.end() + _PRO_WINDOW)
+        window = texte_lower[start:end]
+        if re.search(r"(?<!\w)" + re.escape(skill_lower) + r"(?!\w)", window):
+            return True
+    return False
+
+
 # CEFR level → NiveauExpertise mapping for heuristic language detection
 _CEFR_RE = re.compile(
     r"\b(a1|a2|b1|b2|c1|c2|natif|native|maternell[a-z]*|bilingue|courant|fluent|professionnel)\b",
@@ -285,19 +307,24 @@ def _fallback_parse_cv(texte: str) -> CVParse:
     lower_text = texte.lower()
 
     # Use word-boundary matching to avoid "AI" hitting "mairie", "C" hitting any word
-    competences: list[Competence] = [
-        Competence(nom=skill, niveau=NiveauExpertise.INTERMEDIAIRE)
-        for skill in COMMON_SKILLS
-        if re.search(r"(?<!\w)" + re.escape(skill.lower()) + r"(?!\w)", lower_text)
-    ]
+    # Skills found near professional experience markers (stage/CDI/CDD/alternance) → avance
+    competences: list[Competence] = []
+    for skill in COMMON_SKILLS:
+        if re.search(r"(?<!\w)" + re.escape(skill.lower()) + r"(?!\w)", lower_text):
+            if _is_skill_in_pro_context(skill.lower(), lower_text):
+                niveau = NiveauExpertise.AVANCE
+            else:
+                niveau = NiveauExpertise.INTERMEDIAIRE
+            competences.append(Competence(nom=skill, niveau=niveau))
 
-    # Apply tool → domain implications (e.g. Keras → Machine Learning, Intelligence Artificielle)
+    # Apply tool → domain implications; implied skills inherit the source skill's level
     existing_names = {c.nom.lower() for c in competences}
     for skill_lower, implied in _SKILL_IMPLICATIONS.items():
         if re.search(r"(?<!\w)" + re.escape(skill_lower) + r"(?!\w)", lower_text):
+            source_niveau = NiveauExpertise.AVANCE if _is_skill_in_pro_context(skill_lower, lower_text) else NiveauExpertise.INTERMEDIAIRE
             for imp in implied:
                 if imp.lower() not in existing_names:
-                    competences.append(Competence(nom=imp, niveau=NiveauExpertise.INTERMEDIAIRE))
+                    competences.append(Competence(nom=imp, niveau=source_niveau))
                     existing_names.add(imp.lower())
 
     soft_skills = [skill for skill in COMMON_SOFT_SKILLS if skill in lower_text]

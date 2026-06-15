@@ -24,8 +24,10 @@ import com.techlance.recrute.Entities.Cvs;
 import com.techlance.recrute.Entities.Users;
 import com.techlance.recrute.Entities.JobOffers;
 import com.techlance.recrute.Enum.Rating;
+import com.techlance.recrute.Entities.CvCategories;
 import com.techlance.recrute.Entities.JobCategories;
 import com.techlance.recrute.Repositories.ApplicationsRepository;
+import com.techlance.recrute.Repositories.CvCategoriesRepository;
 import com.techlance.recrute.Repositories.CandidateJobRatingsRepository;
 import com.techlance.recrute.Repositories.CandidateProfilesRepository;
 import com.techlance.recrute.Repositories.CompanyProfilesRepository;
@@ -42,6 +44,7 @@ public class JobOfferService {
     private final CandidateJobRatingsRepository candidateJobRatingsRepository;
     private final ApplicationsRepository applicationsRepository;
     private final JobCategoriesRepository jobCategoriesRepository;
+    private final CvCategoriesRepository cvCategoriesRepository;
     private final ObjectMapper objectMapper;
 
     public JobOfferService(
@@ -51,7 +54,8 @@ public class JobOfferService {
             CvsRepository cvsRepository,
             CandidateJobRatingsRepository candidateJobRatingsRepository,
             ApplicationsRepository applicationsRepository,
-            JobCategoriesRepository jobCategoriesRepository) {
+            JobCategoriesRepository jobCategoriesRepository,
+            CvCategoriesRepository cvCategoriesRepository) {
         this.jobOfferRepository = jobOfferRepository;
         this.companyProfilesRepository = companyProfilesRepository;
         this.candidateProfilesRepository = candidateProfilesRepository;
@@ -59,6 +63,7 @@ public class JobOfferService {
         this.candidateJobRatingsRepository = candidateJobRatingsRepository;
         this.applicationsRepository = applicationsRepository;
         this.jobCategoriesRepository = jobCategoriesRepository;
+        this.cvCategoriesRepository = cvCategoriesRepository;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -686,6 +691,20 @@ public class JobOfferService {
         item.put("scoreSemantique", rating != null ? rating.getScoreSemantique() : null);
         item.put("scoreStructure", rating != null ? rating.getScoreStructure() : null);
         item.put("scoreLlm", rating != null ? rating.getScoreLlm() : null);
+        // CV skills/tags visible to the company
+        List<Map<String, Object>> cvSkills = new ArrayList<>();
+        if (cv != null) {
+            for (CvCategories cc : cvCategoriesRepository.findByCvId(cv.getId())) {
+                if (cc.getCategory() != null) {
+                    Map<String, Object> s = new LinkedHashMap<>();
+                    s.put("name", cc.getCategory().getName());
+                    s.put("level", cc.getLevel() != null ? cc.getLevel().name() : null);
+                    s.put("type", cc.getCategory().getType() != null ? cc.getCategory().getType().name() : null);
+                    cvSkills.add(s);
+                }
+            }
+        }
+        item.put("cvSkills", cvSkills);
         return item;
     }
 
@@ -803,6 +822,9 @@ public class JobOfferService {
         suggestion.put("id", job.getId());
         suggestion.put("title", job.getTitle());
         suggestion.put("company", job.getCompanyProfiles() != null ? job.getCompanyProfiles().getCompanyName() : "Entreprise inconnue");
+        if (job.getCompanyProfiles() != null && job.getCompanyProfiles().getUser() != null) {
+            suggestion.put("companyUserId", job.getCompanyProfiles().getUser().getId());
+        }
         suggestion.put("companyInitial", buildCompanyInitial(job));
         suggestion.put("companyColor", pickCompanyColor(job));
         suggestion.put("location", fallback(job.getLocation(), candidate.getLocation(), "Télétravail possible"));
@@ -1104,6 +1126,9 @@ public class JobOfferService {
         offer.put("id", job.getId());
         offer.put("title", job.getTitle());
         offer.put("company", job.getCompanyProfiles() != null ? job.getCompanyProfiles().getCompanyName() : "Entreprise inconnue");
+        if (job.getCompanyProfiles() != null && job.getCompanyProfiles().getUser() != null) {
+            offer.put("companyUserId", job.getCompanyProfiles().getUser().getId());
+        }
         offer.put("companyInitial", buildCompanyInitial(job));
         offer.put("companyColor", pickCompanyColor(job));
         offer.put("location", fallback(job.getLocation(), "", "Télétravail possible"));
