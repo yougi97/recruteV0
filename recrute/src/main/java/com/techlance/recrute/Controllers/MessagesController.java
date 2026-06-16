@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "https://localhost"})
 @RestController
 @RequestMapping("/api/messages")
 public class MessagesController {
@@ -68,6 +68,9 @@ public class MessagesController {
         if (offerId == null || senderUserId == null || recipientUserId == null
                 || text == null || text.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Champs manquants");
+        }
+        if (text.length() > 5000) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le message ne peut pas dépasser 5000 caractères");
         }
         requireSelf(authUser, senderUserId);
 

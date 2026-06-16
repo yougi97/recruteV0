@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.techlance.recrute.Services.JobOfferService;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "https://localhost"})
 @RestController
 @RequestMapping("/public/offers")
 public class PublicOffersController {

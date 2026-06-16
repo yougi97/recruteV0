@@ -18,7 +18,7 @@ import com.techlance.recrute.Entities.Users;
 import com.techlance.recrute.Security.AuthenticatedUser;
 import com.techlance.recrute.Services.UserService;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "https://localhost"})
 @RestController
 @RequestMapping("/users")
 public class UserController {

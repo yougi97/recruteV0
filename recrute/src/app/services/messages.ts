@@ -18,7 +18,7 @@ export interface ConversationItem {
 @Injectable({ providedIn: 'root' })
 export class MessagesService {
   private readonly http = inject(HttpClient);
-  private readonly base = 'http://localhost:8080/api/messages';
+  private readonly base = 'https://localhost/api/messages';
 
   getConversations(userId: number): Observable<ConversationItem[]> {
     return this.http.get<ConversationItem[]>(`${this.base}/conversations?userId=${userId}`);

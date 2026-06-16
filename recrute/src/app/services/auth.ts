@@ -10,8 +10,8 @@ import { CompanyProfiles } from '../model/companyProfiles';
 })
 export class AuthService {
   private readonly httpClient = inject(HttpClient)
-  private readonly url = "http://localhost:8080"
-  private readonly pythonUrl = "http://localhost:5001"
+  private readonly url = "https://localhost"
+  private readonly pythonUrl = "https://localhost"
 
   getCandidatebyId(id: number): Observable<CandidateProfiles> {
     return this.httpClient.get<CandidateProfiles>(`${this.url}/users/candidate/${id}`);

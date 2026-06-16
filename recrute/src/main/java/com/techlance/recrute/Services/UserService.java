@@ -16,6 +16,7 @@ import com.techlance.recrute.Repositories.CandidateProfilesRepository;
 import com.techlance.recrute.Repositories.CompanyProfilesRepository;
 import com.techlance.recrute.Repositories.UserRepository;
 import com.techlance.recrute.Security.JwtService;
+import com.techlance.recrute.Util.InputValidator;
 
 @Service
 public class UserService {
@@ -42,12 +43,15 @@ public class UserService {
                         String.format("Les champs obligatoires ne sont pas tous remplient")
                 );
         }
-        if(user.getEmail().contains("@") ==false) {
+        InputValidator.requireEmail(user.getEmail());
+        if (user.getPassword().length() < 8) {
             throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        String.format("adresse email invalide")
+                        "Le mot de passe doit contenir au moins 8 caractères"
                 );
         }
+        InputValidator.requireMaxLength(user.getFirstName(), 100, "Le prénom");
+        InputValidator.requireMaxLength(user.getLastName(), 100, "Le nom");
         if(userRepository.findByEmail(user.getEmail()) != null) {
             throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -83,12 +87,12 @@ public class UserService {
     }
 
     public CandidateProfiles updateCandidate(CandidateProfiles user, Long id, Long authUserId) {
-        if(user.getUser().getEmail().contains("@") ==false) {
-            throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        String.format("adresse email invalide")
-                );
-        }
+        InputValidator.requireEmail(user.getUser().getEmail());
+        InputValidator.requireMaxLength(user.getUser().getFirstName(), 100, "Le prénom");
+        InputValidator.requireMaxLength(user.getUser().getLastName(), 100, "Le nom");
+        InputValidator.requireMaxLength(user.getTitle(), 255, "Le titre");
+        InputValidator.requireMaxLength(user.getLocation(), 255, "La localisation");
+        InputValidator.requireMaxLength(user.getBio(), 5000, "La bio");
         CandidateProfiles oldCandidateProfiles = candidateProfilesRepository.getReferenceById(id);
         if (!oldCandidateProfiles.getUser().getId().equals(authUserId)) {
             throw new ResponseStatusException(
@@ -112,12 +116,13 @@ public class UserService {
     }
 
     public CompanyProfiles updateCompany(CompanyProfiles user, Long id, Long authUserId) {
-        if(user.getUser().getEmail().contains("@") ==false) {
-            throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        String.format("adresse email invalide")
-                );
-        }
+        InputValidator.requireEmail(user.getUser().getEmail());
+        InputValidator.requireMaxLength(user.getUser().getFirstName(), 100, "Le prénom");
+        InputValidator.requireMaxLength(user.getUser().getLastName(), 100, "Le nom");
+        InputValidator.requireMaxLength(user.getCompanyName(), 255, "Le nom de l'entreprise");
+        InputValidator.requireMaxLength(user.getLocation(), 255, "La localisation");
+        InputValidator.requireMaxLength(user.getIndustry(), 255, "Le secteur");
+        InputValidator.requireMaxLength(user.getDescription(), 5000, "La description");
         CompanyProfiles oldCompanyProfiles = companyProfilesRepository.getReferenceById(id);
         if (!oldCompanyProfiles.getUser().getId().equals(authUserId)) {
             throw new ResponseStatusException(
@@ -155,6 +160,12 @@ public class UserService {
     }
 
     public LoginResponse login(String email, String password) {
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Email et mot de passe sont obligatoires"
+            );
+        }
         Users user = userRepository.findByEmail(email);
         
         if (user == null) {

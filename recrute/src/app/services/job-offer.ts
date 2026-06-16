@@ -5,7 +5,7 @@ import { JobOffer } from '../model/job-offer';
 
 @Injectable({ providedIn: 'root' })
 export class JobOfferService {
-  private apiUrl = 'http://localhost:8080';
+  private apiUrl = 'https://localhost';
 
   constructor(private http: HttpClient) {}
 

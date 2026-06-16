@@ -21,7 +21,7 @@ import com.techlance.recrute.Entities.Cvs;
 import com.techlance.recrute.Security.AuthenticatedUser;
 import com.techlance.recrute.Services.CvsService;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "https://localhost"})
 @RestController
 @RequestMapping("/users/candidate/{candidateId}")
 public class CvsController {

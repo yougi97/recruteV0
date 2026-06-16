@@ -9,7 +9,7 @@ import { User } from '../model/user';
 export class UserApi {
 
   private readonly httpClient = inject(HttpClient)
-  private readonly url = "http://localhost:8080/users";
+  private readonly url = "https://localhost/users";
 
   getUsers(): Observable<User[]> {
     return this.httpClient.get<User[]>('...');

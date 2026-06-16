@@ -9,7 +9,7 @@ import { CompanyProfiles } from './model/companyProfiles';
 })
 export class RecruteApi {
   private readonly httpClient = inject(HttpClient)
-  private readonly url = "http://localhost:8080"
+  private readonly url = "https://localhost"
 
   getCandidatebyId(id: number): Observable<CandidateProfiles> {
     return this.httpClient.get<CandidateProfiles>(`${this.url}/users/candidate/${id}`);

@@ -54,6 +54,24 @@ services:
     networks:
       - recrute-network
 
+  # Caddy reverse proxy (local HTTPS via self-signed cert)
+  caddy:
+    image: caddy:2-alpine
+    container_name: recrute-caddy
+    depends_on:
+      - backend
+      - frontend
+      - python-ai
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - recrute-network
+
   # Python AI Service (optional)
   python-ai:
     build:
@@ -73,6 +91,8 @@ services:
 
 volumes:
   mysql_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   recrute-network:

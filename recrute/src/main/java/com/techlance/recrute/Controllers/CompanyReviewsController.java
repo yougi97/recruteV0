@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "https://localhost"})
 @RestController
 @RequestMapping("/api")
 public class CompanyReviewsController {
@@ -94,6 +94,9 @@ public class CompanyReviewsController {
         if (reviewerUserId == null || rating == null || rating < 1 || rating > 5) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Champs invalides");
         }
+        if (comment != null && comment.length() > 2000) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le commentaire ne peut pas dépasser 2000 caractères");
+        }
         if (!authUser.userId().equals(reviewerUserId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non autorisé");
         }
@@ -129,6 +132,9 @@ public class CompanyReviewsController {
 
         if (rating == null || rating < 1 || rating > 5) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Champs invalides");
+        }
+        if (comment != null && comment.length() > 2000) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le commentaire ne peut pas dépasser 2000 caractères");
         }
 
         CompanyReviews review = reviewsRepo.findById(reviewId)
@@ -170,6 +176,12 @@ public class CompanyReviewsController {
         if (reporterUserId == null || jobTitle == null || jobTitle.isBlank()
                 || minSalary == null || maxSalary == null || minSalary < 0 || maxSalary < minSalary) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Champs invalides");
+        }
+        if (jobTitle.length() > 255) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le poste ne peut pas dépasser 255 caractères");
+        }
+        if (maxSalary > 10_000_000) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Salaire hors limites raisonnables");
         }
         if (!authUser.userId().equals(reporterUserId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non autorisé");

@@ -12,7 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.techlance.recrute.Services.MatchService;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "https://localhost"})
 @RestController
 @RequestMapping("/api/internal/match")
 public class InternalMatchController {

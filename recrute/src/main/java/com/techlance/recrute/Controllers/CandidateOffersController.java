@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.techlance.recrute.Enum.Rating;
 import com.techlance.recrute.Services.JobOfferService;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "https://localhost"})
 @RestController
 @RequestMapping("/users/candidate/{candidateId}")
 public class CandidateOffersController {

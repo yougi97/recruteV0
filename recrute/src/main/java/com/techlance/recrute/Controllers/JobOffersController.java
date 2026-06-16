@@ -17,7 +17,7 @@ import com.techlance.recrute.Entities.JobOffers;
 import com.techlance.recrute.Services.JobOfferService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "https://localhost"})
 @RequestMapping("/users/company/{companyId}/jobs")
 public class JobOffersController {
     private final JobOfferService jobOfferService;

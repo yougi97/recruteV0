@@ -34,6 +34,7 @@ import com.techlance.recrute.Repositories.CompanyProfilesRepository;
 import com.techlance.recrute.Repositories.CvsRepository;
 import com.techlance.recrute.Repositories.JobCategoriesRepository;
 import com.techlance.recrute.Repositories.JobOfferRepository;
+import com.techlance.recrute.Util.InputValidator;
 
 @Service
 public class JobOfferService {
@@ -68,6 +69,13 @@ public class JobOfferService {
     }
 
     public JobOffers creatJobOffers(JobOffers jobOffer, Long id) {
+        InputValidator.requireNonBlank(jobOffer.getTitle(), "Le titre de l'offre");
+        InputValidator.requireMaxLength(jobOffer.getTitle(), 255, "Le titre de l'offre");
+        InputValidator.requireMaxLength(jobOffer.getLocation(), 255, "La localisation");
+        InputValidator.requireMaxLength(jobOffer.getDescription(), 50000, "La description");
+        if (jobOffer.getAnneesExperienceMin() != 0f) {
+            InputValidator.requireRange(jobOffer.getAnneesExperienceMin(), 0, 60, "Les années d'expérience minimum");
+        }
         CompanyProfiles companyProfiles = companyProfilesRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Candidate not found"));
         jobOffer.setCompanyProfiles(companyProfiles);
@@ -142,7 +150,11 @@ public class JobOfferService {
         }).collect(Collectors.toList());
     }
 
+    private static final Set<String> APPLICATION_STATUSES =
+            Set.of("attente", "encours", "accepte", "refuse", "prospection");
+
     public void reviewApplication(Long companyId, Long jobId, Long applicationId, String status) {
+        InputValidator.requireOneOf(status, APPLICATION_STATUSES, "Le statut de la candidature");
         JobOffers jobOffer = getCompanyJobOffer(companyId, jobId);
         Applications app = applicationsRepository.findById(applicationId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidature introuvable"));
@@ -309,6 +321,8 @@ public class JobOfferService {
     }
 
     // Handles Python's snake_case payload: parsed_json (dict), embedding (base64), etc.
+    private static final int MAX_EMBEDDING_BYTES = 1_000_000;
+
     public JobOffers updateJobOfferFromPython(Long id, Map<String, Object> body) {
         JobOffers job = getJobOffer(id);
         try {
@@ -320,12 +334,25 @@ public class JobOfferService {
             }
             Object embeddingB64 = body.get("embedding");
             if (embeddingB64 != null) {
-                job.setEmbedding(java.util.Base64.getDecoder().decode((String) embeddingB64));
+                byte[] decoded = java.util.Base64.getDecoder().decode((String) embeddingB64);
+                if (decoded.length > MAX_EMBEDDING_BYTES) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Embedding trop volumineux");
+                }
+                job.setEmbedding(decoded);
             }
             Object enriched = body.get("enriched_description");
-            if (enriched != null) job.setEnrichedDescription((String) enriched);
+            if (enriched != null) {
+                InputValidator.requireMaxLength((String) enriched, 50000, "La description enrichie");
+                job.setEnrichedDescription((String) enriched);
+            }
             Object expMin = body.get("annees_experience_min");
-            if (expMin != null) job.setAnneesExperienceMin(((Number) expMin).floatValue());
+            if (expMin != null) {
+                float value = ((Number) expMin).floatValue();
+                InputValidator.requireRange(value, 0, 60, "Les années d'expérience minimum");
+                job.setAnneesExperienceMin(value);
+            }
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid payload: " + e.getMessage());
         }
@@ -336,14 +363,18 @@ public class JobOfferService {
         JobOffers oldjob=getJobOffer(id);
 
         if (job.getTitle()!=null) {
+            InputValidator.requireNonBlank(job.getTitle(), "Le titre de l'offre");
+            InputValidator.requireMaxLength(job.getTitle(), 255, "Le titre de l'offre");
             oldjob.setTitle(job.getTitle());
         }
 
         if(job.getDescription()!=null) {
+            InputValidator.requireMaxLength(job.getDescription(), 50000, "La description");
             oldjob.setDescription(job.getDescription());
         }
 
         if(job.getEnrichedDescription()!=null) {
+            InputValidator.requireMaxLength(job.getEnrichedDescription(), 50000, "La description enrichie");
             oldjob.setEnrichedDescription(job.getEnrichedDescription());
         }
 
@@ -360,10 +391,12 @@ public class JobOfferService {
         }
 
         if (job.getAnneesExperienceMin()!=0.0) {
+            InputValidator.requireRange(job.getAnneesExperienceMin(), 0, 60, "Les années d'expérience minimum");
             oldjob.setAnneesExperienceMin(job.getAnneesExperienceMin());
         }
 
         if (job.getLocation() != null) {
+            InputValidator.requireMaxLength(job.getLocation(), 255, "La localisation");
             oldjob.setLocation(job.getLocation());
         }
 
@@ -382,12 +415,16 @@ public class JobOfferService {
         JobOffers oldJob = getCompanyJobOffer(companyId, jobId);
 
         if (job.getTitle() != null) {
+            InputValidator.requireNonBlank(job.getTitle(), "Le titre de l'offre");
+            InputValidator.requireMaxLength(job.getTitle(), 255, "Le titre de l'offre");
             oldJob.setTitle(job.getTitle());
         }
         if (job.getDescription() != null) {
+            InputValidator.requireMaxLength(job.getDescription(), 50000, "La description");
             oldJob.setDescription(job.getDescription());
         }
         if (job.getLocation() != null) {
+            InputValidator.requireMaxLength(job.getLocation(), 255, "La localisation");
             oldJob.setLocation(job.getLocation());
         }
         if (job.getContractType() != null) {
