@@ -1,0 +1,208 @@
+<div class="offres-page">
+  <div class="offres-shell">
+    <div class="page-header">
+      <div class="eyebrow">
+        <span>🔍</span> Marché du travail
+      </div>
+      <h1>Toutes les <span class="highlight">offres d'emploi</span></h1>
+      <p>
+        Recherchez parmi l'ensemble des offres disponibles sur la plateforme.
+        Filtrez par contrat, lieu ou score de match pour trouver l'opportunité idéale.
+      </p>
+
+      <div class="header-meta">
+        <div class="meta-chip">📋 {{ totalCount }} offres disponibles</div>
+        <div class="meta-chip accent" *ngIf="activeCount !== totalCount">
+          ✦ {{ activeCount }} correspondent
+        </div>
+        <button class="refresh-btn" type="button" (click)="refreshOffers()">
+          {{ isRefreshing ? 'Actualisation...' : '↻ Rafraîchir' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="search-wrap">
+      <div class="search-bar" [class.has-value]="searchQuery">
+        <span class="search-icon">⌕</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher par titre, entreprise..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange()"
+        />
+        <button *ngIf="searchQuery" class="search-clear" (click)="searchQuery = ''; onSearchChange()">✕</button>
+      </div>
+    </div>
+
+    <app-filters-bar (filtersChange)="onFiltersChange($event)" />
+
+    <!-- Tri + vue toggle -->
+    <div class="sort-row">
+      <span class="sort-label">Trier par</span>
+      <button class="sort-btn" [class.on]="sortBy === 'match'"  (click)="setSortBy('match')">↓ Meilleur match</button>
+      <button class="sort-btn" [class.on]="sortBy === 'title'"  (click)="setSortBy('title')">A→Z Titre</button>
+      <button class="sort-btn" [class.on]="sortBy === 'recent'" (click)="setSortBy('recent')">Récent</button>
+      <div class="view-toggle">
+        <button class="view-btn" [class.on]="viewMode === 'grid'" (click)="setViewMode('grid')" title="Grille">⊞</button>
+        <button class="view-btn" [class.on]="viewMode === 'list'" (click)="setViewMode('list')" title="Liste">☰</button>
+      </div>
+    </div>
+
+    <!-- Tag actif -->
+    <div class="active-tag-row" *ngIf="selectedTag">
+      <span class="active-tag-chip">🏷 {{ selectedTag }} <button class="tag-clear" (click)="clearTag()">✕</button></span>
+    </div>
+
+    <div class="status-card" *ngIf="isLoading || isRefreshing">
+      <span>{{ isRefreshing ? 'Actualisation des offres...' : 'Chargement des offres...' }}</span>
+    </div>
+
+    <div class="status-card error" *ngIf="!isLoading && errorMessage">
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <div [class]="viewMode === 'grid' ? 'cards-grid' : 'cards-list'" *ngIf="!isLoading && !errorMessage && filteredOffers.length > 0">
+      <app-job-card
+        *ngFor="let offer of filteredOffers"
+        [offer]="offer"
+        [compact]="viewMode === 'list'"
+        [clickableTags]="true"
+        [highlightTag]="selectedTag"
+        [cvSkills]="cvSkills"
+        (tagClick)="onTagClick($event)"
+        (detail)="openDetail($event)"
+        (interested)="onInterested($event)"
+        (dismissed)="onDismissed($event)"
+      />
+    </div>
+
+    <div class="status-card empty" *ngIf="!isLoading && !errorMessage && !filteredOffers.length && !dismissedOffers.length">
+      <span>Aucune offre ne correspond aux critères sélectionnés.</span>
+    </div>
+
+    <!-- Offres ignorées -->
+    <div class="dismissed-section" *ngIf="!isLoading && dismissedOffers.length > 0">
+      <button class="dismissed-toggle" (click)="toggleDismissed()">
+        <span class="dismissed-arrow">{{ showDismissed ? '▾' : '▸' }}</span>
+        Offres ignorées
+        <span class="dismissed-count">{{ dismissedOffers.length }}</span>
+      </button>
+      <div class="dismissed-grid" *ngIf="showDismissed">
+        <app-job-card
+          *ngFor="let offer of dismissedOffers"
+          [offer]="offer"
+          (interested)="onInterested($event)"
+          (dismissed)="onDismissed($event)"
+        />
+      </div>
+    </div>
+
+    <div class="toast" [class.show]="toastVisible">
+      ✓ Offre sauvegardée !
+    </div>
+
+    <div class="toast toast-error" [class.show]="actionError">
+      {{ actionError }}
+    </div>
+  </div>
+</div>
+
+<!-- Drawer détail -->
+<div class="drawer-overlay" *ngIf="selectedOffer" (click)="closeDetail()">
+  <aside class="drawer" (click)="$event.stopPropagation()">
+    <button class="drawer-close" (click)="closeDetail()">✕</button>
+
+    <div class="drawer-body">
+      <div class="drawer-hero">
+        <a class="company-logo" [ngClass]="'color-' + selectedOffer.companyColor"
+           [routerLink]="selectedOffer.companyUserId ? ['/company-profile', selectedOffer.companyUserId] : null"
+           (click)="selectedOffer.companyUserId && closeDetail()"
+           [class.clickable]="!!selectedOffer.companyUserId">{{ selectedOffer.companyInitial }}</a>
+        <div>
+          <div class="drawer-title">{{ selectedOffer.title }}</div>
+          <a class="drawer-company"
+             [routerLink]="selectedOffer.companyUserId ? ['/company-profile', selectedOffer.companyUserId] : null"
+             (click)="selectedOffer.companyUserId && closeDetail()"
+             [class.drawer-company-link]="!!selectedOffer.companyUserId">{{ selectedOffer.company }}</a>
+          <div class="drawer-meta">📍 {{ selectedOffer.location }} · {{ selectedOffer.contractType }} · {{ selectedOffer.workMode }}</div>
+        </div>
+      </div>
+
+      <!-- Score breakdown -->
+      <div class="drawer-section">
+        <div class="dsec-label">Compatibilité</div>
+        <div class="drawer-main-score">
+          <div class="match-badge" [ngClass]="selectedOffer.matchLevel">{{ selectedOffer.matchScore }}% match</div>
+        </div>
+        <div class="subscores" *ngIf="selectedOffer.scoreDetail">
+          <div class="subscore-row">
+            <span class="subscore-name">Sémantique</span>
+            <div class="subscore-track"><div class="subscore-fill" [style.width.%]="pct(selectedOffer.scoreDetail.sem)"></div></div>
+            <span class="subscore-val">{{ pct(selectedOffer.scoreDetail.sem) }}%</span>
+          </div>
+          <div class="subscore-row">
+            <span class="subscore-name">Structurel</span>
+            <div class="subscore-track"><div class="subscore-fill" [style.width.%]="pct(selectedOffer.scoreDetail.str)"></div></div>
+            <span class="subscore-val">{{ pct(selectedOffer.scoreDetail.str) }}%</span>
+          </div>
+          <div class="subscore-row">
+            <span class="subscore-name">Analyse IA</span>
+            <div class="subscore-track"><div class="subscore-fill" [style.width.%]="pct(selectedOffer.scoreDetail.llm)"></div></div>
+            <span class="subscore-val">{{ pct(selectedOffer.scoreDetail.llm) }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags (metadata: contrat, lieu, etc.) -->
+      <div class="drawer-section" *ngIf="selectedOffer.tags?.length">
+        <div class="drawer-tags">
+          <span *ngFor="let tag of selectedOffer.tags" class="tag" [class.accent]="tag.accent">{{ tag.label }}</span>
+        </div>
+      </div>
+
+      <!-- Job skills with cv match highlight -->
+      <div class="drawer-section" *ngIf="selectedOffer.jobSkills?.length">
+        <div class="dsec-label">Compétences requises</div>
+        <div class="drawer-tags">
+          <span *ngFor="let s of selectedOffer.jobSkills"
+                class="tag"
+                [class.tag-match]="isJobSkillInCv(s.name)">
+            {{ s.name }}<span *ngIf="isJobSkillInCv(s.name)" class="tag-match-tick"> ✓</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="drawer-section" *ngIf="selectedOffer.description">
+        <div class="dsec-label">Description du poste</div>
+        <div class="drawer-desc">{{ selectedOffer.description }}</div>
+      </div>
+
+      <!-- AI reason -->
+      <div class="drawer-section" *ngIf="selectedOffer.aiReason && selectedOffer.aiReason !== selectedOffer.description">
+        <div class="dsec-label">✦ Pourquoi cette offre vous correspond</div>
+        <div class="drawer-ai-reason">{{ selectedOffer.aiReason }}</div>
+      </div>
+
+      <!-- CV skills -->
+      <div class="drawer-section" *ngIf="cvSkills.length > 0">
+        <div class="dsec-label">Ce que l'IA a retenu de votre CV</div>
+        <div class="drawer-cv-skills">
+          <div class="cv-skill-chip" *ngFor="let s of cvSkills" [ngClass]="'lvl-' + s.level">
+            <span>{{ s.name }}</span>
+            <span class="skill-lvl-badge">{{ s.level }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn-interest btn-yes" style="flex:1" [class.sent]="selectedOffer.status === 'interested'" [disabled]="selectedOffer.status !== 'pending'" (click)="onInterested(selectedOffer)">
+        <ng-container *ngIf="selectedOffer.status !== 'interested'">→ Je suis intéressé(e)</ng-container>
+        <ng-container *ngIf="selectedOffer.status === 'interested'">✓ Intérêt envoyé</ng-container>
+      </button>
+    </div>
+  </aside>
+</div>

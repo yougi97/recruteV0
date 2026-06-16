@@ -1,0 +1,16 @@
+FROM maven:3.9.4-eclipse-temurin-17
+
+WORKDIR /app
+
+# Copy pom.xml and download dependencies
+COPY pom.xml .
+RUN mvn dependency:resolve
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+RUN mvn clean package -DskipTests
+
+# Run the application
+CMD ["mvn", "spring-boot:run"]

@@ -1,0 +1,17 @@
+<section class="team-section">
+  <div class="section-header">
+    <div class="eyebrow">✦ L'équipe</div>
+    <h2>Celles et ceux qui construisent RECRUTE</h2>
+  </div>
+
+  <div class="team-grid">
+    <div class="member-card" *ngFor="let m of members">
+      <div class="avatar" [ngClass]="'color-' + m.color">{{ m.initials }}</div>
+      <div class="member-info">
+        <div class="member-name">{{ m.name }}</div>
+        <div class="member-role">{{ m.role }}</div>
+        <p class="member-desc">{{ m.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>

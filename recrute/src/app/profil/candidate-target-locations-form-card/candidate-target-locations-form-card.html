@@ -1,0 +1,16 @@
+<div class="candidate-card">
+  <div class="header-row">
+    <h3>Modifier localisations cibles</h3>
+    <button type="button" class="close-btn" (click)="onCancel()">✕</button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+    <label>Localisations (séparées par des virgules)</label>
+    <input type="text" formControlName="locations" placeholder="Paris, Lyon, Remote" />
+
+    <div class="actions">
+      <button type="button" class="btn-secondary" (click)="onCancel()">Annuler</button>
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">Enregistrer</button>
+    </div>
+  </form>
+</div>

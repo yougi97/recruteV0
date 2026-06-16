@@ -1,0 +1,378 @@
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">
+    <div class="eyebrow-line"></div>
+    Intelligence Artificielle
+  </div>
+  <h1>Vos offres &amp; candidats correspondants</h1>
+  <p>Consultez vos offres actives et découvrez les candidats classés par compatibilité IA. Cliquez sur une offre pour voir les profils qui correspondent.</p>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-icon">📋</span>
+      <span class="hero-stat-val">{{ totalOffers }}</span>
+      <span class="hero-stat-label">offres publiées</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-icon">✅</span>
+      <span class="hero-stat-val">{{ activeOffers }}</span>
+      <span class="hero-stat-label">offres actives</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-icon">👥</span>
+      <span class="hero-stat-val">{{ selectedCandidates.length }}</span>
+      <span class="hero-stat-label">candidatures reçues</span>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-bar">
+  <span class="filter-label">Filtrer :</span>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'all'" [class.filter-inactive]="activeFilter !== 'all'" (click)="setFilter('all')">Toutes</button>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'active'" [class.filter-inactive]="activeFilter !== 'active'" (click)="setFilter('active')">Actives</button>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'inactive'" [class.filter-inactive]="activeFilter !== 'inactive'" (click)="setFilter('inactive')">Inactives</button>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'cdi'" [class.filter-inactive]="activeFilter !== 'cdi'" (click)="setFilter('cdi')">CDI</button>
+  <button class="filter-chip" [class.filter-active]="activeFilter === 'stage'" [class.filter-inactive]="activeFilter !== 'stage'" (click)="setFilter('stage')">Stage / Alternance</button>
+</div>
+
+<!-- LOADING -->
+<div class="grid" *ngIf="loading">
+  <div class="empty-state" style="grid-column: 1 / -1;">
+    <div class="empty-icon">⏳</div>
+    <div class="empty-title">Chargement des offres...</div>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div class="grid" *ngIf="!loading && error">
+  <div class="empty-state" style="grid-column: 1 / -1;">
+    <div class="empty-icon">❌</div>
+    <div class="empty-title">{{ error }}</div>
+  </div>
+</div>
+
+<!-- OFFERS GRID -->
+<div class="grid" *ngIf="!loading && !error">
+
+  <!-- Empty -->
+  <div class="empty-state" style="grid-column: 1 / -1;" *ngIf="filteredOffers.length === 0">
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">Aucune offre dans cette catégorie</div>
+  </div>
+
+  <!-- Cards -->
+  <div class="offer-card"
+       *ngFor="let offer of filteredOffers"
+       [class.selected]="selectedOffer?.id === offer.id"
+       (click)="openPanel(offer)">
+
+    <div class="card-top">
+      <div class="card-icon" [style.background]="offer.is_active ? 'rgba(26,95,248,0.15)' : 'rgba(255,255,255,0.05)'" [style.color]="offer.is_active ? '#5b8ef8' : 'var(--text-muted)'">
+        {{ getCardInitials(offer.title) }}
+      </div>
+      <div class="card-badge" [class.badge-active]="offer.is_active" [class.badge-inactive]="!offer.is_active">
+        <div class="badge-dot"></div>
+        {{ offer.is_active ? 'Active' : 'Inactive' }}
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="card-title" [style.color]="offer.is_active ? 'var(--text-primary)' : 'var(--text-secondary)'">
+        {{ offer.title }}
+      </div>
+      <div class="card-company">{{ companyName }}</div>
+      <div class="card-meta">
+        <span>📍 {{ offer.location || 'Remote' }}</span>
+        <div class="meta-dot"></div>
+        <span>{{ offer.contract_type || 'CDI' }}</span>
+      </div>
+      <div class="card-stats">
+        <div class="stat-box">
+          <span class="stat-num cyan">{{ offer.applicationCount ?? 0 }}</span>
+          <span class="stat-label">Candidatures</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" style="color:var(--green);">
+            {{ selectedOffer?.id === offer.id ? highMatchCount : '—' }}
+          </span>
+          <span class="stat-label">Match ≥ 85%</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" style="color:var(--gold);">{{ getDaysOnline(offer.created_at) }}j</span>
+          <span class="stat-label">En ligne</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <button class="btn-primary-card"
+              [style.opacity]="offer.is_active ? '1' : '0.5'"
+              [style.cursor]="offer.is_active ? 'pointer' : 'default'"
+              (click)="$event.stopPropagation(); openPanel(offer)">
+        {{ offer.is_active ? 'Voir les candidats →' : 'Offre désactivée' }}
+      </button>
+      <button class="btn-ghost-card" (click)="$event.stopPropagation()">✎</button>
+    </div>
+  </div>
+</div>
+
+<!-- CV VIEWER MODAL -->
+<div class="cv-modal-backdrop" *ngIf="cvViewUrl" (click)="closeCvModal()">
+  <div class="cv-modal" (click)="$event.stopPropagation()">
+    <div class="cv-modal-header">
+      <span class="cv-modal-title">Visualisation du CV</span>
+      <button class="cv-modal-close" (click)="closeCvModal()">✕</button>
+    </div>
+    <iframe class="cv-modal-frame" [src]="cvViewUrl" type="application/pdf"></iframe>
+  </div>
+</div>
+
+<!-- PANEL OVERLAY -->
+<div class="panel-overlay" [class.open]="panelOpen" (click)="closePanel()">
+  <div class="panel" (click)="$event.stopPropagation()">
+
+    <div class="panel-header">
+      <div class="panel-title-row">
+        <div class="panel-title">{{ selectedOffer?.title }}</div>
+        <button class="panel-close" (click)="closePanel()">✕</button>
+      </div>
+      <div class="panel-tabs">
+        <button class="panel-tab" [class.tab-active]="panelTab === 'top'" (click)="panelTab = 'top'">
+          ✦ Top IA
+        </button>
+        <button class="panel-tab" [class.tab-active]="panelTab === 'applications'" (click)="panelTab = 'applications'">
+          📋 Candidatures
+          <span class="tab-count" *ngIf="selectedCandidates.length > 0">{{ selectedCandidates.length }}</span>
+        </button>
+        <button class="btn-refresh" (click)="refreshTopScores()" [disabled]="refreshingScores" title="Recalculer les scores IA pour tous les candidats">
+          <span *ngIf="!refreshingScores">↻</span>
+          <span *ngIf="refreshingScores" class="spin">↻</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB: TOP IA -->
+    <div class="panel-body" *ngIf="panelTab === 'top'">
+
+      <!-- Computing banner: shown while Python AI is scoring -->
+      <div class="computing-banner" *ngIf="computingScores">
+        <div class="computing-pulse"></div>
+        <div class="computing-text">
+          <div class="computing-title">Analyse IA en cours…</div>
+          <div class="computing-sub">Les scores sont calculés en arrière-plan. Cela prend quelques secondes.</div>
+        </div>
+        <div class="computing-bars">
+          <div class="cbar cbar-1"></div>
+          <div class="cbar cbar-2"></div>
+          <div class="cbar cbar-3"></div>
+          <div class="cbar cbar-4"></div>
+          <div class="cbar cbar-5"></div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!computingScores && loadingTop">
+        <div class="empty-icon">⏳</div>
+        <div class="empty-title">Chargement des résultats…</div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loadingTop && topError">
+        <div class="empty-icon">❌</div>
+        <div class="empty-title">{{ topError }}</div>
+      </div>
+
+      <div class="empty-state" *ngIf="!computingScores && !loadingTop && !topError && topCandidates.length === 0">
+        <div class="empty-icon">🔎</div>
+        <div class="empty-title">Aucun candidat scoré pour cette offre</div>
+        <div class="empty-sub">Les scores IA apparaissent dès qu'un candidat postule.</div>
+      </div>
+
+      <div class="premium-banner" *ngIf="!computingScores && !loadingTop && !topError && topCandidates.length > 0">
+        <div class="premium-icon">🔒</div>
+        <div class="premium-text">
+          <h4>Accès limité — 5 profils gratuits</h4>
+          <p>Débloquez tous les candidats correspondants et recevez des alertes en temps réel.</p>
+        </div>
+        <button class="btn-premium">Passer Premium</button>
+      </div>
+
+      <ng-container *ngIf="!computingScores">
+        <div class="cand-card" *ngFor="let c of topCandidates; let i = index">
+          <div class="cand-top">
+            <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
+            <div class="cand-info">
+              <div class="cand-name-row">
+                <span class="cand-name">#{{ i + 1 }} {{ c.name }}</span>
+                <span class="applied-badge" *ngIf="c.applied">✓ A postulé</span>
+              </div>
+              <div class="cand-role">{{ c.role }}</div>
+              <div class="cand-meta">
+                <span>📍 {{ c.location }}</span>
+                <span>·</span>
+                <span>Exp. : {{ c.dispo }}</span>
+              </div>
+            </div>
+            <div class="match-badge" [ngClass]="getMatchClass(c.match)">
+              {{ getMatchArrow(c.match) }} {{ c.match }}% match
+            </div>
+          </div>
+
+          <div class="compat-row">
+            <span class="compat-label">Score global</span>
+            <div class="compat-bar">
+              <div class="compat-fill" [ngClass]="getFillClass(c.match)" [style.width.%]="c.match"></div>
+            </div>
+            <span class="compat-val" [style.color]="getFillColor(c.match)">{{ c.match }}%</span>
+          </div>
+
+          <div class="score-breakdown" *ngIf="c.scoreSemantique !== undefined || c.scoreStructure !== undefined || c.scoreLlm !== undefined">
+            <div class="score-row">
+              <span class="score-lbl">Sémantique</span>
+              <div class="score-bar-wrap">
+                <div class="score-bar">
+                  <div class="score-fill fill-cyan" [style.width.%]="(c.scoreSemantique ?? 0) * 100"></div>
+                </div>
+              </div>
+              <span class="score-num">{{ ((c.scoreSemantique ?? 0) * 100) | number:'1.0-0' }}%</span>
+            </div>
+            <div class="score-row">
+              <span class="score-lbl">Structurel</span>
+              <div class="score-bar-wrap">
+                <div class="score-bar">
+                  <div class="score-fill fill-gold" [style.width.%]="(c.scoreStructure ?? 0) * 100"></div>
+                </div>
+              </div>
+              <span class="score-num">{{ ((c.scoreStructure ?? 0) * 100) | number:'1.0-0' }}%</span>
+            </div>
+            <div class="score-row">
+              <span class="score-lbl">LLM</span>
+              <div class="score-bar-wrap">
+                <div class="score-bar">
+                  <div class="score-fill fill-green" [style.width.%]="(c.scoreLlm ?? 0) * 100"></div>
+                </div>
+              </div>
+              <span class="score-num">{{ ((c.scoreLlm ?? 0) * 100) | number:'1.0-0' }}%</span>
+            </div>
+          </div>
+
+          <div class="cand-skills-section" *ngIf="c.cvSkills && c.cvSkills.length > 0">
+            <div class="skills-label">
+              Compétences
+              <span class="skills-match-count" *ngIf="countMatchingSkills(c) > 0">
+                · {{ countMatchingSkills(c) }} en commun avec l'offre
+              </span>
+            </div>
+            <div class="skills-chips">
+              <span class="cand-skill-tag"
+                    *ngFor="let s of c.cvSkills.slice(0, 10)"
+                    [attr.data-level]="s.level"
+                    [class.skill-match]="isSkillInOffer(s.name)">
+                {{ s.name }}<span class="skill-match-tick" *ngIf="isSkillInOffer(s.name)">✓</span>
+              </span>
+              <span class="cand-skill-more" *ngIf="c.cvSkills.length > 10">+{{ c.cvSkills.length - 10 }}</span>
+            </div>
+          </div>
+
+          <div class="cand-actions">
+            <button class="btn-interested"
+                    *ngIf="!c.applied"
+                    [disabled]="c.companyInterested"
+                    (click)="markInterest(c)">
+              {{ c.companyInterested ? '✓ Intérêt marqué' : '★ Marquer comme intéressé' }}
+            </button>
+            <button class="btn-view-cv" *ngIf="c.userId" (click)="viewCv(c)">
+              Voir le CV
+            </button>
+            <a class="btn-view-profile" *ngIf="c.userId" [routerLink]="['/candidate-profile', c.userId]" target="_blank">
+              Voir le profil →
+            </a>
+            <button class="btn-skip" *ngIf="!c.applied">✕ Passer</button>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+
+    <!-- TAB: CANDIDATURES -->
+    <div class="panel-body" *ngIf="panelTab === 'applications'">
+
+      <div class="empty-state" *ngIf="loadingCandidates">
+        <div class="empty-icon">⏳</div>
+        <div class="empty-title">Chargement des candidatures...</div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loadingCandidates && candidatesError">
+        <div class="empty-icon">❌</div>
+        <div class="empty-title">{{ candidatesError }}</div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loadingCandidates && !candidatesError && selectedCandidates.length === 0">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">Aucune candidature pour cette offre</div>
+      </div>
+
+      <div class="app-card-wrap" *ngFor="let c of selectedCandidates; let i = index">
+        <div class="app-card">
+          <div class="app-card-left">
+            <div class="cand-avatar" [style.background]="c.bg" [style.color]="c.color">{{ c.initials }}</div>
+            <div class="cand-info">
+              <div class="cand-name">{{ c.name }}</div>
+              <div class="cand-role">{{ c.role }}</div>
+              <div class="cand-meta">
+                <span>📍 {{ c.location }}</span>
+                <span>·</span>
+                <span>Exp. : {{ c.dispo }}</span>
+                <ng-container *ngIf="c.appliedAt">
+                  <span>·</span>
+                  <span>{{ c.appliedAt | date:'dd/MM/yyyy' }}</span>
+                </ng-container>
+              </div>
+              <div class="cand-skills" *ngIf="c.cvSkills && c.cvSkills.length > 0">
+                <span class="cand-skill-tag"
+                      *ngFor="let s of c.cvSkills.slice(0, 8)"
+                      [attr.data-level]="s.level"
+                      [class.skill-match]="isSkillInOffer(s.name)">
+                  {{ s.name }}<span class="skill-match-tick" *ngIf="isSkillInOffer(s.name)">✓</span>
+                </span>
+                <span class="cand-skill-more" *ngIf="c.cvSkills.length > 8">+{{ c.cvSkills.length - 8 }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="app-card-right">
+            <div class="match-badge" [ngClass]="getMatchClass(c.match)">
+              {{ getMatchArrow(c.match) }} {{ c.match }}%
+            </div>
+            <div class="app-status" [ngClass]="getStatusClass(c.applicationStatus)">
+              {{ getStatusLabel(c.applicationStatus) }}
+            </div>
+            <button class="btn-view-cv btn-sm" *ngIf="c.userId" (click)="viewCv(c)">CV</button>
+            <a class="btn-view-profile btn-sm" *ngIf="c.userId" [routerLink]="['/candidate-profile', c.userId]" target="_blank">
+              Profil →
+            </a>
+            <button class="btn-interested btn-sm"
+                    *ngIf="c.applicationStatus !== 'accepte'"
+                    (click)="reviewApp(c, 'accepte')">✓ Accepter</button>
+            <button class="btn-skip btn-sm"
+                    *ngIf="c.applicationStatus !== 'refuse'"
+                    (click)="reviewApp(c, 'refuse')">✗ Refuser</button>
+            <button class="btn-chat-sm" *ngIf="c.userId"
+              [class.active]="openChatCandidateUserId === c.userId"
+              (click)="toggleCandidateChat(c.userId!)">
+              💬 {{ openChatCandidateUserId === c.userId ? 'Fermer' : 'Messagerie' }}
+            </button>
+          </div>
+        </div>
+        <app-chat
+          *ngIf="openChatCandidateUserId === c.userId && c.userId && selectedOffer"
+          [offerId]="selectedOffer!.id"
+          [myUserId]="myCompanyUserId"
+          [otherUserId]="c.userId!"
+          [otherName]="c.name"
+        />
+      </div>
+
+    </div>
+  </div>
+</div>

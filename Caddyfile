@@ -1,0 +1,17 @@
+localhost {
+	tls internal
+
+	@backend path /users/* /api/* /public/* /uploads/*
+	handle @backend {
+		reverse_proxy backend:8080
+	}
+
+	@pythonAi path /parse-cv /score-cv
+	handle @pythonAi {
+		reverse_proxy python-ai:5000
+	}
+
+	handle {
+		reverse_proxy frontend:4200
+	}
+}

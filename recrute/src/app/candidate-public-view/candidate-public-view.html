@@ -1,0 +1,67 @@
+<div class="cpv-page">
+  <div class="cpv-shell">
+
+    <div class="cpv-state" *ngIf="loading">
+      <div class="cpv-state-icon">⏳</div>
+      <div>Chargement du profil…</div>
+    </div>
+
+    <div class="cpv-state cpv-state-error" *ngIf="!loading && error">
+      <div class="cpv-state-icon">⚠️</div>
+      <div>{{ error }}</div>
+    </div>
+
+    <ng-container *ngIf="!loading && !error && profile">
+
+      <!-- Header -->
+      <div class="cpv-header">
+        <div class="cpv-avatar">{{ initials(fullName) }}</div>
+        <div class="cpv-header-info">
+          <h1 class="cpv-name">{{ fullName }}</h1>
+          <div class="cpv-title" *ngIf="profile.title">{{ profile.title }}</div>
+          <div class="cpv-meta-chips">
+            <span class="cpv-chip" *ngIf="profile.location">📍 {{ profile.location }}</span>
+            <span class="cpv-chip" *ngIf="profile.anneesExperience">🕐 {{ profile.anneesExperience }} ans d'exp.</span>
+            <span class="cpv-chip" *ngIf="profile.niveauEtudes">🎓 {{ profile.niveauEtudes }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact row -->
+      <div class="cpv-card cpv-contact-row" *ngIf="profile.user?.email || targetLocations.length > 0">
+        <div class="cpv-contact-item" *ngIf="profile.user?.email">
+          <span class="cpv-contact-label">Email</span>
+          <a class="cpv-contact-value cpv-email" [href]="'mailto:' + profile.user.email">{{ profile.user.email }}</a>
+        </div>
+        <div class="cpv-contact-item" *ngIf="targetLocations.length > 0">
+          <span class="cpv-contact-label">Mobilité</span>
+          <div class="cpv-location-chips">
+            <span class="cpv-loc-chip" *ngFor="let loc of targetLocations">{{ loc }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="cpv-card" *ngIf="profile.bio">
+        <div class="cpv-section-label">À propos</div>
+        <p class="cpv-bio">{{ profile.bio }}</p>
+      </div>
+
+      <!-- CV Skills -->
+      <div class="cpv-card" *ngIf="cvSkills.length > 0">
+        <div class="cpv-section-label">Compétences détectées par l'IA</div>
+        <div class="cpv-skills">
+          <span class="cpv-skill-tag" *ngFor="let s of cvSkills" [attr.data-level]="s.level">
+            {{ s.name }}
+            <span class="cpv-skill-lvl" *ngIf="s.level">{{ s.level }}</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="cpv-no-skills" *ngIf="!loadingCv && cvSkills.length === 0">
+        <span>Aucun CV analysé pour ce candidat.</span>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

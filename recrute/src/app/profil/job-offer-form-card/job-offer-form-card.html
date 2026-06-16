@@ -1,0 +1,31 @@
+<div class="offer-card">
+  <div class="offer-card-header">
+    <h3>{{ cardTitle }}</h3>
+    <button type="button" class="close-btn" (click)="onCancel()">✕</button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="offer-form">
+    <label>Titre du poste</label>
+    <input type="text" formControlName="title" placeholder="Ex: Développeur Full-Stack" />
+
+    <label>Description</label>
+    <textarea rows="4" formControlName="description" placeholder="Décris la mission, le contexte et les attentes"></textarea>
+
+    <label>Localisation</label>
+    <input type="text" formControlName="location" placeholder="Ex: Paris / Remote" />
+
+    <label>Type de contrat</label>
+    <select formControlName="contractType">
+      <option value="CDI">CDI</option>
+      <option value="CDD">CDD</option>
+      <option value="freelance">Freelance</option>
+      <option value="stage">Stage</option>
+      <option value="alternance">Alternance</option>
+    </select>
+
+    <div class="actions">
+      <button type="button" class="btn-secondary" (click)="onCancel()">Annuler</button>
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">{{ submitLabel }}</button>
+    </div>
+  </form>
+</div>

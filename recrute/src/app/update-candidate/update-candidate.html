@@ -1,0 +1,33 @@
+<h1>Modification du Profil</h1>
+<div>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input class="form-control" type="text" id="email" name="email" [(ngModel)]="email">
+    </div>
+    <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input class="form-control" type="password" id="password" name="password" [(ngModel)]="password">
+    </div>
+    <div class="form-group">
+        <label for="firstName">Prenom</label>
+        <input class="form-control" type="text" id="firstName" name="firstName" [(ngModel)]="firstName">
+    </div>
+    <div class="form-group">
+        <label for="lastName">Nom de famille</label>
+        <input class="form-control" type="text" id="lastName" name="lastName" [(ngModel)]="lastName">
+    </div>
+    <div class="form-group">
+        <label for="title">Titre</label>
+        <input class="form-control" type="text" id="title" name="title" [(ngModel)]="title">
+    </div>
+    <div class="form-group">
+        <label for="location">Ville</label>
+        <input class="form-control" type="text" id="location" name="location" [(ngModel)]="location">
+    </div>
+    <div class="form-group">
+        <label for="bio">Bio</label>
+        <input class="form-control" type="text" id="bio" name="bio" [(ngModel)]="bio">
+    </div>
+
+</div>
+<button class="btn btn-primary" (click)="updateCandidate(candidate()!)">Ok</button>

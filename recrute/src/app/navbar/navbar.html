@@ -1,0 +1,39 @@
+<nav class="navbar">
+  <div class="nav-left">
+    <a class="brand-link" routerLink="/">
+      <img src="/icon..png" class="logo" />
+      <span class="brand">RECRUTE</span>
+    </a>
+  </div>
+
+  <div class="nav-links">
+    <a href="#">Contactez-nous</a>
+    <a routerLink="/about">À Propos</a>
+    <ng-container *ngIf="!isLoggedIn(); else loggedInBlock">
+      <button class="home-btn" routerLink="/">Home</button>
+      <button class="login-btn" routerLink="/login">Connexion</button>
+    </ng-container>
+    <ng-template #loggedInBlock>
+      <div class="user-section">
+        <ng-container *ngIf="authService.getCurrentUserType() === 'candidate'">
+          <button class="nav-pill" routerLink="/candidat">
+            <span class="dot"></span> Mes suggestions IA
+          </button>
+          <button class="nav-pill secondary" routerLink="/offres">
+            🔍 Toutes les offres
+          </button>
+          <button class="nav-pill secondary" routerLink="/mes-candidatures">
+            📋 Mes candidatures
+          </button>
+        </ng-container>
+        <button class="profile-btn" routerLink="/profil">Profil</button>
+        <button *ngIf="authService.getCurrentUserType() === 'company'" class="profile-btn" routerLink="/company-offers">Candidatures</button>
+        <button class="nav-pill secondary" routerLink="/messagerie">
+          💬 Messagerie
+        </button>
+        <span class="user-email">{{ getCurrentUser() }}</span>
+        <button class="logout-btn" (click)="logout()">Déconnexion</button>
+      </div>
+    </ng-template>
+  </div>
+</nav>

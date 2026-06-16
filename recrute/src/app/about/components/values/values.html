@@ -1,0 +1,14 @@
+<section class="values-section">
+  <div class="section-header">
+    <div class="eyebrow">✦ Nos engagements</div>
+    <h2>Ce en quoi nous croyons</h2>
+  </div>
+
+  <div class="values-grid">
+    <div class="value-card" *ngFor="let v of values" [ngClass]="'accent-' + v.color">
+      <div class="value-icon">{{ v.icon }}</div>
+      <h3>{{ v.title }}</h3>
+      <p>{{ v.description }}</p>
+    </div>
+  </div>
+</section>

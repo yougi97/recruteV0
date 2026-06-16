@@ -1,0 +1,276 @@
+:host {
+  display: block;
+  min-height: calc(100vh - 70px);
+  background: linear-gradient(135deg, #151f35 0%, #1e3058 40%, #284574 70%, #375674 100%);
+  color: #fff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+:host, :host * { box-sizing: border-box; }
+
+$border: rgba(255,255,255,0.12);
+$card-bg: rgba(255,255,255,0.07);
+$card-hover: rgba(255,255,255,0.11);
+$text-sec: rgba(255,255,255,0.65);
+$text-muted: rgba(255,255,255,0.40);
+$cyan: #38bdf8;
+$green: #22d3a0;
+$gold: #f5b942;
+$red: #ff6b6b;
+$purple: #9b77f5;
+
+.page { padding: 0 1rem 3rem; }
+
+.shell {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+// ── HERO ───────────────────────────────────────────────
+.hero {
+  padding: 2.5rem 0 1.5rem;
+
+  .eyebrow {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    color: $cyan; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .eyebrow-line { width: 20px; height: 1px; background: $cyan; }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem; font-weight: 700; margin-bottom: 8px;
+    .highlight { color: $cyan; }
+  }
+
+  p {
+    font-size: 15px; color: $text-sec;
+    max-width: 540px; line-height: 1.6; margin-bottom: 1.5rem;
+  }
+}
+
+.hero-stats {
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+
+.stat-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid $border;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+
+  .stat-icon { font-size: 14px; }
+  .stat-val { font-weight: 700; color: #fff; }
+  .stat-lbl { color: $text-sec; }
+}
+
+// ── STATES ─────────────────────────────────────────────
+.state-block {
+  text-align: center;
+  padding: 3rem 1rem;
+
+  .state-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .state-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 6px; }
+  .state-sub { font-size: 14px; color: $text-sec; margin-bottom: 1.2rem; }
+}
+
+.btn-explore {
+  display: inline-block;
+  background: rgba(56,189,248,0.15);
+  border: 1px solid rgba(56,189,248,0.35);
+  color: $cyan;
+  padding: 9px 20px;
+  border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+  &:hover { background: rgba(56,189,248,0.25); }
+}
+
+// ── LIST ───────────────────────────────────────────────
+.cand-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cand-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 16px 20px;
+  transition: background 0.2s, border-color 0.2s;
+
+  &:hover {
+    background: $card-hover;
+    border-color: rgba(255,255,255,0.2);
+  }
+}
+
+.card-left {
+  flex-shrink: 0;
+}
+
+.company-avatar {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700;
+}
+
+.card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 15px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.card-company {
+  font-size: 13px; color: $text-sec; margin-bottom: 4px;
+}
+
+.card-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: $text-muted; flex-wrap: wrap;
+  .dot { opacity: 0.4; }
+}
+
+.card-right {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+// ── STATUS BADGES ──────────────────────────────────────
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  &.status-attente {
+    background: rgba(245,185,66,0.15);
+    color: $gold;
+    border: 1px solid rgba(245,185,66,0.3);
+  }
+  &.status-encours {
+    background: rgba(56,189,248,0.15);
+    color: $cyan;
+    border: 1px solid rgba(56,189,248,0.3);
+  }
+  &.status-accepte {
+    background: rgba(34,211,160,0.15);
+    color: $green;
+    border: 1px solid rgba(34,211,160,0.3);
+  }
+  &.status-refuse {
+    background: rgba(255,107,107,0.12);
+    color: $red;
+    border: 1px solid rgba(255,107,107,0.25);
+  }
+}
+
+// ── RETRACT BUTTON ─────────────────────────────────────
+.btn-retract {
+  background: transparent;
+  border: 1px solid rgba(255,107,107,0.35);
+  color: $red;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+
+  &:hover:not(:disabled) {
+    background: rgba(255,107,107,0.12);
+    border-color: rgba(255,107,107,0.5);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+// ── CHAT BUTTON ────────────────────────────────────────
+.btn-chat {
+  background: transparent;
+  border: 1px solid rgba(56,189,248,0.35);
+  color: #38bdf8;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+
+  &:hover {
+    background: rgba(56,189,248,0.1);
+    border-color: rgba(56,189,248,0.55);
+  }
+
+  &.active {
+    background: rgba(56,189,248,0.15);
+    border-color: rgba(56,189,248,0.6);
+  }
+}
+
+.cand-card-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+// ── INTERESTED SECTION ─────────────────────────────────
+.section-block {
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.section-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.interested-dot { background: $gold; box-shadow: 0 0 6px rgba(245,185,66,0.5); }
+
+.section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem; font-weight: 600; color: #fff; margin: 0;
+}
+
+.section-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(245,185,66,0.2); color: $gold;
+  font-size: 11px; font-weight: 700; margin-left: 6px;
+}
+
+.interested-card {
+  border-color: rgba(245,185,66,0.2);
+  background: rgba(245,185,66,0.04);
+}
+
+.interested-badge {
+  background: rgba(245,185,66,0.15);
+  color: $gold;
+  border: 1px solid rgba(245,185,66,0.3);
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase;
+}

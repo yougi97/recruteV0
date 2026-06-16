@@ -1,0 +1,125 @@
+<!-- Normal mode -->
+<div
+  *ngIf="!compact"
+  class="job-card"
+  [class.match-high]="offer?.matchLevel === 'high'"
+  [class.match-mid]="offer?.matchLevel === 'mid'"
+  [class.match-low]="offer?.matchLevel === 'low'"
+  [class.is-dismissed]="offer?.status === 'dismissed'"
+>
+  <div class="card-top">
+    <a class="company-logo" [ngClass]="'color-' + offer?.companyColor"
+       [routerLink]="offer?.companyUserId ? ['/company-profile', offer!.companyUserId] : null"
+       (click)="$event.stopPropagation()"
+       [class.clickable]="!!offer?.companyUserId">
+      {{ offer?.companyInitial }}
+    </a>
+    <div class="match-badge" [ngClass]="offer?.matchLevel">
+      {{ matchIcon }} {{ offer?.matchScore }}% match
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="job-title" (click)="onDetail()" style="cursor:pointer">{{ offer?.title }}</div>
+    <a class="company-name"
+       [routerLink]="offer?.companyUserId ? ['/company-profile', offer!.companyUserId] : null"
+       (click)="$event.stopPropagation()"
+       [class.company-link]="!!offer?.companyUserId">{{ offer?.company }}</a>
+    <div class="job-location">
+      📍 {{ offer?.location }} · {{ offer?.contractType }} · {{ offer?.workMode }}
+    </div>
+  </div>
+
+  <div class="tags">
+    <span
+      *ngFor="let tag of offer?.tags"
+      class="tag"
+      [class.accent]="tag.accent"
+      [class.selected]="tag.label === highlightTag"
+      [style.cursor]="clickableTags ? 'pointer' : 'default'"
+      (click)="onTagClick(tag.label)"
+    >
+      {{ tag.label }}
+    </span>
+  </div>
+
+  <div class="match-bar-wrap">
+    <div class="match-bar-label">
+      <span>Compatibilité profil</span>
+      <span>{{ offer?.matchScore }}%</span>
+    </div>
+    <div class="match-bar-track">
+      <div
+        class="match-bar-fill"
+        [ngClass]="offer?.matchLevel"
+        [style.width.%]="offer?.matchScore"
+      ></div>
+    </div>
+  </div>
+
+  <div class="ai-reason" *ngIf="offer?.aiReason || matchingSkills.length > 0">
+    <strong>✦ Pourquoi l'IA vous suggère cette offre</strong>
+    <span class="ai-reason-text" *ngIf="offer?.aiReason">{{ offer?.aiReason }}</span>
+    <div class="matching-skills" *ngIf="matchingSkills.length > 0">
+      <span class="matching-label">Compétences en commun</span>
+      <div class="matching-chips">
+        <span *ngFor="let s of matchingSkills" class="matching-chip" [ngClass]="'lvl-' + s.level">
+          ✓ {{ s.label }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-actions">
+    <button
+      class="btn-interest btn-yes"
+      [class.sent]="offer?.status === 'interested'"
+      [disabled]="offer?.status !== 'pending'"
+      (click)="onInterest()"
+    >
+      <ng-container *ngIf="offer?.status !== 'interested'">→ Je suis intéressé(e)</ng-container>
+      <ng-container *ngIf="offer?.status === 'interested'">✓ Intérêt envoyé</ng-container>
+    </button>
+
+    <button
+      class="btn-interest btn-no"
+      [class.dismissed]="offer?.status === 'dismissed'"
+      [disabled]="offer?.status !== 'pending'"
+      (click)="onDismiss()"
+    >
+      <ng-container *ngIf="offer?.status !== 'dismissed'">✕ Pas intéressé(e)</ng-container>
+      <ng-container *ngIf="offer?.status === 'dismissed'">✕ Ignoré</ng-container>
+    </button>
+
+    <button class="btn-detail" (click)="onDetail()">Voir l'offre →</button>
+  </div>
+</div>
+
+<!-- Compact mode -->
+<div
+  *ngIf="compact"
+  class="job-card compact"
+  [class.match-high]="offer?.matchLevel === 'high'"
+  [class.match-mid]="offer?.matchLevel === 'mid'"
+  [class.match-low]="offer?.matchLevel === 'low'"
+  [class.is-dismissed]="offer?.status === 'dismissed'"
+>
+  <div class="compact-row">
+    <a class="company-logo compact-logo" [ngClass]="'color-' + offer?.companyColor"
+       [routerLink]="offer?.companyUserId ? ['/company-profile', offer!.companyUserId] : null"
+       (click)="$event.stopPropagation()"
+       [class.clickable]="!!offer?.companyUserId">{{ offer?.companyInitial }}</a>
+    <div class="compact-info">
+      <div class="compact-title" (click)="onDetail()">{{ offer?.title }}</div>
+      <div class="compact-sub">{{ offer?.company }} · {{ offer?.location }} · {{ offer?.contractType }}</div>
+    </div>
+    <div class="compact-tags">
+      <span *ngFor="let tag of (offer?.tags ?? []).slice(0, 3)" class="tag" [class.accent]="tag.accent">{{ tag.label }}</span>
+    </div>
+    <div class="match-badge" [ngClass]="offer?.matchLevel">{{ matchIcon }} {{ offer?.matchScore }}%</div>
+    <div class="compact-btns">
+      <button class="cbtn cbtn-yes" [class.sent]="offer?.status === 'interested'" [disabled]="offer?.status !== 'pending'" (click)="onInterest()">{{ offer?.status === 'interested' ? '✓' : '→' }}</button>
+      <button class="cbtn cbtn-no" [class.dismissed]="offer?.status === 'dismissed'" [disabled]="offer?.status !== 'pending'" (click)="onDismiss()">✕</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,37 @@
+<h1>Modification du Profil</h1>
+<div>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input class="form-control" type="text" id="email" name="email" [(ngModel)]="email">
+    </div>
+    <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input class="form-control" type="password" id="password" name="password" [(ngModel)]="password">
+    </div>
+    <div class="form-group">
+        <label for="firstName">Prenom</label>
+        <input class="form-control" type="text" id="firstName" name="firstName" [(ngModel)]="firstName">
+    </div>
+    <div class="form-group">
+        <label for="lastName">Nom de famille</label>
+        <input class="form-control" type="text" id="lastName" name="lastName" [(ngModel)]="lastName">
+    </div>
+    <div class="form-group">
+        <label for="companyName">Nom de l'entreprise</label>
+        <input class="form-control" type="text" id="companyName" name="companyName" [(ngModel)]="companyName">
+    </div>
+    <div class="form-group">
+        <label for="industry">Secteur d'activité</label>
+        <input class="form-control" type="text" id="industry" name="industry" [(ngModel)]="industry">
+    </div>
+    <div class="form-group">
+        <label for="location">Ville</label>
+        <input class="form-control" type="text" id="location" name="location" [(ngModel)]="location">
+    </div>
+    <div class="form-group">
+        <label for="description">Description</label>
+        <input class="form-control" type="text" id="description" name="description" [(ngModel)]="description">
+    </div>
+
+</div>
+<button class="btn btn-primary" (click)="updateCandidate(company()!)">Ok</button>

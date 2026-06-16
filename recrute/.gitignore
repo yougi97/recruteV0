@@ -41,3 +41,19 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+.DS_Store
+.jar
+.jar.original
+node_modules
+.venv/
+.empty/
+.env
+*.pyc
+__pycache__/
+*.class
+*.log
+*.tmprmysql -uroot
+*.jar
+*.jar.*
+*.lst

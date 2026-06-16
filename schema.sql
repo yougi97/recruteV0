@@ -13,12 +13,15 @@ CREATE TABLE users (
 -- ─── PROFILS ──────────────────────────────────────────────────────────────────
 
 CREATE TABLE candidate_profiles (
-    id          INT PRIMARY KEY AUTO_INCREMENT,
-    user_id     INT UNIQUE NOT NULL,
-    title       VARCHAR(255),
-    location    VARCHAR(255),
-    target_location    JSON,
-    bio         TEXT,
+    id                  INT PRIMARY KEY AUTO_INCREMENT,
+    user_id             INT UNIQUE NOT NULL,
+    title               VARCHAR(255),
+    location            VARCHAR(255),
+    target_location     JSON,
+    bio                 TEXT,
+    -- AJOUT : données parsées par l'agent, utiles pour filtres rapides
+    annees_experience   FLOAT,
+    niveau_etudes       ENUM('bac','bac+2','bac+3','bac+5','doctorat','autre'),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -38,8 +41,13 @@ CREATE TABLE cvs (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     candidate_id    INT NOT NULL,
     file_url        VARCHAR(500),
+    file_name       VARCHAR(255),
+    content_type    VARCHAR(100),
+    file_data       LONGBLOB,
     raw_text        LONGTEXT,
-    embedding       MEDIUMBLOB,        -- vecteur float32 sérialisé (384 dims)
+    -- MODIF : parsed_json stocke le CVParse Pydantic complet
+    parsed_json     JSON,
+    embedding       MEDIUMBLOB,
     is_active       BOOLEAN DEFAULT TRUE,
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE
@@ -48,16 +56,22 @@ CREATE TABLE cvs (
 -- ─── OFFRES D'EMPLOI ──────────────────────────────────────────────────────────
 
 CREATE TABLE job_offers (
-    id              INT PRIMARY KEY AUTO_INCREMENT,
-    company_id      INT NOT NULL,
-    title           VARCHAR(255) NOT NULL,
-    description     LONGTEXT,
-    raw_text        LONGTEXT,
-    embedding       MEDIUMBLOB,        -- vecteur float32 sérialisé (384 dims)
-    location        VARCHAR(255),
-    contract_type   ENUM('CDI', 'CDD', 'freelance', 'stage', 'alternance'),
-    is_active       BOOLEAN DEFAULT TRUE,
-    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id                      INT PRIMARY KEY AUTO_INCREMENT,
+    company_id              INT NOT NULL,
+    title                   VARCHAR(255) NOT NULL,
+    description             LONGTEXT,
+    -- AJOUT : description réécrite par Gemini, c'est CE texte qui est vectorisé
+    enriched_description    LONGTEXT,
+    -- MODIF : parsed_json stocke le OffreParsee Pydantic complet
+    parsed_json             JSON,
+    embedding               MEDIUMBLOB,
+    location                VARCHAR(255),
+    contract_type           ENUM('CDI','CDD','freelance','stage','alternance'),
+    -- AJOUT : critères filtrables sans parser le JSON
+    annees_experience_min   FLOAT,
+    niveau_etudes_min       ENUM('bac','bac+2','bac+3','bac+5','doctorat','autre'),
+    is_active               BOOLEAN DEFAULT TRUE,
+    created_at              DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES company_profiles(id) ON DELETE CASCADE
 );
 
@@ -65,9 +79,11 @@ CREATE TABLE job_offers (
 
 CREATE TABLE categories (
     id      INT PRIMARY KEY AUTO_INCREMENT,
+    -- AJOUT : contrainte unique sur (name, type) pour les upserts propres
     name    VARCHAR(255) NOT NULL,
     type    ENUM('skill', 'domain', 'soft_skill') NOT NULL,
-    source  ENUM('ai_generated', 'manual') DEFAULT 'ai_generated'
+    source  ENUM('ai_generated', 'manual') DEFAULT 'ai_generated',
+    UNIQUE KEY uq_category (name, type)
 );
 
 CREATE TABLE cv_categories (
@@ -75,7 +91,9 @@ CREATE TABLE cv_categories (
     cv_id       INT NOT NULL,
     category_id INT NOT NULL,
     confidence  FLOAT,
-    level       ENUM('débutant', 'intermédiaire', 'avancé', 'expert'),
+    level       ENUM('débutant','intermédiaire','avancé','expert'),
+    -- AJOUT : évite les doublons cv/catégorie
+    UNIQUE KEY uq_cv_category (cv_id, category_id),
     FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
@@ -84,8 +102,10 @@ CREATE TABLE job_categories (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     job_offer_id    INT NOT NULL,
     category_id     INT NOT NULL,
-    required_level  ENUM('débutant', 'intermédiaire', 'avancé', 'expert'),
+    required_level  ENUM('débutant','intermédiaire','avancé','expert'),
     is_mandatory    BOOLEAN DEFAULT TRUE,
+    -- AJOUT : évite les doublons offre/catégorie
+    UNIQUE KEY uq_job_category (job_offer_id, category_id),
     FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
@@ -102,17 +122,15 @@ CREATE TABLE job_searches (
 );
 
 -- ─── ÉVALUATIONS ──────────────────────────────────────────────────────────────
--- cv_id présent dans les deux tables : snapshot du vecteur actif au moment
--- du vote, essentiel pour réentraîner l'IA sur des données cohérentes
 
 CREATE TABLE candidate_job_ratings (
     id              INT PRIMARY KEY AUTO_INCREMENT,
     user_id         INT NOT NULL,
     job_offer_id    INT NOT NULL,
     cv_id           INT NOT NULL,
-    rating          ENUM('up', 'down') NOT NULL,
-    ai_score        FLOAT,
+    rating          ENUM('up','down') NOT NULL,
     rated_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_candidate_rating (user_id, job_offer_id, cv_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
     FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
@@ -123,10 +141,116 @@ CREATE TABLE company_candidate_ratings (
     company_id      INT NOT NULL,
     job_offer_id    INT NOT NULL,
     cv_id           INT NOT NULL,
-    rating          ENUM('up', 'down') NOT NULL,
-    ai_score        FLOAT,
+    rating          ENUM('up','down') NOT NULL,
     rated_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_company_rating (company_id, job_offer_id, cv_id),
     FOREIGN KEY (company_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
     FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
     FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
+);
+
+-- ─── CANDIDATURES (candidat postule à une offre) ──────────────────────────────
+
+CREATE TABLE applications (
+    id                  INT PRIMARY KEY AUTO_INCREMENT,
+    candidate_id        INT NOT NULL,
+    job_offer_id        INT NOT NULL,
+    cv_id               INT,
+    status              ENUM('attente', 'encours', 'accepte', 'refuse', 'prospection') DEFAULT 'attente',
+    message             TEXT,
+    company_interested  TINYINT(1) NOT NULL DEFAULT 0,
+    ai_score_id         INT UNIQUE,
+    applied_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_application (candidate_id, job_offer_id),
+    FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
+    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE SET NULL,
+    FOREIGN KEY (ai_score_id) REFERENCES ai_scores(id) ON DELETE SET NULL
+);
+
+-- ─── DEMANDES ENTRANTES (entreprise contacte un candidat) ─────────────────────
+
+CREATE TABLE company_requests (
+    id              INT PRIMARY KEY AUTO_INCREMENT,
+    company_id      INT NOT NULL,
+    candidate_id    INT NOT NULL,
+    job_offer_id    INT NOT NULL,
+    cv_id           INT NOT NULL,
+    status          ENUM('attente', 'encours', 'accepte', 'refuse') DEFAULT 'attente',
+    message         TEXT,
+    ai_score_id     INT UNIQUE,
+    requested_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_request (company_id, candidate_id, job_offer_id),
+    FOREIGN KEY (company_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
+    FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
+    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE,
+    FOREIGN KEY (ai_score_id) REFERENCES ai_scores(id) ON DELETE SET NULL
+);
+
+-- ─── SCORES IA ────────────────────────────────────────────────────────────────
+
+CREATE TABLE ai_scores (
+    id                  INT PRIMARY KEY AUTO_INCREMENT,
+    evaluator_type      ENUM('candidate', 'company') NOT NULL,
+    evaluator_id        INT NOT NULL,
+    job_offer_id        INT NOT NULL,
+    cv_id               INT NOT NULL,
+    ai_score            FLOAT,
+    score_semantique    FLOAT,
+    score_structure     FLOAT,
+    score_llm           FLOAT,
+    scored_at           DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_ai_score (evaluator_type, evaluator_id, job_offer_id, cv_id),
+    FOREIGN KEY (job_offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
+    FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
+);
+-- ─── MESSAGERIE ───────────────────────────────────────────────────────────────
+
+CREATE TABLE messages (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    offer_id            INT NOT NULL,
+    sender_user_id      INT NOT NULL,
+    recipient_user_id   INT NOT NULL,
+    body                TEXT NOT NULL,
+    is_read             TINYINT(1) NOT NULL DEFAULT 0,
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_msg_offer (offer_id),
+    KEY idx_msg_sender (sender_user_id),
+    KEY idx_msg_recipient (recipient_user_id),
+    CONSTRAINT fk_msg_offer FOREIGN KEY (offer_id) REFERENCES job_offers(id) ON DELETE CASCADE,
+    CONSTRAINT fk_msg_sender FOREIGN KEY (sender_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_msg_recipient FOREIGN KEY (recipient_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- ─── AVIS ENTREPRISES ─────────────────────────────────────────────────────────
+
+CREATE TABLE company_reviews (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    company_profile_id  INT NOT NULL,
+    reviewer_user_id    INT NOT NULL,
+    is_anonymous        TINYINT(1) NOT NULL DEFAULT 0,
+    rating              TINYINT NOT NULL,
+    comment             TEXT,
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_review (company_profile_id, reviewer_user_id),
+    CONSTRAINT fk_review_company FOREIGN KEY (company_profile_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_review_user FOREIGN KEY (reviewer_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- ─── TRANSPARENCE SALARIALE ───────────────────────────────────────────────────
+
+CREATE TABLE salary_reports (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    company_profile_id  INT NOT NULL,
+    reporter_user_id    INT NOT NULL,
+    job_title           VARCHAR(255) NOT NULL,
+    min_salary          INT NOT NULL,
+    max_salary          INT NOT NULL,
+    contract_type       ENUM('CDI','CDD','freelance','stage','alternance'),
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_salary_company FOREIGN KEY (company_profile_id) REFERENCES company_profiles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_salary_user FOREIGN KEY (reporter_user_id) REFERENCES users(id) ON DELETE CASCADE
 );

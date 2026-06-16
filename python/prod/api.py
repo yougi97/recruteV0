@@ -1,0 +1,106 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import tempfile, os, threading
+
+from parsing_agent import parser_cv
+from job_enrichment_agent import enrichir_offre
+from dispatcher import sauvegarder_cv, sauvegarder_offre
+from matching_agent import matcher, _charger_cv, _charger_offre
+from explanation_agent import expliquer
+import spring_client as api
+
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": ["http://localhost:4200", "http://localhost:8080"]}})
+
+def _score_cv_against_all_jobs(cv_id: int):
+    try:
+        job_ids = api.get_active_job_offer_ids()
+    except Exception:
+        return
+    for job_id in job_ids:
+        try:
+            matcher(cv_id, job_id)
+        except Exception:
+            pass
+
+@app.post("/parse-cv")
+def parse_cv_endpoint():
+    cv_id = request.form.get("cv_id", type=int) if request.form else None
+    fichier = request.files.get("cv") if request.files else None
+
+    if cv_id is None:
+        return jsonify({"erreur": "cv_id manquant"}), 400
+
+    if fichier is not None:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            fichier.save(tmp.name)
+            chemin = tmp.name
+    else:
+        pdf_bytes, file_name, _ = api.get_cv_pdf(cv_id)
+        suffix = ".pdf" if file_name.lower().endswith(".pdf") else ".pdf"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp.write(pdf_bytes)
+            tmp.flush()
+            chemin = tmp.name
+
+    try:
+        cv, raw_text = parser_cv(chemin)
+        sauvegarder_cv(cv, cv_id, raw_text=raw_text)
+        threading.Thread(target=_score_cv_against_all_jobs, args=(cv_id,), daemon=True).start()
+        return jsonify(cv.model_dump()), 200
+    except ValueError as e:
+        return jsonify({"erreur": str(e)}), 422
+    finally:
+        os.unlink(chemin)
+
+@app.post("/score-cv")
+def score_cv_endpoint():
+    body = request.json or {}
+    cv_id = body.get("cv_id")
+    if not cv_id:
+        return jsonify({"erreur": "cv_id manquant"}), 400
+    _score_cv_against_all_jobs(int(cv_id))
+    return jsonify({"status": "ok"}), 200
+
+@app.post("/enrich-job")
+def enrich_job_endpoint():
+    body     = request.json
+    offre_id = body["offre_id"]
+    titre    = body["titre"]
+    desc     = body["description"]
+
+    offre = enrichir_offre(titre, desc)
+    sauvegarder_offre(offre, offre_id)
+    return jsonify(offre.model_dump()), 200
+
+@app.post("/match")
+def match_endpoint():
+    body     = request.json
+    cv_id    = body["cv_id"]
+    offre_id = body["offre_id"]
+
+    resultat = matcher(cv_id, offre_id)
+
+    explication = None
+    if resultat.detail_llm:
+        try:
+            cv    = _charger_cv(cv_id)
+            offre = _charger_offre(offre_id)
+            expl  = expliquer(resultat, cv, offre)
+            explication = expl.model_dump()
+        except Exception:
+            pass
+
+    return jsonify({
+        "score_final": resultat.score_final,
+        "scores_detail": {
+            "semantique": resultat.score_semantique,
+            "structure":  resultat.score_structure,
+            "llm":        resultat.score_llm,
+        },
+        "explication": explication,
+    }), 200
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
