@@ -1,5 +1,6 @@
 package com.techlance.recrute.Controllers;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +15,7 @@ import com.techlance.recrute.DTO.LoginResponse;
 import com.techlance.recrute.Entities.CandidateProfiles;
 import com.techlance.recrute.Entities.CompanyProfiles;
 import com.techlance.recrute.Entities.Users;
+import com.techlance.recrute.Security.AuthenticatedUser;
 import com.techlance.recrute.Services.UserService;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -62,12 +64,14 @@ public class UserController {
     }
 
     @PutMapping("candidate/{id}")
-    public CandidateProfiles updateCandidateProfiles(@RequestBody CandidateProfiles user, @PathVariable Long id) {
-        return userService.updateCandidate(user, id);
+    public CandidateProfiles updateCandidateProfiles(@RequestBody CandidateProfiles user, @PathVariable Long id,
+            @AuthenticationPrincipal AuthenticatedUser authUser) {
+        return userService.updateCandidate(user, id, authUser.userId());
     }
 
     @PutMapping("/company/{id}")
-    public CompanyProfiles updateCompanyProfiles(@RequestBody CompanyProfiles user, @PathVariable Long id) {
-        return userService.updateCompany(user, id);
+    public CompanyProfiles updateCompanyProfiles(@RequestBody CompanyProfiles user, @PathVariable Long id,
+            @AuthenticationPrincipal AuthenticatedUser authUser) {
+        return userService.updateCompany(user, id, authUser.userId());
     }
 }

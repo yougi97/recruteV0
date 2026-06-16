@@ -9,7 +9,9 @@ import com.techlance.recrute.Repositories.CompanyProfilesRepository;
 import com.techlance.recrute.Repositories.CompanyReviewsRepository;
 import com.techlance.recrute.Repositories.SalaryReportsRepository;
 import com.techlance.recrute.Repositories.UserRepository;
+import com.techlance.recrute.Security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -82,7 +84,8 @@ public class CompanyReviewsController {
 
     @PostMapping("/reviews/company/{companyUserId}")
     public Map<String, Object> submitReview(@PathVariable Long companyUserId,
-                                            @RequestBody Map<String, Object> body) {
+                                            @RequestBody Map<String, Object> body,
+                                            @AuthenticationPrincipal AuthenticatedUser authUser) {
         Long reviewerUserId = toLong(body.get("reviewerUserId"));
         Integer rating = toInt(body.get("rating"));
         String comment = (String) body.get("comment");
@@ -90,6 +93,9 @@ public class CompanyReviewsController {
 
         if (reviewerUserId == null || rating == null || rating < 1 || rating > 5) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Champs invalides");
+        }
+        if (!authUser.userId().equals(reviewerUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non autorisé");
         }
 
         CompanyProfiles company = companyProfilesRepo.findByUserId(companyUserId);
@@ -114,7 +120,8 @@ public class CompanyReviewsController {
 
     @PutMapping("/reviews/{reviewId}")
     public Map<String, Object> updateReview(@PathVariable Long reviewId,
-                                            @RequestBody Map<String, Object> body) {
+                                            @RequestBody Map<String, Object> body,
+                                            @AuthenticationPrincipal AuthenticatedUser authUser) {
         Long reviewerUserId = toLong(body.get("reviewerUserId"));
         Integer rating = toInt(body.get("rating"));
         String comment = (String) body.get("comment");
@@ -127,7 +134,8 @@ public class CompanyReviewsController {
         CompanyReviews review = reviewsRepo.findById(reviewId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Avis introuvable"));
 
-        if (reviewerUserId == null || !review.getReviewer().getId().equals(reviewerUserId)) {
+        if (reviewerUserId == null || !review.getReviewer().getId().equals(reviewerUserId)
+                || !authUser.userId().equals(reviewerUserId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non autorisé");
         }
 
@@ -151,7 +159,8 @@ public class CompanyReviewsController {
 
     @PostMapping("/salaries/company/{companyUserId}")
     public Map<String, Object> submitSalary(@PathVariable Long companyUserId,
-                                            @RequestBody Map<String, Object> body) {
+                                            @RequestBody Map<String, Object> body,
+                                            @AuthenticationPrincipal AuthenticatedUser authUser) {
         Long reporterUserId = toLong(body.get("reporterUserId"));
         String jobTitle = (String) body.get("jobTitle");
         Integer minSalary = toInt(body.get("minSalary"));
@@ -161,6 +170,9 @@ public class CompanyReviewsController {
         if (reporterUserId == null || jobTitle == null || jobTitle.isBlank()
                 || minSalary == null || maxSalary == null || minSalary < 0 || maxSalary < minSalary) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Champs invalides");
+        }
+        if (!authUser.userId().equals(reporterUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non autorisé");
         }
 
         CompanyProfiles company = companyProfilesRepo.findByUserId(companyUserId);

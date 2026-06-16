@@ -6,16 +6,8 @@ import { RecruteApi } from '../recrute-api';
 import { AuthService } from '../services/auth';
 import { JobOfferService } from '../services/job-offer';
 import { CompanyProfiles } from '../model/companyProfiles';
-
-interface PublicJobOffer {
-  id: number;
-  title: string;
-  location: string;
-  contractType: string;
-  description: string;
-  createdAt: string;
-  applicationCount: number;
-}
+import { JobOffer, toJobOffer } from '../model/job-offer';
+import { norm } from '../utils/normalize';
 
 interface Review {
   id: number;
@@ -44,9 +36,11 @@ interface SalaryReport {
 })
 export class CompanyHome implements OnInit {
   profile: CompanyProfiles | null = null;
-  jobs: PublicJobOffer[] = [];
+  jobs: JobOffer[] = [];
   loading = true;
   error = '';
+  cvSkills: { name: string; level: string; type: string }[] = [];
+  private cvId: number | null = null;
 
   // Who is viewing
   myUserId = 0;
@@ -85,7 +79,7 @@ export class CompanyHome implements OnInit {
   stars = [1, 2, 3, 4, 5];
 
   // Job detail drawer
-  selectedJob: PublicJobOffer | null = null;
+  selectedJob: JobOffer | null = null;
   jobInterestStatus: Record<number, 'pending' | 'interested'> = {};
 
   constructor(
@@ -103,27 +97,15 @@ export class CompanyHome implements OnInit {
     this.recruteApi.getCompanybyId(this.companyUserId).subscribe({
       next: (p) => {
         this.profile = p;
-        if (p?.id) {
-          this.authService.getCompanyJobs(Number(p.id)).subscribe({
-            next: (jobs) => {
-              this.jobs = jobs
-                .filter((j: any) => j.isActive)
-                .map((j: any) => ({
-                  id: j.id,
-                  title: j.title ?? '',
-                  location: j.location ?? '—',
-                  contractType: j.contractType ?? 'CDI',
-                  description: j.description ?? '',
-                  createdAt: j.createdAt ?? '',
-                  applicationCount: j.applicationCount ?? 0,
-                }));
-              this.loading = false;
-            },
-            error: () => { this.loading = false; },
-          });
-        } else {
-          this.loading = false;
-        }
+        this.jobOfferService.getAllOffers().subscribe({
+          next: (offers) => {
+            this.jobs = offers
+              .filter((o: any) => o.companyUserId === this.companyUserId)
+              .map(toJobOffer);
+            this.loading = false;
+          },
+          error: () => { this.loading = false; },
+        });
       },
       error: () => {
         this.error = 'Profil introuvable.';
@@ -131,8 +113,43 @@ export class CompanyHome implements OnInit {
       },
     });
 
+    if (this.myUserId > 0) {
+      this.loadCvId();
+    }
+
     this.loadReviews();
     this.loadSalaries();
+  }
+
+  private loadCvId(): void {
+    this.authService.getCandidateCv(this.myUserId).subscribe({
+      next: (cv) => {
+        if (cv?.id) { this.cvId = cv.id; this.loadCvSkills(cv.id); }
+      },
+      error: () => {}
+    });
+  }
+
+  private loadCvSkills(cvId: number): void {
+    const order: Record<string, number> = { expert: 4, avance: 3, intermediaire: 2, debutant: 1 };
+    this.authService.getCvCategories(cvId).subscribe({
+      next: (cats: any[]) => {
+        this.cvSkills = cats
+          .filter((c: any) => c.type !== 'soft_skill')
+          .sort((a: any, b: any) => (order[b.level] ?? 0) - (order[a.level] ?? 0));
+      },
+      error: () => {}
+    });
+  }
+
+  pct(v: number): number {
+    return Math.round((v ?? 0) * 100);
+  }
+
+  isJobSkillInCv(skillName: string): boolean {
+    if (!skillName || !this.cvSkills.length) return false;
+    const nl = norm(skillName);
+    return this.cvSkills.some(s => norm(s.name) === nl);
   }
 
   loadReviews(): void {
@@ -254,7 +271,7 @@ export class CompanyHome implements OnInit {
     });
   }
 
-  markInterested(job: PublicJobOffer): void {
+  markInterested(job: JobOffer): void {
     if (this.jobInterestStatus[job.id] === 'interested' || !this.myUserId) return;
     this.jobInterestStatus[job.id] = 'interested';
     this.jobOfferService.notifyInterest(this.myUserId, job.id).subscribe();

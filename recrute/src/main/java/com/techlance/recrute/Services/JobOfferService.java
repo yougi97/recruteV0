@@ -1139,6 +1139,8 @@ public class JobOfferService {
         offer.put("tags", buildPublicTags(job));
         offer.put("jobSkills", buildJobSkills(job));
         offer.put("status", "pending");
+        offer.put("createdAt", job.getCreatedAt());
+        offer.put("applicationCount", applicationsRepository.countByJobOfferId(job.getId()));
         return offer;
     }
 

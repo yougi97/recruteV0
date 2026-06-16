@@ -15,6 +15,7 @@ import com.techlance.recrute.Entities.Users;
 import com.techlance.recrute.Repositories.CandidateProfilesRepository;
 import com.techlance.recrute.Repositories.CompanyProfilesRepository;
 import com.techlance.recrute.Repositories.UserRepository;
+import com.techlance.recrute.Security.JwtService;
 
 @Service
 public class UserService {
@@ -23,13 +24,15 @@ public class UserService {
     private final CandidateProfilesRepository candidateProfilesRepository;
     private final CompanyProfilesRepository companyProfilesRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public UserService(UserRepository userRepository, CandidateProfilesRepository candidateProfilesRepository,
-            CompanyProfilesRepository companyProfilesRepository) {
+            CompanyProfilesRepository companyProfilesRepository, JwtService jwtService) {
         this.userRepository = userRepository;
         this.candidateProfilesRepository = candidateProfilesRepository;
         this.companyProfilesRepository = companyProfilesRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
+        this.jwtService = jwtService;
     }
 
     public Users createUser(Users user) {
@@ -79,7 +82,7 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    public CandidateProfiles updateCandidate(CandidateProfiles user, Long id) {
+    public CandidateProfiles updateCandidate(CandidateProfiles user, Long id, Long authUserId) {
         if(user.getUser().getEmail().contains("@") ==false) {
             throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -87,6 +90,12 @@ public class UserService {
                 );
         }
         CandidateProfiles oldCandidateProfiles = candidateProfilesRepository.getReferenceById(id);
+        if (!oldCandidateProfiles.getUser().getId().equals(authUserId)) {
+            throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Vous n'êtes pas autorisé à modifier ce profil"
+                );
+        }
         Users oldUsers = userRepository.getReferenceById(oldCandidateProfiles.getUser().getId());
         oldUsers.setEmail(user.getUser().getEmail());
         oldUsers.setUserType(user.getUser().getUserType());
@@ -102,7 +111,7 @@ public class UserService {
         return candidateProfilesRepository.save(oldCandidateProfiles);
     }
 
-    public CompanyProfiles updateCompany(CompanyProfiles user, Long id) {
+    public CompanyProfiles updateCompany(CompanyProfiles user, Long id, Long authUserId) {
         if(user.getUser().getEmail().contains("@") ==false) {
             throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -110,6 +119,12 @@ public class UserService {
                 );
         }
         CompanyProfiles oldCompanyProfiles = companyProfilesRepository.getReferenceById(id);
+        if (!oldCompanyProfiles.getUser().getId().equals(authUserId)) {
+            throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Vous n'êtes pas autorisé à modifier ce profil"
+                );
+        }
         Users oldUsers = userRepository.getReferenceById(oldCompanyProfiles.getUser().getId());
         oldUsers.setEmail(user.getUser().getEmail());
         oldUsers.setUserType(user.getUser().getUserType());
@@ -156,8 +171,9 @@ public class UserService {
             );
         }
         
-        return new LoginResponse(user.getId(), user.getEmail(), user.getUserType(), 
-                                user.getFirstName(), user.getLastName());
+        String token = jwtService.generateToken(user.getId(), user.getUserType(), user.getEmail());
+        return new LoginResponse(user.getId(), user.getEmail(), user.getUserType(),
+                                user.getFirstName(), user.getLastName(), token);
     }
 
     private void validateCurrentPassword(String providedPassword, String storedPasswordHash) {

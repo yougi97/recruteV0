@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { JobOfferService } from '../services/job-offer';
 import { AuthService } from '../services/auth';
-import { JobOffer, OfferFilters } from '../model/job-offer';
+import { JobOffer, OfferFilters, toJobOffer } from '../model/job-offer';
 import { JobCardComponent } from '../candidat/components/job-card/job-card';
 import { FiltersBarComponent } from '../candidat/components/filters-bar/filters-bar';
 import { norm } from '../utils/normalize';
@@ -220,43 +220,7 @@ export class OffresComponent implements OnInit {
   }
 
   private convertToJobOffers(data: any[]): JobOffer[] {
-    return data.map(item => {
-      let raw = item.matchScore ?? 50;
-      let ms = raw;
-      if (typeof ms === 'number' && ms <= 1) ms = Math.round(ms * 100);
-      else if (typeof ms === 'number') ms = Math.round(ms);
-
-      return {
-        id: item.id,
-        title: item.title,
-        company: item.company,
-        companyUserId: item.companyUserId ?? undefined,
-        companyInitial: item.companyInitial,
-        companyColor: item.companyColor,
-        location: item.location,
-        contractType: item.contractType as any,
-        workMode: item.workMode as any,
-        salary: item.salary,
-        matchScore: ms,
-        matchLevel: this.computeMatchLevel(ms),
-        tags: item.tags ?? [],
-        aiReason: item.aiReason ?? '',
-        description: item.description ?? '',
-        scoreDetail: item.score_semantique != null ? {
-          sem: item.score_semantique,
-          str: item.score_structure ?? 0,
-          llm: item.score_llm ?? 0,
-        } : undefined,
-        jobSkills: item.jobSkills ?? [],
-        status: item.status ?? 'pending',
-      } as JobOffer;
-    });
-  }
-
-  private computeMatchLevel(score: number): 'high' | 'mid' | 'low' {
-    if (score >= 70) return 'high';
-    if (score >= 50) return 'mid';
-    return 'low';
+    return data.map(toJobOffer);
   }
 
   private showToast(): void {

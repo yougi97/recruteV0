@@ -133,6 +133,7 @@ export class AuthService {
         localStorage.setItem('user_email', email);
         localStorage.setItem('user_type', response.userType);
         localStorage.setItem('user_id', response.id);
+        localStorage.setItem('auth_token', response.token);
       })
     );
   }
@@ -141,6 +142,7 @@ export class AuthService {
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_type');
     localStorage.removeItem('user_id');
+    localStorage.removeItem('auth_token');
   }
 
   isLoggedIn(): boolean {
@@ -153,5 +155,9 @@ export class AuthService {
 
   getCurrentUserType(): string | null {
     return localStorage.getItem('user_type');
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('auth_token');
   }
 }

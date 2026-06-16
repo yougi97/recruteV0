@@ -8,7 +8,9 @@ import com.techlance.recrute.Repositories.CompanyProfilesRepository;
 import com.techlance.recrute.Repositories.JobOfferRepository;
 import com.techlance.recrute.Repositories.MessagesRepository;
 import com.techlance.recrute.Repositories.UserRepository;
+import com.techlance.recrute.Security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -38,17 +40,26 @@ public class MessagesController {
         this.companyProfilesRepository = companyProfilesRepository;
     }
 
+    private void requireSelf(AuthenticatedUser authUser, Long userId) {
+        if (!authUser.userId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous n'êtes pas autorisé à effectuer cette action");
+        }
+    }
+
     @GetMapping("/thread")
     public List<Map<String, Object>> getThread(@RequestParam Long offerId,
                                                @RequestParam Long myUserId,
-                                               @RequestParam Long otherUserId) {
+                                               @RequestParam Long otherUserId,
+                                               @AuthenticationPrincipal AuthenticatedUser authUser) {
+        requireSelf(authUser, myUserId);
         messagesRepository.markRead(offerId, myUserId, otherUserId);
         return messagesRepository.findThread(offerId, myUserId, otherUserId)
                 .stream().map(this::toMap).collect(Collectors.toList());
     }
 
     @PostMapping
-    public Map<String, Object> send(@RequestBody Map<String, Object> body) {
+    public Map<String, Object> send(@RequestBody Map<String, Object> body,
+                                     @AuthenticationPrincipal AuthenticatedUser authUser) {
         Long offerId     = toLong(body.get("offerId"));
         Long senderUserId    = toLong(body.get("senderUserId"));
         Long recipientUserId = toLong(body.get("recipientUserId"));
@@ -58,6 +69,7 @@ public class MessagesController {
                 || text == null || text.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Champs manquants");
         }
+        requireSelf(authUser, senderUserId);
 
         JobOffers offer = jobOfferRepository.findById(offerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Offre introuvable"));
@@ -75,7 +87,9 @@ public class MessagesController {
     }
 
     @GetMapping("/conversations")
-    public List<Map<String, Object>> getConversations(@RequestParam Long userId) {
+    public List<Map<String, Object>> getConversations(@RequestParam Long userId,
+                                                        @AuthenticationPrincipal AuthenticatedUser authUser) {
+        requireSelf(authUser, userId);
         List<Messages> all = messagesRepository.findAllForUser(userId);
         Map<String, Map<String, Object>> convMap = new LinkedHashMap<>();
         for (Messages m : all) {
@@ -112,7 +126,9 @@ public class MessagesController {
     }
 
     @GetMapping("/unread")
-    public Map<String, Long> unreadCount(@RequestParam Long userId) {
+    public Map<String, Long> unreadCount(@RequestParam Long userId,
+                                          @AuthenticationPrincipal AuthenticatedUser authUser) {
+        requireSelf(authUser, userId);
         return Map.of("count", messagesRepository.countUnread(userId));
     }
 
