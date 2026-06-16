@@ -13,3 +13,4 @@ __pycache__/
 *.jar
 *.jar.*
 *.lst
+caddy-root-ca.crt

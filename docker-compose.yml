@@ -33,6 +33,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/recrute_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: recrute_user
       SPRING_DATASOURCE_PASSWORD: mon_mdp
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8080:8080"
     networks:
