@@ -118,6 +118,12 @@ export class CandidatComponent implements OnInit {
     return Math.round((v ?? 0) * 100);
   }
 
+  isJobSkillInCv(skillName: string): boolean {
+    if (!skillName || !this.cvSkills.length) return false;
+    const nl = norm(skillName);
+    return this.cvSkills.some(s => norm(s.name) === nl);
+  }
+
   refreshSuggestions(): void {
     this.computingScores = true;
     this.authService.getCandidateCv(this.candidateId).subscribe({

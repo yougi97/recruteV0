@@ -154,7 +154,11 @@
       <div class="drawer-section" *ngIf="selectedOffer.jobSkills?.length">
         <div class="dsec-label">Compétences requises</div>
         <div class="drawer-tags">
-          <span *ngFor="let s of selectedOffer.jobSkills" class="tag">{{ s.name }}</span>
+          <span *ngFor="let s of selectedOffer.jobSkills"
+                class="tag"
+                [class.tag-match]="isJobSkillInCv(s.name)">
+            {{ s.name }}<span *ngIf="isJobSkillInCv(s.name)" class="tag-match-tick"> ✓</span>
+          </span>
         </div>
       </div>
 
