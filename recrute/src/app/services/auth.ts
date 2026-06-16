@@ -39,12 +39,16 @@ export class AuthService {
     return this.httpClient.post<any>(`${this.url}/users/candidate/${candidateId}`, formData);
   }
 
-  getCandidateCvDownloadUrl(candidateId: number): string {
-    return `${this.url}/users/candidate/${candidateId}/cv/download`;
+  // These endpoints require the JWT Authorization header, which a plain
+  // <iframe src="..."> or window.open(url) can't send. Fetch as a Blob
+  // through HttpClient (which attaches the header via the auth interceptor)
+  // and let the caller turn it into an object URL instead.
+  getCandidateCvViewBlob(candidateId: number): Observable<Blob> {
+    return this.httpClient.get(`${this.url}/users/candidate/${candidateId}/cv/view`, { responseType: 'blob' });
   }
 
-  getCandidateCvViewUrl(candidateId: number): string {
-    return `${this.url}/users/candidate/${candidateId}/cv/view`;
+  getCandidateCvDownloadBlob(candidateId: number): Observable<Blob> {
+    return this.httpClient.get(`${this.url}/users/candidate/${candidateId}/cv/download`, { responseType: 'blob' });
   }
 
   computeCandidateCv(cvId: number): Observable<any> {

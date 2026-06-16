@@ -165,8 +165,19 @@ export class Profile implements OnInit {
 
   downloadCV(): void {
     if (!this.activeCV || !this.candidateProfile.id) return;
-    const baseUrl = this.authService.getCandidateCvDownloadUrl(this.candidateProfile.user_id);
-    window.open(`${baseUrl}?t=${Date.now()}`, '_blank');
+    this.authService.getCandidateCvDownloadBlob(this.candidateProfile.user_id).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        a.download = `cv-${this.candidateProfile.user_id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(objectUrl);
+      },
+      error: () => {
+        this.toastr.error('Impossible de télécharger le CV.', 'Erreur');
+      }
+    });
   }
 
   deleteCV(): void {

@@ -228,15 +228,30 @@ export class CompanyOffers implements OnInit, OnDestroy {
     });
   }
 
+  private cvObjectUrl: string | null = null;
+
   viewCv(c: CompanyCandidateView): void {
     if (!c.userId) return;
-    this.cvViewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-      this.authService.getCandidateCvViewUrl(c.userId)
-    );
+    this.authService.getCandidateCvViewBlob(c.userId).subscribe({
+      next: (blob) => {
+        this.revokeCvObjectUrl();
+        this.cvObjectUrl = URL.createObjectURL(blob);
+        this.cvViewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.cvObjectUrl);
+      },
+      error: () => { this.cvViewUrl = null; }
+    });
   }
 
   closeCvModal(): void {
     this.cvViewUrl = null;
+    this.revokeCvObjectUrl();
+  }
+
+  private revokeCvObjectUrl(): void {
+    if (this.cvObjectUrl) {
+      URL.revokeObjectURL(this.cvObjectUrl);
+      this.cvObjectUrl = null;
+    }
   }
 
   @HostListener('document:keydown.escape')
@@ -246,6 +261,7 @@ export class CompanyOffers implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.cvViewUrl = null;
+    this.revokeCvObjectUrl();
   }
 
   isSkillInOffer(skillName: string): boolean {
