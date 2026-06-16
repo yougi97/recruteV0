@@ -67,7 +67,7 @@ export class UpdateCompany {
       "location": this.location,
       "description": this.description,
     };
-    this.recruteApi.updateCompany(data).subscribe(() => this.router.navigate([`/users/company/${company.id}`]));
+    this.recruteApi.updateCompany(data).subscribe(() => this.router.navigate([`/company-profile/${company.id}`]));
 
   }
 }

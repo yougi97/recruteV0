@@ -285,7 +285,7 @@
             <button class="btn-view-cv" *ngIf="c.userId" (click)="viewCv(c)">
               Voir le CV
             </button>
-            <a class="btn-view-profile" *ngIf="c.userId" [routerLink]="['/users/candidate', c.userId]" target="_blank">
+            <a class="btn-view-profile" *ngIf="c.userId" [routerLink]="['/candidate-profile', c.userId]" target="_blank">
               Voir le profil →
             </a>
             <button class="btn-skip" *ngIf="!c.applied">✕ Passer</button>
@@ -348,7 +348,7 @@
               {{ getStatusLabel(c.applicationStatus) }}
             </div>
             <button class="btn-view-cv btn-sm" *ngIf="c.userId" (click)="viewCv(c)">CV</button>
-            <a class="btn-view-profile btn-sm" *ngIf="c.userId" [routerLink]="['/users/candidate', c.userId]" target="_blank">
+            <a class="btn-view-profile btn-sm" *ngIf="c.userId" [routerLink]="['/candidate-profile', c.userId]" target="_blank">
               Profil →
             </a>
             <button class="btn-interested btn-sm"

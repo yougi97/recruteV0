@@ -107,13 +107,13 @@
     <div class="drawer-body">
       <div class="drawer-hero">
         <a class="company-logo" [ngClass]="'color-' + selectedOffer.companyColor"
-           [routerLink]="selectedOffer.companyUserId ? ['/users/company', selectedOffer.companyUserId] : null"
+           [routerLink]="selectedOffer.companyUserId ? ['/company-profile', selectedOffer.companyUserId] : null"
            (click)="selectedOffer.companyUserId && closeDetail()"
            [class.clickable]="!!selectedOffer.companyUserId">{{ selectedOffer.companyInitial }}</a>
         <div>
           <div class="drawer-title">{{ selectedOffer.title }}</div>
           <a class="drawer-company"
-             [routerLink]="selectedOffer.companyUserId ? ['/users/company', selectedOffer.companyUserId] : null"
+             [routerLink]="selectedOffer.companyUserId ? ['/company-profile', selectedOffer.companyUserId] : null"
              (click)="selectedOffer.companyUserId && closeDetail()"
              [class.drawer-company-link]="!!selectedOffer.companyUserId">{{ selectedOffer.company }}</a>
           <div class="drawer-meta">📍 {{ selectedOffer.location }} · {{ selectedOffer.contractType }} · {{ selectedOffer.workMode }}</div>

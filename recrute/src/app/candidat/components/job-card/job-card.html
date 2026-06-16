@@ -9,7 +9,7 @@
 >
   <div class="card-top">
     <a class="company-logo" [ngClass]="'color-' + offer?.companyColor"
-       [routerLink]="offer?.companyUserId ? ['/users/company', offer!.companyUserId] : null"
+       [routerLink]="offer?.companyUserId ? ['/company-profile', offer!.companyUserId] : null"
        (click)="$event.stopPropagation()"
        [class.clickable]="!!offer?.companyUserId">
       {{ offer?.companyInitial }}
@@ -22,7 +22,7 @@
   <div class="card-body">
     <div class="job-title" (click)="onDetail()" style="cursor:pointer">{{ offer?.title }}</div>
     <a class="company-name"
-       [routerLink]="offer?.companyUserId ? ['/users/company', offer!.companyUserId] : null"
+       [routerLink]="offer?.companyUserId ? ['/company-profile', offer!.companyUserId] : null"
        (click)="$event.stopPropagation()"
        [class.company-link]="!!offer?.companyUserId">{{ offer?.company }}</a>
     <div class="job-location">
@@ -106,7 +106,7 @@
 >
   <div class="compact-row">
     <a class="company-logo compact-logo" [ngClass]="'color-' + offer?.companyColor"
-       [routerLink]="offer?.companyUserId ? ['/users/company', offer!.companyUserId] : null"
+       [routerLink]="offer?.companyUserId ? ['/company-profile', offer!.companyUserId] : null"
        (click)="$event.stopPropagation()"
        [class.clickable]="!!offer?.companyUserId">{{ offer?.companyInitial }}</a>
     <div class="compact-info">

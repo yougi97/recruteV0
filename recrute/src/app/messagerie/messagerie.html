@@ -34,12 +34,12 @@
           <span class="conv-unread" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</span>
           <a class="conv-profile-link"
              *ngIf="c.otherUserType === 'company'"
-             [routerLink]="['/users/company', c.otherUserId]"
+             [routerLink]="['/company-profile', c.otherUserId]"
              (click)="$event.stopPropagation()"
              title="Voir le profil entreprise">↗</a>
           <a class="conv-profile-link"
              *ngIf="c.otherUserType === 'candidate'"
-             [routerLink]="['/users/candidate', c.otherUserId]"
+             [routerLink]="['/candidate-profile', c.otherUserId]"
              (click)="$event.stopPropagation()"
              title="Voir le profil candidat">↗</a>
         </div>
@@ -66,12 +66,12 @@
         </div>
         <a class="btn-view-profile"
            *ngIf="selected.otherUserType === 'company'"
-           [routerLink]="['/users/company', selected.otherUserId]">
+           [routerLink]="['/company-profile', selected.otherUserId]">
           Voir le profil &amp; offres →
         </a>
         <a class="btn-view-profile"
            *ngIf="selected.otherUserType === 'candidate'"
-           [routerLink]="['/users/candidate', selected.otherUserId]">
+           [routerLink]="['/candidate-profile', selected.otherUserId]">
           Voir le profil candidat →
         </a>
       </div>

@@ -29,7 +29,7 @@
           <span *ngIf="profile!.industry" class="co-chip">{{ profile!.industry }}</span>
         </div>
         <p class="co-desc" *ngIf="profile!.description">{{ profile!.description }}</p>
-        <a *ngIf="isOwnCompany" class="btn-edit-profile" [routerLink]="['/users/company', companyUserId, 'update']">
+        <a *ngIf="isOwnCompany" class="btn-edit-profile" [routerLink]="['/company-profile', companyUserId, 'update']">
           ✏️ Modifier le profil
         </a>
       </div>
