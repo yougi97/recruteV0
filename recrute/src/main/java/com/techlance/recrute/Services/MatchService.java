@@ -47,7 +47,10 @@ public class MatchService {
         r.setJobOffer(job);
         r.setCv(cv);
 
-        if (r.getRating() == null) r.setRating(com.techlance.recrute.Enum.Rating.up);
+        // Don't default rating here: this method runs from the background AI scoring
+        // pass (every active job gets re-scored after any CV parse), not from a real
+        // candidate action. Leaving rating null means "scored, no opinion yet" instead
+        // of fabricating a fake "interested" the candidate never expressed.
         if (r.getRated_at() == null) r.setRated_at(new java.sql.Date(System.currentTimeMillis()));
 
         setFloatIfPresent(infoMatch, "ai_score",         v -> r.setAi_score(v));

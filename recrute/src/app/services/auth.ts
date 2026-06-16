@@ -109,6 +109,14 @@ export class AuthService {
     return this.httpClient.delete<void>(`${this.url}/users/candidate/${userId}/offers/${offerId}/application`);
   }
 
+  acceptCompanyInterest(userId: number, offerId: number): Observable<void> {
+    return this.httpClient.post<void>(`${this.url}/users/candidate/${userId}/offers/${offerId}/accept-interest`, {});
+  }
+
+  declineCompanyInterest(userId: number, offerId: number): Observable<void> {
+    return this.httpClient.post<void>(`${this.url}/users/candidate/${userId}/offers/${offerId}/decline-interest`, {});
+  }
+
   reviewApplication(companyId: number, jobId: number, applicationId: number, status: string): Observable<void> {
     return this.httpClient.patch<void>(
       `${this.url}/users/company/${companyId}/jobs/${jobId}/applications/${applicationId}/review`,

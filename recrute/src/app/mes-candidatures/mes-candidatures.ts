@@ -45,6 +45,7 @@ export class MesCandidaturesComponent implements OnInit {
   loadingInterested = false;
   error = '';
   retractingId: number | null = null;
+  respondingId: number | null = null;
   userId = 0;
   openChatOfferId: number | null = null;
 
@@ -71,19 +72,23 @@ export class MesCandidaturesComponent implements OnInit {
     this.error = '';
     this.authService.getCandidateApplications(this.userId).subscribe({
       next: (data) => {
-        this.candidatures = data.map((item: any) => ({
-          applicationId: Number(item.applicationId ?? 0),
-          status: item.status ?? 'attente',
-          appliedAt: item.appliedAt ?? null,
-          jobOfferId: Number(item.jobOfferId ?? 0),
-          jobTitle: item.jobTitle ?? 'Offre inconnue',
-          companyName: item.companyName ?? 'Entreprise inconnue',
-          companyInitial: item.companyInitial ?? '?',
-          companyColor: item.companyColor ?? 'blue',
-          location: item.location ?? '—',
-          contractType: item.contractType ?? 'CDI',
-          companyUserId: item.companyUserId ? Number(item.companyUserId) : undefined,
-        }));
+        this.candidatures = data
+          // "prospection" rows (company interested, candidate hasn't responded yet)
+          // are shown exclusively in the "Entreprises qui vous contactent" section above.
+          .filter((item: any) => item.status !== 'prospection')
+          .map((item: any) => ({
+            applicationId: Number(item.applicationId ?? 0),
+            status: item.status ?? 'attente',
+            appliedAt: item.appliedAt ?? null,
+            jobOfferId: Number(item.jobOfferId ?? 0),
+            jobTitle: item.jobTitle ?? 'Offre inconnue',
+            companyName: item.companyName ?? 'Entreprise inconnue',
+            companyInitial: item.companyInitial ?? '?',
+            companyColor: item.companyColor ?? 'blue',
+            location: item.location ?? '—',
+            contractType: item.contractType ?? 'CDI',
+            companyUserId: item.companyUserId ? Number(item.companyUserId) : undefined,
+          }));
         this.loading = false;
       },
       error: () => {
@@ -125,6 +130,29 @@ export class MesCandidaturesComponent implements OnInit {
       error: () => {
         this.retractingId = null;
       },
+    });
+  }
+
+  acceptInterest(item: InterestedOfferItem): void {
+    this.respondingId = item.applicationId;
+    this.authService.acceptCompanyInterest(this.userId, item.jobOfferId).subscribe({
+      next: () => {
+        this.interestedOffers = this.interestedOffers.filter(i => i.applicationId !== item.applicationId);
+        this.respondingId = null;
+        this.loadCandidatures();
+      },
+      error: () => { this.respondingId = null; },
+    });
+  }
+
+  declineInterest(item: InterestedOfferItem): void {
+    this.respondingId = item.applicationId;
+    this.authService.declineCompanyInterest(this.userId, item.jobOfferId).subscribe({
+      next: () => {
+        this.interestedOffers = this.interestedOffers.filter(i => i.applicationId !== item.applicationId);
+        this.respondingId = null;
+      },
+      error: () => { this.respondingId = null; },
     });
   }
 

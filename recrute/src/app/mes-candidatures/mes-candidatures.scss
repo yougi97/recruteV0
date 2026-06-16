@@ -203,6 +203,28 @@ $purple: #9b77f5;
   }
 }
 
+// ── ACCEPT BUTTON ──────────────────────────────────────
+.btn-accept {
+  background: rgba(34,211,160,0.12);
+  border: 1px solid rgba(34,211,160,0.4);
+  color: $green;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+
+  &:hover:not(:disabled) {
+    background: rgba(34,211,160,0.22);
+    border-color: rgba(34,211,160,0.6);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
 // ── CHAT BUTTON ────────────────────────────────────────
 .btn-chat {
   background: transparent;

@@ -44,7 +44,7 @@ def update_cv_parsed(cv_id: int, payload: dict):
 
 def update_candidate_profile(candidate_profile_id: int, payload: dict):
     r = requests.put(
-        _url(f"/users/candidate/{candidate_profile_id}"),
+        _url(f"/api/internal/candidates/{candidate_profile_id}"),
         json=payload, headers=HEADERS
     )
     r.raise_for_status()

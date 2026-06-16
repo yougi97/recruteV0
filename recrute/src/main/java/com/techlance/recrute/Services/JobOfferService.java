@@ -230,6 +230,42 @@ public class JobOfferService {
                 .ifPresent(applicationsRepository::delete);
     }
 
+    // A company marking interest in a candidate creates an Applications row with
+    // companyInterested=true and status="prospection". The candidate previously had
+    // no way to respond to that: accepting turns it into a real, pending application
+    // (and clears companyInterested so it stops showing in "interested offers" and
+    // shows up once, normally, in their applications list); declining drops the row.
+    public void respondToCompanyInterest(Long userId, Long offerId, boolean accept) {
+        CandidateProfiles candidate = candidateProfilesRepository.findByUserId(userId);
+        if (candidate == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Profil candidat introuvable");
+        }
+        JobOffers job = getJobOffer(offerId);
+        Applications app = applicationsRepository.findByCandidateAndJob(candidate.getId(), job.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune proposition de cette entreprise"));
+        if (!app.isCompanyInterested()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cette entreprise ne vous a pas contacté");
+        }
+
+        if (!accept) {
+            applicationsRepository.delete(app);
+            return;
+        }
+
+        Cvs latestCv = findLatestCv(candidate.getId());
+        if (latestCv == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d'accepter sans CV");
+        }
+        app.setCv(latestCv);
+        app.setStatus("attente");
+        if (app.getAppliedAt() == null) {
+            app.setAppliedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+        }
+        app.setCompanyInterested(false);
+        app.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+        applicationsRepository.save(app);
+    }
+
     public List<Map<String, Object>> getCandidateSuggestions(Long userId) {
         CandidateProfiles candidate = candidateProfilesRepository.findByUserId(userId);
         if (candidate == null) {
@@ -829,27 +865,24 @@ public class JobOfferService {
         int matchScore = computeMatchScore(job, candidate, cv, candidateTerms);
         String status = "pending";
 
-        try {
-            java.util.Optional<Applications> application = applicationsRepository.findByCandidateAndJob(candidate.getId(), job.getId());
-            if (application.isPresent()) {
-                status = "interested";
-            }
-        } catch (Exception ignored) {}
-
         Float scoreSem = null, scoreStr = null, scoreLlm = null;
 
-        // Prefer persisted AI score when available
+        // Status reflects the CANDIDATE's own rating only (see buildPublicOffer for the
+        // same fix) - a company marking interest in this candidate elsewhere must not
+        // make every suggested offer look like the candidate already applied.
         try {
             java.util.Optional<CandidateJobRatings> opt = candidateJobRatingsRepository.findLatestByCandidateAndJob(candidate.getId(), job.getId());
             if (opt.isPresent()) {
+                if (opt.get().getRating() == Rating.up) {
+                    status = "interested";
+                } else if (opt.get().getRating() == Rating.down) {
+                    status = "dismissed";
+                }
                 if (opt.get().getAi_score() > 0) {
                     matchScore = Math.max(0, Math.min(100, Math.round(opt.get().getAi_score())));
                     scoreSem = opt.get().getScoreSemantique();
                     scoreStr = opt.get().getScoreStructure();
                     scoreLlm = opt.get().getScoreLlm();
-                }
-                if (status.equals("pending") && opt.get().getRating() == Rating.down) {
-                    status = "dismissed";
                 }
             }
         } catch (Exception ignored) {}
@@ -1185,18 +1218,16 @@ public class JobOfferService {
         Map<String, Object> offer = buildPublicOffer(job);
         String status = "pending";
 
-        try {
-            java.util.Optional<Applications> application = applicationsRepository.findByCandidateAndJob(candidate.getId(), job.getId());
-            if (application.isPresent()) {
-                status = "interested";
-            }
-        } catch (Exception ignored) {}
-
-        // Prefer AI score persisted by Python service when available
+        // Status reflects the CANDIDATE's own action (up = interested, down = dismissed),
+        // never the company's side-channel "interested in this candidate" flag on
+        // Applications - that's a separate, company-only signal and must not make the
+        // offer look like the candidate already applied/expressed interest themselves.
         try {
             java.util.Optional<CandidateJobRatings> opt = candidateJobRatingsRepository.findLatestByCandidateAndJob(candidate.getId(), job.getId());
             if (opt.isPresent()) {
-                if (status.equals("pending") && opt.get().getRating() == Rating.down) {
+                if (opt.get().getRating() == Rating.up) {
+                    status = "interested";
+                } else if (opt.get().getRating() == Rating.down) {
                     status = "dismissed";
                 }
                 if (opt.get().getAi_score() > 0) {

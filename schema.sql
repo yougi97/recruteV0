@@ -128,7 +128,7 @@ CREATE TABLE candidate_job_ratings (
     user_id         INT NOT NULL,
     job_offer_id    INT NOT NULL,
     cv_id           INT NOT NULL,
-    rating          ENUM('up','down') NOT NULL,
+    rating          ENUM('up','down') NULL,
     rated_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_candidate_rating (user_id, job_offer_id, cv_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

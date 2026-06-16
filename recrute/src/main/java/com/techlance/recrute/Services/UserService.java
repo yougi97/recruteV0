@@ -87,12 +87,6 @@ public class UserService {
     }
 
     public CandidateProfiles updateCandidate(CandidateProfiles user, Long id, Long authUserId) {
-        InputValidator.requireEmail(user.getUser().getEmail());
-        InputValidator.requireMaxLength(user.getUser().getFirstName(), 100, "Le prénom");
-        InputValidator.requireMaxLength(user.getUser().getLastName(), 100, "Le nom");
-        InputValidator.requireMaxLength(user.getTitle(), 255, "Le titre");
-        InputValidator.requireMaxLength(user.getLocation(), 255, "La localisation");
-        InputValidator.requireMaxLength(user.getBio(), 5000, "La bio");
         CandidateProfiles oldCandidateProfiles = candidateProfilesRepository.getReferenceById(id);
         if (!oldCandidateProfiles.getUser().getId().equals(authUserId)) {
             throw new ResponseStatusException(
@@ -100,6 +94,24 @@ public class UserService {
                         "Vous n'êtes pas autorisé à modifier ce profil"
                 );
         }
+        return applyCandidateUpdate(user, oldCandidateProfiles);
+    }
+
+    // Used by the Python AI service after parsing a CV: no end-user JWT is involved,
+    // so there's no authUserId to check ownership against (the internal endpoint
+    // calling this is reserved for server-to-server use, not exposed to end users).
+    public CandidateProfiles updateCandidateInternal(CandidateProfiles user, Long id) {
+        CandidateProfiles oldCandidateProfiles = candidateProfilesRepository.getReferenceById(id);
+        return applyCandidateUpdate(user, oldCandidateProfiles);
+    }
+
+    private CandidateProfiles applyCandidateUpdate(CandidateProfiles user, CandidateProfiles oldCandidateProfiles) {
+        InputValidator.requireEmail(user.getUser().getEmail());
+        InputValidator.requireMaxLength(user.getUser().getFirstName(), 100, "Le prénom");
+        InputValidator.requireMaxLength(user.getUser().getLastName(), 100, "Le nom");
+        InputValidator.requireMaxLength(user.getTitle(), 255, "Le titre");
+        InputValidator.requireMaxLength(user.getLocation(), 255, "La localisation");
+        InputValidator.requireMaxLength(user.getBio(), 5000, "La bio");
         Users oldUsers = userRepository.getReferenceById(oldCandidateProfiles.getUser().getId());
         oldUsers.setEmail(user.getUser().getEmail());
         oldUsers.setUserType(user.getUser().getUserType());

@@ -53,4 +53,14 @@ public class CandidateOffersController {
     public List<Map<String, Object>> getInterestedOffers(@PathVariable Long candidateId) {
         return jobOfferService.getCandidateInterestedApplications(candidateId);
     }
+
+    @PostMapping("/offers/{offerId}/accept-interest")
+    public void acceptCompanyInterest(@PathVariable Long candidateId, @PathVariable Long offerId) {
+        jobOfferService.respondToCompanyInterest(candidateId, offerId, true);
+    }
+
+    @PostMapping("/offers/{offerId}/decline-interest")
+    public void declineCompanyInterest(@PathVariable Long candidateId, @PathVariable Long offerId) {
+        jobOfferService.respondToCompanyInterest(candidateId, offerId, false);
+    }
 }

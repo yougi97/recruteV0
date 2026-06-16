@@ -76,6 +76,18 @@
             </div>
             <div class="card-right">
               <span class="status-badge interested-badge">★ Intéressée</span>
+              <button
+                class="btn-accept"
+                [disabled]="respondingId === item.applicationId"
+                (click)="acceptInterest(item)">
+                {{ respondingId === item.applicationId ? '...' : 'Accepter' }}
+              </button>
+              <button
+                class="btn-retract"
+                [disabled]="respondingId === item.applicationId"
+                (click)="declineInterest(item)">
+                Ignorer
+              </button>
               <button class="btn-chat" *ngIf="item.companyUserId"
                 [class.active]="openChatOfferId === item.jobOfferId"
                 (click)="toggleChat(item.jobOfferId)">

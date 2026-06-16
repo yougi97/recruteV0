@@ -169,7 +169,7 @@ public class CvsService {
     }
 
     public Resource getCvFileResourceByCvId(Long cvId) {
-        Cvs cv = getCvById(cvId);
+        Cvs cv = materializeLegacyCvIfNeeded(getCvById(cvId));
         if (cv.getFileData() == null || cv.getFileData().length == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun CV disponible pour ce CV");
         }
