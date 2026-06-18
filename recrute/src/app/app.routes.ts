@@ -13,6 +13,7 @@ import { CompanyOffers } from './company-offers/company-offers';
 import { MesCandidaturesComponent } from './mes-candidatures/mes-candidatures';
 import { MessagerieComponent } from './messagerie/messagerie';
 import { CandidatePublicView } from './candidate-public-view/candidate-public-view';
+import { Contact } from './contact/contact';
 
 export const routes: Routes = [
     { path: '', component: Home },
@@ -30,4 +31,5 @@ export const routes: Routes = [
     { path: 'about', component: AboutComponent },
     { path: 'company-offers', component: CompanyOffers },
     { path: 'messagerie', component: MessagerieComponent },
+    { path: 'contact',component: Contact },
 ];

@@ -7,7 +7,7 @@
   </div>
 
   <div class="nav-links">
-    <a href="#">Contactez-nous</a>
+    <a routerLink="/contact">Contactez-nous</a>
     <a routerLink="/about">À Propos</a>
     <ng-container *ngIf="!isLoggedIn(); else loggedInBlock">
       <button class="home-btn" routerLink="/">Home</button>
