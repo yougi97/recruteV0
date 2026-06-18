@@ -1,0 +1,12 @@
+{
+  "/connexion": {
+    "target": "https://entreprise.francetravail.fr",
+    "secure": true,
+    "changeOrigin": true
+  },
+  "/partenaire": {
+    "target": "https://api.francetravail.io",
+    "secure": true,
+    "changeOrigin": true
+  }
+}

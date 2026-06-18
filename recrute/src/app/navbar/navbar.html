@@ -17,15 +17,18 @@
       <div class="user-section">
         <ng-container *ngIf="authService.getCurrentUserType() === 'candidate'">
           <button class="nav-pill" routerLink="/candidat">
-            <span class="dot"></span> Mes suggestions IA
-          </button>
-          <button class="nav-pill secondary" routerLink="/offres">
-            🔍 Toutes les offres
-          </button>
+              <span class="dot"></span> Mes suggestions IA
+            </button>
+            <button class="nav-pill secondary" routerLink="/offres">
+              🔍 Toutes les offres
+            </button>
           <button class="nav-pill secondary" routerLink="/mes-candidatures">
             📋 Mes candidatures
           </button>
         </ng-container>
+        <button class="nav-pill salons" routerLink="/salons">
+            🎯 Salons emploi
+        </button>
         <button class="profile-btn" routerLink="/profil">Profil</button>
         <button *ngIf="authService.getCurrentUserType() === 'company'" class="profile-btn" routerLink="/company-offers">Candidatures</button>
         <button class="nav-pill secondary" routerLink="/messagerie">
