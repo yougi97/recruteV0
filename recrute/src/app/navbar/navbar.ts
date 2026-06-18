@@ -17,6 +17,10 @@ export class Navbar {
     return this.authService.isLoggedIn();
   }
 
+  isCandidate(): boolean {
+    return this.authService.getCurrentUserType() === 'candidate';
+  }
+
   getCurrentUser(): string | null {
     return this.authService.getCurrentUser();
   }

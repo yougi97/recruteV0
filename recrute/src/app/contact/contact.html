@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<body>
+
+  <section class="hero">
+    <p class="hero-label">Contactez-nous</p>
+    <h1>Parlons de votre <em>projet.</em></h1>
+    <p class="hero-sub">Une question, une idée, une collaboration ? On vous répond sous 24 heures, sans détour.</p>
+  </section>
+
+  <div class="grid">
+
+    <!-- LEFT -->
+    <aside class="info-panel">
+      <div class="info-section">
+        <p class="info-label">Email</p>
+        <p class="info-value"><a href="mailto:bonjour@recrute.fr">bonjour@recrute.fr</a></p>
+        <p class="info-note">Pour toute demande générale</p>
+      </div>
+
+      <div class="info-section">
+        <p class="info-label">Téléphone</p>
+        <p class="info-value"><a href="tel:+33123456789">+33 1 23 45 67 89</a></p>
+        <p class="info-note">Lun – Ven, 9h – 18h</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="info-section">
+        <p class="info-label">Adresse</p>
+        <p class="info-value">12 rue des Capucines<br>75001 Paris, France</p>
+      </div>
+
+      <div class="info-section">
+        <div class="availability">
+          <span class="dot"></span>
+          <span>Disponible pour de nouveaux projets</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT -->
+    <div class="form-panel">
+      <form id="contactForm" novalidate>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="prenom">Prénom</label>
+            <input type="text" id="prenom" name="prenom" placeholder="Marie" required />
+          </div>
+          <div class="field">
+            <label for="nom">Nom</label>
+            <input type="text" id="nom" name="nom" placeholder="Dupont" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="email">Adresse email</label>
+          <input type="email" id="email" name="email" placeholder="marie@exemple.fr" required />
+        </div>
+
+        <div class="field">
+          <label for="sujet">Sujet</label>
+          <div class="select-wrap">
+            <select id="sujet" name="sujet">
+              <option value="">Choisir un sujet…</option>
+              <option>Nouveau projet</option>
+              <option>Collaboration</option>
+              <option>Demande de devis</option>
+              <option>Support</option>
+              <option>Autre</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Décrivez votre projet en quelques lignes…" required></textarea>
+        </div>
+
+        <div class="submit-row">
+          <span class="submit-note">Réponse sous 24h</span>
+          <button type="submit" class="btn-send">
+            Envoyer
+            <span class="arrow">→</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <span>© 2026 Recrute</span>
+    <span>Paris · France</span>
+  </footer>
+
+  <div class="toast" id="toast">✓ Message envoyé — on vous répond vite !</div>
+
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+      this.reset();
+    });
+  </script>
+
+</body>
+</html>
