@@ -1,0 +1,180 @@
+<div class="salons-page">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <span class="title-icon">🎯</span>
+        Salons de recrutement
+      </h1>
+      <p class="page-subtitle">Trouvez les salons et évènements emploi près de chez vous</p>
+    </div>
+  </div>
+
+  <!-- Barre de recherche -->
+  <div class="search-bar">
+    <div class="search-inputs">
+      <div class="postal-group">
+        <span class="input-icon">📍</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Code postal (ex: 75001)"
+          [(ngModel)]="codePostal"
+          (keyup.enter)="search()"
+          maxlength="5"
+        />
+        @if (detectedCommune) {
+          <span class="detected-label">{{ detectedCommune }}</span>
+        }
+      </div>
+      <button class="search-btn" (click)="search()" [disabled]="isLoading || !codePostal.trim()">
+        @if (isLoading) { <span class="spinner"></span> } @else { 🔍 }
+        Rechercher
+      </button>
+      <button class="geo-btn" (click)="tryGeolocation()" title="Me localiser automatiquement">
+        📡 Localiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Liste des événements -->
+  <div class="main-content" [class.has-detail]="selectedEvenement">
+    <div class="events-list">
+      @if (isLoading) {
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Recherche des salons en cours…</p>
+        </div>
+      }
+      @if (!isLoading && errorMessage) {
+        <div class="empty-state">
+          <span class="empty-icon">🔎</span>
+          <p>{{ errorMessage }}</p>
+        </div>
+      }
+      @if (!isLoading && evenements.length === 0 && !errorMessage) {
+        <div class="empty-state">
+          <span class="empty-icon">🗺️</span>
+          <p>Saisissez un code postal pour découvrir les salons près de chez vous.</p>
+        </div>
+      }
+      @for (ev of evenements; track ev.id) {
+        <div
+          class="event-card"
+          [class.selected]="selectedEvenement?.id === ev.id"
+          (click)="selectEvenement(ev)"
+        >
+          <div class="event-card-header">
+            <span class="event-type-badge" [class.online]="isOnline(ev)">
+              {{ isOnline(ev) ? '💻 En ligne' : '📍 Présentiel' }}
+            </span>
+            @if (ev.nombreOffresEmploi) {
+              <span class="offers-badge">{{ ev.nombreOffresEmploi }} offres</span>
+            }
+          </div>
+          <h3 class="event-title">{{ ev.intitule }}</h3>
+          @if (ev.organisme) {
+            <p class="event-organizer">{{ ev.organisme }}</p>
+          }
+          <div class="event-meta">
+            <span class="meta-item">📅 {{ formatDate(ev.dateDebut) }}</span>
+            <span class="meta-item">🕐 {{ formatTime(ev.dateDebut) }} – {{ formatTime(ev.dateFin) }}</span>
+            <span class="meta-item">🏙️ {{ ev.lieu.commune }} ({{ ev.lieu.codePostal }})</span>
+          </div>
+          @if (ev.secteurActivite?.length) {
+            <div class="event-tags">
+              @for (s of ev.secteurActivite!.slice(0, 3); track s.code) {
+                <span class="tag">{{ s.libelle }}</span>
+              }
+            </div>
+          }
+          <div class="event-card-footer">
+            <span class="see-more">Voir les détails →</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (selectedEvenement) {
+      <ng-container *ngTemplateOutlet="detailTpl; context: { $implicit: selectedEvenement }"></ng-container>
+    }
+  </div>
+
+</div>
+
+<!-- ─── Panneau de détail ──────────────────────────────── -->
+<ng-template #detailTpl let-ev>
+  <div class="detail-panel">
+    <button class="close-btn" (click)="closeDetail()">✕</button>
+    <div class="detail-content">
+
+      <span class="detail-type-badge" [class.online]="isOnline(ev)">
+        {{ isOnline(ev) ? '💻 Salon en ligne' : '📍 Salon en présentiel' }}
+      </span>
+
+      <h2 class="detail-title">{{ ev.intitule }}</h2>
+
+      @if (ev.organisme) {
+        <p class="detail-organizer">Organisé par <strong>{{ ev.organisme }}</strong></p>
+      }
+
+      <div class="detail-section">
+        <h4>📅 Date et horaires</h4>
+        <p>{{ formatDate(ev.dateDebut) }}</p>
+        <p>De {{ formatTime(ev.dateDebut) }} à {{ formatTime(ev.dateFin) }}</p>
+      </div>
+
+      <div class="detail-section">
+        <h4>📍 Lieu</h4>
+        @if (ev.lieu.nom) { <p><strong>{{ ev.lieu.nom }}</strong></p> }
+        @if (ev.lieu.adresse1) { <p>{{ ev.lieu.adresse1 }}</p> }
+        @if (ev.lieu.adresse2) { <p>{{ ev.lieu.adresse2 }}</p> }
+        <p>{{ ev.lieu.codePostal }} {{ ev.lieu.commune }}</p>
+      </div>
+
+      @if (ev.description) {
+        <div class="detail-section">
+          <h4>ℹ️ Description</h4>
+          <p class="detail-description">{{ ev.description }}</p>
+        </div>
+      }
+
+      @if (ev.secteurActivite?.length) {
+        <div class="detail-section">
+          <h4>🏢 Secteurs d'activité</h4>
+          <div class="detail-tags">
+            @for (s of ev.secteurActivite!; track s.code) {
+              <span class="tag">{{ s.libelle }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      @if (ev.typeContrat?.length) {
+        <div class="detail-section">
+          <h4>📋 Types de contrat</h4>
+          <div class="detail-tags">
+            @for (c of ev.typeContrat!; track c.code) {
+              <span class="tag tag-contract">{{ c.libelle }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      @if (ev.nombreOffresEmploi) {
+        <div class="detail-offers">
+          <span class="offers-count">{{ ev.nombreOffresEmploi }}</span>
+          <span>offres d'emploi disponibles lors de cet événement</span>
+        </div>
+      }
+
+      @if (ev.urlEvenement) {
+        <a [href]="ev.urlEvenement" target="_blank" rel="noopener" class="register-btn">
+          S'inscrire à cet événement →
+        </a>
+      }
+
+    </div>
+  </div>
+</ng-template>

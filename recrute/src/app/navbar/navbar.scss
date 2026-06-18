@@ -99,6 +99,17 @@
     }
   }
 
+  &.salons {
+    background: rgba(52, 211, 153, 0.15);
+    border-color: rgba(52, 211, 153, 0.4);
+    color: #34d399;
+
+    &:hover {
+      background: rgba(52, 211, 153, 0.28);
+      border-color: rgba(52, 211, 153, 0.7);
+    }
+  }
+
   .dot {
     width: 7px;
     height: 7px;

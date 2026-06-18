@@ -14,12 +14,17 @@
       <button class="login-btn" routerLink="/login">Connexion</button>
     } @else {
       <div class="user-section">
-        <button class="nav-pill" routerLink="/candidat">
-          <span class="dot"></span> Mes suggestions IA
-        </button>
-        <button class="nav-pill secondary" routerLink="/offres">
-          🔍 Toutes les offres
-        </button>
+        @if (isCandidate()) {
+          <button class="nav-pill" routerLink="/candidat">
+            <span class="dot"></span> Mes suggestions IA
+          </button>
+          <button class="nav-pill secondary" routerLink="/offres">
+            🔍 Toutes les offres
+          </button>
+          <button class="nav-pill salons" routerLink="/salons">
+            🎯 Salons emploi
+          </button>
+        }
         <button class="profile-btn" routerLink="/profil">Profil</button>
         <span class="user-email">{{ getCurrentUser() }}</span>
         <button class="logout-btn" (click)="logout()">Déconnexion</button>
